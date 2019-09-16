@@ -125,17 +125,7 @@ end
 BentoSearch.register_engine('solr') do |conf|
 	conf.engine = 'BentoSearch::SolrEngineSingle'
 	conf.title = 'Solr Query'
-	if SOLR_CONFIG[ENV['RAILS_ENV']].present? && SOLR_CONFIG[ENV['RAILS_ENV']]["url"].present?
-		conf.solr_url = SOLR_CONFIG[ENV['RAILS_ENV']]["url"]
-	else
-		if ENV['RAILS_ENV'].blank?
-			raise 'no RAILS_ENV'
-		end
-		if ENV['SOLR_URL'].blank?
-			raise 'no SOLR_URL'
-		end
-		raise 'jgr25 error'
-	end
+	conf.solr_url = SOLR_CONFIG[ENV['RAILS_ENV']]["url"]
 end
 
 BentoSearch.register_engine('Book') do |conf|
