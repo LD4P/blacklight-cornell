@@ -86,6 +86,9 @@ devise_for :users, controllers: {
   get '/browse/heading_subject' => 'browse#show_subject', :as => 'browse_show_subject'
   get '/browse_authortitle' => 'browse#index_authortitle', :as => 'browse_index_authortitle'
   
+  ## Try a separate browse everything page with browse controller
+  get '/browseld/subject' => 'browseld#subject'
+  get '/browseld' => 'browseld#index'
 
   match '/catalog/range_limit' => 'catalog', :via => [:get, :post, :put]
   get '/databases' => 'databases#index', :as => 'databases_index'
