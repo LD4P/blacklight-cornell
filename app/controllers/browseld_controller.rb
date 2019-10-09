@@ -12,7 +12,10 @@ class BrowseldController < ApplicationController
    @heading='Browse'
   end
   def subject
-
+  	# Read the callhierarchy and call numbers json
+  	filepath =Rails.public_path.join("data/callhierarchy.json")
+  	@hierarchy = JSON.parse(File.read(filepath,:encoding => "UTF-8"))
+  	@callhash = JSON.parse(File.read(Rails.public_path.join("data/callnumbers.json")),:encoding => "UTF-8")
   end
   
   def index

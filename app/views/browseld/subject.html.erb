@@ -1,1 +1,30 @@
 <h1>Subjects</h1>
+<div style="float:none">
+<div style="float:left">
+<ul>
+<% @hierarchy.keys.each do |key| %>
+	<li><a heading="<%=key%>" href="<%=key%>"><%=@callhash[key]%></a>
+	<%
+	  subheadings = @hierarchy[key]
+	 %>
+	  <ul>
+	  <%
+	  subheadings.each do |sh|
+	  %>
+	  	<li><a heading="<%=sh%>" href="<%=sh%>"><%=@callhash.key?(sh) ?  @callhash[sh].encode!('UTF-8', 'binary', invalid: :replace, undef: :replace, replace: ''):"no"%></a></li>
+	  <%
+	  end
+	  %>
+	  </ul>
+	
+	</li>
+<% end %>
+</ul>
+</div>
+<div id="browsecontent" style="float:left">
+<h4>Subject Headings</h4>
+<div id="subjectcontent">
+</div>
+</div>
+
+</div>
