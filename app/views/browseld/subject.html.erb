@@ -1,7 +1,7 @@
 <h1>Subjects</h1>
 <div style="float:none">
 <div style="float:left">
-<ul>
+<ul id="classification_headings" base-url="<%= root_url %>">
 <% @hierarchy.keys.each do |key| %>
 	<li><a heading="<%=key%>" href="<%=key%>"><%=@callhash[key]%></a>
 	<%
