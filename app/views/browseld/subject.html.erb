@@ -1,6 +1,6 @@
 <h1>Subjects</h1>
 <div style="float:none">
-<div style="float:left">
+<div style="float:left;width:40%">
 <ul id="classification_headings" base-url="<%= root_url %>">
 <% @hierarchy.keys.each do |key| %>
 	<li><a heading="<%=key%>" href="<%=key%>"><%=@callhash[key]%></a>
@@ -21,9 +21,16 @@
 <% end %>
 </ul>
 </div>
-<div id="browsecontent" style="float:left">
+
+<div id="browsecontent" style="float:left;width:30%">
 <h4>Subject Headings</h4>
 <div id="subjectcontent">
+</div>
+</div>
+
+<div id="subjectdescription" style="float:left;width:30%">
+<h4>Subject Description</h4>
+<div id="subjectdescription">
 </div>
 </div>
 
