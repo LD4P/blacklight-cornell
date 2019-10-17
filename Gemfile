@@ -128,3 +128,4 @@ gem 'google-analytics-rails', '1.1.1'
 
 # LD4P
 gem 'leaflet-rails'
+gem 'jquery-mousewheel-rails'

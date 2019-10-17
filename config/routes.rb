@@ -89,6 +89,7 @@ devise_for :users, controllers: {
   
   ## Try a separate browse everything page with browse controller
   get '/browseld/subject' => 'browseld#subject'
+  get '/browseld/authors' => 'browseld#authors'
   get '/browseld' => 'browseld#index'
 
   match '/catalog/range_limit' => 'catalog', :via => [:get, :post, :put]

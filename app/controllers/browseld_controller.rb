@@ -20,4 +20,8 @@ class BrowseldController < ApplicationController
   
   def index
   end
+  
+  def authors
+  	#Query solr index and pass back information for timeline as json
+  end
 end
