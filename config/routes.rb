@@ -28,6 +28,8 @@ end
 get 'proxy/search'  
 get 'proxy/facet' 
 get 'proxy/subjectbrowse'
+get 'proxy/authorbrowse'
+
   
 #get 'bookmarks/email_login_required' => 'bookmarks#email_login_required'
 get 'bookmarks/show_email_login_required_bookmarks' => 'bookmarks#show_email_login_required_bookmarks'

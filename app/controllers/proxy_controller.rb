@@ -40,4 +40,16 @@ class ProxyController < ApplicationController
     render :json => result 
   end
   
+  def authorbrowse
+    require "net/http"
+    # Query parameter
+    query = params[:q]
+    sep_solr_url = ENV["AUTHOR_SOLR"] + "/select?q=*:*&wt=json&sort=wd_birthy_i desc&rows=400";
+    url = URI.parse(sep_solr_url)
+    resp = Net::HTTP.get_response(url)
+    data = resp.body
+    result = JSON.parse(data)
+    render :json => result 
+  end
+  
 end
