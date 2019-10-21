@@ -29,7 +29,7 @@ var browseAuthors = {
       //Convert data to format required to display
       var convertedData = browseAuthors.convertData(data);
       timeline1.load(convertedData, {width:2000, height:700, initialDate: {
-          year: 1895,
+          year: 1600,
           month: 1,
           day: 1
         },zoom: {
@@ -58,12 +58,16 @@ var browseAuthors = {
             var wdURI = v["wd_uri_s"];
             var n = wdURI.lastIndexOf('/');
             var wdName = wdURI.substring(n + 1);
-            var article = {id:id, title:wdName, from:{year: birthYear} , style:articleStyle};
-            if("wd_deathy_i" in v) {
-              article["to"] = {year: v["wd_deathy_i"]};
+            var displayName = ("authlabel_s" in v)? v["authlabel_s"] : wdName;
+            var article = {id:id, title:displayName, from:{year: birthYear} , style:articleStyle};
+            if("wd_birthy_i" in v) {
+              article["to"] = {year: v["wd_birthy_i"]};
             }
             //testing image
-            article["imageUrl"] = "https://upload.wikimedia.org/wikipedia/commons/thumb/6/63/Portrait_of_Charles_Dickens_%284671094%29.jpg/435px-Portrait_of_Charles_Dickens_%284671094%29.jpg";
+            if("wd_image_s" in v) {
+              article["imageUrl"] = v["wd_image_s"];
+            }
+            //article["imageUrl"] = "https://upload.wikimedia.org/wikipedia/commons/thumb/6/63/Portrait_of_Charles_Dickens_%284671094%29.jpg/435px-Portrait_of_Charles_Dickens_%284671094%29.jpg";
             articles.push(article);
           }   
         }
