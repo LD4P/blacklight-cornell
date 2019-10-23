@@ -1,5 +1,6 @@
 <div class="browse-syllabi">
   <h3 class="mt-4">Browse works often assigned with this one</h3>
-  <p><%= @document['isbn_t'].inspect %></p>
-  <% # javascript_include_tag "syllabi_browse" %>
+  <ul id="recommended-list"></ul>
+  <div id="none-list">[none]</div>
+  <div style="display: none;" id="isbn-box"><%= @document['isbn_t'].inspect %></div>
 </div>
