@@ -12,21 +12,30 @@ var browseLd = {
         return browseLd.handleLCSHClick(e, $(this));
       });
     },
+    //Top level click, display appropriate div
     handleLCCNClick: function(e, target) {
       e.preventDefault();
       var heading = target.attr("heading");
+      var headingtype = target.attr("headingtype");
+      var headingTitle = target.attr("title");
+      if (typeof headingtype !== typeof undefined && headingtype !== false) {
+        //Hide the others
+        $("div[headingtype='sub']").hide();
+        //Show the appropriate sub categories of this top level LCCN category
+        $("div[headingtype='sub'][heading='" + heading + "']").show();
+      }
       var baseUrl = $("#classification_headings").attr("base-url");
       var querySolr = baseUrl + "proxy/subjectbrowse?q=" + heading;
       $.ajax({
         "url": querySolr,
         "type": "GET",
         "success" : function(data) {              
-          browseLd.displaySubjectHeading(data);
+          browseLd.displaySubjectHeading(data, headingTitle);
         }
       });
       return false;
     },
-    displaySubjectHeading:function(data) {
+    displaySubjectHeading:function(data, title) {
       var htmlDisplay = [];
       if("response" in data && "docs" in data["response"] && data["response"]["docs"].length) {
         var docs = data["response"]["docs"];
@@ -37,7 +46,7 @@ var browseLd = {
           htmlDisplay.push(browseLd.generateSubjectDisplay(d));
         }
       }
-      $("#subjectcontent").html(htmlDisplay.join(" "));
+      $("#subjectcontent").html("<h5>Subject Headings for " + title + "</h5>" + htmlDisplay.join(" "));
     },
     generateSubjectDisplay: function(doc) {
       var html = "";
