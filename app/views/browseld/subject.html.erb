@@ -15,7 +15,7 @@
 <hr/>
 <div class="row">
 <div class="col-sm-2">
-<div id="classification_headings" base-url="<%= root_url %>">
+<div id="classification_headings" base-url="<%= root_url %>" class="border">
 <% @hierarchy.keys.each do |key| 
 	if !@callhash[key].nil?
 %>
@@ -40,12 +40,12 @@
 </div>
 </div>
 
-<div id="browsecontent" class="col-sm-3">
+<div id="browsecontent" class="col-sm-3 border">
 <div id="subjectcontent" class="overflow-auto" style="height:500px">
 </div>
 </div>
 
-<div id="subjectdescription" class="col-sm-7">
+<div id="subjectdescription" class="col-sm-7 border">
 
 
 </div>
