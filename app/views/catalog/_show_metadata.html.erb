@@ -13,6 +13,8 @@
   <% 	author_json_parsed = @document['author_json'].present? ? ActiveSupport::JSON.decode(@document['author_json'][0]) : "" %>
   <input type="hidden" id="author" value="<%= author_json_parsed["search1"] %>">
   <input type="hidden" id="format" value="<%= @document['format_main_facet'] %>">
+  <input type="hidden" id="subjects" value="<%= @document['subject_display'] %>">
+  <input type="hidden" id="fast_genre" value="<%= @document['fast_genre_facet'] %>">
   <div id="doc_<%= @document.id.to_s.parameterize %>">
   <%
     # With Blacklight 7, we can't access these using field_value. So get them all out of 
