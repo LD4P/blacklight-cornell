@@ -7,9 +7,18 @@ var browseLd = {
       $("a").click(function(e) {
         return browseLd.handleLCCNClick(e, $(this));
       });
+      //Clicking on expand
+      $("#expandlccn").click(function(e) {
+        //Show top level nav
+        $("#toplevelnav").removeClass("d-lg-none");
+        $("#toplevelnavheading").hide();
+      });
       //Clicking on subject
       $("#browsecontent").on("click", "div[headingtype='lcsh']", function(e) {
         return browseLd.handleLCSHClick(e, $(this));
+      });
+      $("#subjectdescription").on("click", "li[lcsh='related']", function(e) {
+        return browseLd.handleRelated(e, $(this));
       });
     },
     //Top level click, display appropriate div
@@ -18,12 +27,22 @@ var browseLd = {
       var heading = target.attr("heading");
       var headingtype = target.attr("headingtype");
       var headingTitle = target.attr("title");
-      if (typeof headingtype !== typeof undefined && headingtype !== false) {
-        //Hide the others
+      if (typeof headingtype !== typeof undefined && headingtype !== false && headingtype == "nav") {
+        //Hide the top level nav categories and show heading for this subject
+        $("a[headingtype='nav']").removeClass("text-light background-dark");
+        target.addClass("text-light background-dark");
+        $("#toplevelnav").addClass("d-lg-none");
+        $("#toplevelnavheading").show();
+        //Hide the subheadings and show only the one that corresponds to this top level
         $("div[headingtype='sub']").hide();
         //Show the appropriate sub categories of this top level LCCN category
         $("div[headingtype='sub'][heading='" + heading + "']").show();
-      }
+      } 
+      
+      
+      //Highlight selection
+      $("a[headingtype]").removeClass("text-light background-dark");
+      $()
       var baseUrl = $("#classification_headings").attr("base-url");
       var querySolr = baseUrl + "proxy/subjectbrowse?q=" + heading;
       $.ajax({
@@ -59,16 +78,6 @@ var browseLd = {
     handleLCSHClick: function(e, target) {
       e.preventDefault();
       var uri = target.attr("uri");
-      //var label = target.attr("label");
-      /*
-      $.ajax({
-        "url": uri + ".jsonld",
-        "type": "GET",
-        "success" : function(data) {              
-          browseLd.displaySubjectDetails(uri, label, data);
-        }
-      });*/
-      //pass in call back function
       browseLd.getLCSHRelationships(uri, browseLd.displaySubjectDetails);
       return false;
     },
@@ -100,15 +109,15 @@ var browseLd = {
       return display;
     },
     generateRelatedSubject: function(uri, label) {
-      return "<li><a href='" + uri + "'>" + label + "</a></li>";
+      return "<li lcsh='related' uri='" + uri + "'>" + label + "<a href='" + uri + "'>link</a></li>";
     },
     generateSubjectDetailsDisplay : function(uri, label, dataHash, narrowerURIs, broaderURIs, closeURIs) {
       var narrowerDisplay = browseLd.processRelatedURIs(narrowerURIs, dataHash);
       var broaderDisplay = browseLd.processRelatedURIs(broaderURIs, dataHash);
       var closeDisplay = browseLd.processRelatedURIs(closeURIs, dataHash);
       var broader = "<div><ul>" + broaderDisplay.join(" ") + "</ul></div>";
-      var entity = "<div style='margin-left:5px'><h4>" + label + "</h4></div>";
-      var narrower = "<div style='margin-left:20px'><ul>" + narrowerDisplay.join(" ") + "</ul></div>";
+      var entity = "<div><h4>" + label + "</h4></div>";
+      var narrower = "<div><ul>" + narrowerDisplay.join(" ") + "</ul></div>";
       var close = "<div><h5>Close Matches</h5><ul>" + closeDisplay.join(" ") + "</ul></div>";
       return broader + entity + narrower + close;
     },
@@ -189,6 +198,17 @@ var browseLd = {
           $("#documents").html(documents);
         }
       });
+    },
+    handleRelated: function(e, target) {
+      //For now, just getting narrower subjects
+      var uri = target.attr("uri");
+      browseLd.getLCSHRelationships(uri, browseLd.displayNarrower);
+    },
+    displayNarrower: function(relationships) {
+      var requestingURI = relationships.uri;
+      var narrowerURIs = relationships.narrowerURIs;
+      var narrowerDisplay = browseLd.processRelatedURIs(narrowerURIs, relationships.dataHash);
+      $("li[lcsh='related'][uri='" + requestingURI + "']").append(narrowerDisplay.join(" "));
     }
     
 }
