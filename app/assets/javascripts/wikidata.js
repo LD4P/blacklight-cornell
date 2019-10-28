@@ -38,7 +38,6 @@ var processWikidata = {
                      + "WHERE {?notable_work wdt:P629 <" + wikiURI + "> .  "
                      + "SERVICE wikibase:label { bd:serviceParam wikibase:language \"[AUTO_LANGUAGE],en\". }"
                      + " ?notable_work wdt:P577 ?pub_date .}";
-    console.log(sparqlQuery);
   $.ajax({
     url : wikidataEndpoint,
     headers : {
@@ -170,8 +169,8 @@ var processWikidata = {
       },
       success : function(data) {
         if ( data && "results" in data && "bindings" in data["results"] ) {
-        var bindings = data["results"]["bindings"];
-      if ( "locID" in bindings[0] ) {         
+          var bindings = data["results"]["bindings"];
+          if ( bindings[0] != undefined && "locID" in bindings[0] ) {         
             locId = bindings[0]["locID"]["value"];
             processWikidata.getLocData(locId);
           }
@@ -190,10 +189,13 @@ var processWikidata = {
           var results = $.parseJSON(xhr.responseText);
           if ( !jQuery.isEmptyObject(results) ) {
             var label = results["label"][0].replace(". ",". | ").replace("- ","- | ");
-            var href = '/browse?utf8=%E2%9C%93&authq=' + label.replace(" ","+") + '&start=0&browse_type=Subject'
-            var browseHtml = '<div style="margin-top:-25px;"><h3>Browse related items by subject</h3><ul class="list-inline"><li>'
-                             + '<a  class="btn btn-cul" href="' + href + '">' + results["label"][0] + '</a></li></ul></div>';
-              $('div.browse-call-number').append("<h4>- or -</h4>");
+            var href = '/browse?utf8=%E2%9C%93&authq=' + label.replace(" ","+") + '&start=0&browse_type=Subject';
+            var btn_text = results["label"][0];
+            if ( results["label"][0].length > 77 ) {
+                btn_text = results["label"][0].substring(0,77) + "...";
+            }
+            var browseHtml = '<div id="author-title-browse" style="margin-top:-25px;"><h3>Browse this author and title as subject</h3><ul class="list-inline"><li>'
+                             + '<a  class="btn btn-cul" title="' + results["label"][0] + '" href="' + href + '">' + btn_text + '</a></li></ul></div>';
               $('div.browse-call-number').after(browseHtml);
           }
         }
