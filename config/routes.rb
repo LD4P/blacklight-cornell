@@ -27,6 +27,9 @@ end
 #Adding proxy controller to access external URLs like digital collections
 get 'proxy/search'  
 get 'proxy/facet' 
+get 'proxy/subjectbrowse'
+get 'proxy/authorbrowse'
+
   
 #get 'bookmarks/email_login_required' => 'bookmarks#email_login_required'
 get 'bookmarks/show_email_login_required_bookmarks' => 'bookmarks#show_email_login_required_bookmarks'
@@ -86,6 +89,10 @@ devise_for :users, controllers: {
   get '/browse/heading_subject' => 'browse#show_subject', :as => 'browse_show_subject'
   get '/browse_authortitle' => 'browse#index_authortitle', :as => 'browse_index_authortitle'
   
+  ## Try a separate browse everything page with browse controller
+  get '/browseld/subject' => 'browseld#subject'
+  get '/browseld/authors' => 'browseld#authors'
+  get '/browseld' => 'browseld#index'
 
   match '/catalog/range_limit' => 'catalog', :via => [:get, :post, :put]
   get '/databases' => 'databases#index', :as => 'databases_index'

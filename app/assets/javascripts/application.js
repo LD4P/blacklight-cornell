@@ -59,3 +59,9 @@
 //= require tooltip.js
 //= require integrateLinks.js
 //= require indexAdditionalSearch.js
+
+// Added for Browse
+//= require jquery.mousewheel
+//= require histropedia-1.1.1.min.js
+//= require browseld/browseLd.js
+//= require browseld/browseAuthors.js
