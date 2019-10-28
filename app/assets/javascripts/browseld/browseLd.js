@@ -59,47 +59,32 @@ var browseLd = {
     handleLCSHClick: function(e, target) {
       e.preventDefault();
       var uri = target.attr("uri");
-      var label = target.attr("label");
+      //var label = target.attr("label");
+      /*
       $.ajax({
         "url": uri + ".jsonld",
         "type": "GET",
         "success" : function(data) {              
           browseLd.displaySubjectDetails(uri, label, data);
         }
-      });
+      });*/
+      //pass in call back function
+      browseLd.getLCSHRelationships(uri, browseLd.displaySubjectDetails);
       return false;
     },
-    displaySubjectDetails : function(uri, label, data) {
-      var dataHash = browseLd.processLCSHJSON(data);
-      var entity = dataHash[uri];
-      var narrowerProperty = "http://www.loc.gov/mads/rdf/v1#hasNarrowerAuthority";
-      var broaderProperty = "http://www.loc.gov/mads/rdf/v1#hasBroaderAuthority";
-      var closeProperty = "http://www.loc.gov/mads/rdf/v1#hasCloseExternalAuthority";
-      var narrowerURIs = [];
-      var broaderURIs = [];
-      var closeURIs = [];
-      if(narrowerProperty in entity) {
-        narrowerURIs = entity[narrowerProperty];
-      }
-      if(broaderProperty in entity) {
-        broaderURIs = entity[broaderProperty];
-      }
-      if(closeProperty in entity) {
-        closeURIs = entity[closeProperty];
-      }
-    
-      $("#subjectdescription").html(browseLd.generateSubjectDetailsDisplay(uri, label, dataHash, narrowerURIs, broaderURIs, closeURIs));
+    displaySubjectDetails : function(relationships) {    
+     var label = relationships.label;
+      $("#subjectdescription").html(browseLd.generateSubjectDetailsDisplay(relationships.uri, label, relationships.dataHash, relationships.narrowerURIs, relationships.broaderURIs, relationships.closeURIs));
       //Add searches
       var baseUrl = $("#classification_headings").attr("base-url");
-      var fastURI = browseLd.extractFAST(closeURIs);
+      var fastURI = browseLd.extractFAST(relationships.closeURIs);
       var searchFAST = "";
       var searchLCSH = "<a href='" + baseUrl + "?q=" + label + "&search_field=subject_cts'>Search Catalog (Subject)</a>";
 
       if(fastURI != null) { 
-       var fastLabel = browseLd.extractFASTLabel(fastURI, dataHash);
+       var fastLabel = browseLd.extractFASTLabel(fastURI, relationships.dataHash);
        searchFAST = "<a href='" + baseUrl + "?f[fast_topic_facet][]=" + fastLabel + "&q=&search_field=all_fields'>Search Catalog (FAST)</a>";
        browseLd.getCatalogResults(fastLabel);
-
       }
       $("#subjectdescription").append(searchLCSH + "<br/>" + searchFAST);
       //Also kick off search
@@ -160,12 +145,13 @@ var browseLd = {
       return null;
     },
     //Given URL, can you get broader and narrower JSON
-    getLCSHRelationships: function(uri) {
+    getLCSHRelationships: function(uri, callback) {
         $.ajax({
           "url": uri + ".jsonld",
           "type": "GET",
           "success" : function(data) {              
             var relationships = browseLd.extractLCSHRelationships(uri, data);
+            callback(relationships);
           }
         });
     },
@@ -175,6 +161,7 @@ var browseLd = {
       var narrowerProperty = "http://www.loc.gov/mads/rdf/v1#hasNarrowerAuthority";
       var broaderProperty = "http://www.loc.gov/mads/rdf/v1#hasBroaderAuthority";
       var closeProperty = "http://www.loc.gov/mads/rdf/v1#hasCloseExternalAuthority";
+      var labelProperty = "http://www.w3.org/2004/02/skos/core#prefLabel";
       var narrowerURIs = [];
       var broaderURIs = [];
       var closeURIs = [];
@@ -188,7 +175,8 @@ var browseLd = {
         closeURIs = entity[closeProperty];
       }
     
-      return {dataHash: dataHash, narrowerURIs: narrowerURIs, broaderURIs: broaderURIs, closeURIs: closeURIs};
+      var label = entity[labelProperty][0]["@value"];
+      return {uri:uri, dataHash: dataHash, label: label, narrowerURIs: narrowerURIs, broaderURIs: broaderURIs, closeURIs: closeURIs};
     }, 
     getCatalogResults: function(fastHeading) {
       var baseUrl = $("#classification_headings").attr("base-url"); 
