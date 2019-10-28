@@ -98,8 +98,11 @@ var browseLd = {
       if(fastURI != null) { 
        var fastLabel = browseLd.extractFASTLabel(fastURI, dataHash);
        searchFAST = "<a href='" + baseUrl + "?f[fast_topic_facet][]=" + fastLabel + "&q=&search_field=all_fields'>Search Catalog (FAST)</a>";
+       browseLd.getCatalogResults(fastLabel);
+
       }
       $("#subjectdescription").append(searchLCSH + "<br/>" + searchFAST);
+      //Also kick off search
       
     },
     processRelatedURIs : function(rArray, dataHash) {
@@ -155,7 +158,51 @@ var browseLd = {
         return dataHash[URI][prefLabel][0]["@value"];
       }
       return null;
+    },
+    //Given URL, can you get broader and narrower JSON
+    getLCSHRelationships: function(uri) {
+        $.ajax({
+          "url": uri + ".jsonld",
+          "type": "GET",
+          "success" : function(data) {              
+            var relationships = browseLd.extractLCSHRelationships(uri, data);
+          }
+        });
+    },
+    extractLCSHRelationships: function(uri, data) {
+      var dataHash = browseLd.processLCSHJSON(data);
+      var entity = dataHash[uri];
+      var narrowerProperty = "http://www.loc.gov/mads/rdf/v1#hasNarrowerAuthority";
+      var broaderProperty = "http://www.loc.gov/mads/rdf/v1#hasBroaderAuthority";
+      var closeProperty = "http://www.loc.gov/mads/rdf/v1#hasCloseExternalAuthority";
+      var narrowerURIs = [];
+      var broaderURIs = [];
+      var closeURIs = [];
+      if(narrowerProperty in entity) {
+        narrowerURIs = entity[narrowerProperty];
+      }
+      if(broaderProperty in entity) {
+        broaderURIs = entity[broaderProperty];
+      }
+      if(closeProperty in entity) {
+        closeURIs = entity[closeProperty];
+      }
+    
+      return {dataHash: dataHash, narrowerURIs: narrowerURIs, broaderURIs: broaderURIs, closeURIs: closeURIs};
+    }, 
+    getCatalogResults: function(fastHeading) {
+      var baseUrl = $("#classification_headings").attr("base-url"); 
+      var searchLink = baseUrl + "?f[fast_topic_facet][]=" + fastHeading + "&q=&search_field=all_fields";
+      $.ajax({
+        "url": searchLink,
+        "type": "GET",
+        "success" : function(data) {     
+          var documents = $(data).find("#documents");
+          $("#documents").html(documents);
+        }
+      });
     }
+    
 }
 
 //Better to transform above into object later
