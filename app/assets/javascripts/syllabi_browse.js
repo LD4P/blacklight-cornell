@@ -29,9 +29,17 @@ var getOpenSyllabusRecommendations = {
             if (numFound > 0) {
               // Remove "none" from display if somethign is found
               $("#none-list").empty();
+              // Format author string
+              if (solrResponse["responseJSON"]["response"]["docs"][0]["author_display"]) {
+                var authorStringResponse = solrResponse["responseJSON"]["response"]["docs"][0]["author_display"];
+                var authorDividedByComma = authorStringResponse.split(",");
+                var authorFirst2Elements = authorDividedByComma.slice(0,2).join();
+              }
+              var authorNote = (authorFirst2Elements ? ' by '+authorFirst2Elements : '');
+              // Set strings for title and href
               var recomTitle = solrResponse["responseJSON"]["response"]["docs"][0]["title_display"];
-              var recomQuery = 'http://localhost:3000/catalog?&q='+joinedList
-              $("#recommended-list").append('<li><a href="'+recomQuery+'">'+recomTitle+'</li>');
+              var recomQuery = 'http://localhost:3000/catalog?&q='+joinedList;
+              $("#recommended-list").append('<li><a href="'+recomQuery+'">'+recomTitle+'</a>'+authorNote+'</li>');
             }
           }
         });
