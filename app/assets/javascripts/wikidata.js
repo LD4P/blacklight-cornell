@@ -171,7 +171,7 @@ var processWikidata = {
       success : function(data) {
         if ( data && "results" in data && "bindings" in data["results"] ) {
         var bindings = data["results"]["bindings"];
-      if ( "locID" in bindings[0] ) {         
+      if ( bindings[0] != undefined && "locID" in bindings[0] ) {         
             locId = bindings[0]["locID"]["value"];
             processWikidata.getLocData(locId);
           }
