@@ -4,7 +4,7 @@ var browseLd = {
     },
     bindEventHandlers: function() {
       //Clicking on LCCN category
-      $("a").click(function(e) {
+      $("a[heading]").click(function(e) {
         return browseLd.handleLCCNClick(e, $(this));
       });
       //Clicking on expand
@@ -29,20 +29,24 @@ var browseLd = {
       var headingTitle = target.attr("title");
       if (typeof headingtype !== typeof undefined && headingtype !== false && headingtype == "nav") {
         //Hide the top level nav categories and show heading for this subject
-        $("a[headingtype='nav']").removeClass("text-light background-dark");
-        target.addClass("text-light background-dark");
+        $("a[headingtype='nav']").removeClass("selectedCard");
+        target.addClass("selectedCard");
         $("#toplevelnav").addClass("d-lg-none");
         $("#toplevelnavheading").show();
         //Hide the subheadings and show only the one that corresponds to this top level
         $("div[headingtype='sub']").hide();
         //Show the appropriate sub categories of this top level LCCN category
         $("div[headingtype='sub'][heading='" + heading + "']").show();
-      } 
-      
-      
-      //Highlight selection
-      $("a[headingtype]").removeClass("text-light background-dark");
-      $()
+        //Highlight first subcategory
+        //the other 
+        $("a[role='subheading']").removeClass("selectedCard");
+        $("a[role='subheadingtop']").addClass("selectedCard");
+      } else {
+        //Subheading has been selected
+        $("a[role='subheading']").removeClass("selectedCard");
+        target.addClass("selectedCard");       
+      }
+     
       var baseUrl = $("#classification_headings").attr("base-url");
       var querySolr = baseUrl + "proxy/subjectbrowse?q=" + heading;
       $.ajax({
@@ -65,7 +69,7 @@ var browseLd = {
           htmlDisplay.push(browseLd.generateSubjectDisplay(d));
         }
       }
-      $("#subjectcontent").html("<h5>Subject Headings for " + title + "</h5>" + htmlDisplay.join(" "));
+      $("#subjectcontent").html(htmlDisplay.join(" "));
     },
     generateSubjectDisplay: function(doc) {
       var html = "";

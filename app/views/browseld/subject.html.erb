@@ -25,14 +25,14 @@
 <% @hierarchy.keys.each do |key| 
 	if !@callhash[key].nil?
 %>
-	<div headingtype="sub" class="overflow-auto" style="height:500px;display:none" heading="<%=key%>"><a class="font-weight-bold pl-1 list-group-item-action" heading="<%=key%>" href="<%=key%>" title="<%=@callhash[key]%>"><h6><%=@callhash[key]%></h6></a>
+	<div headingtype="sub" class="overflow-auto" style="height:500px;display:none" heading="<%=key%>"><a class="font-weight-bold pl-1 list-group-item-action" heading="<%=key%>" href="<%=key%>" title="<%=@callhash[key]%>" role="subheadingtop"><%=@callhash[key]%></a>
 	<%
 	  subheadings = @hierarchy[key]
 	  subheadings.each do |sh|
 	    if @callhash.key?(sh)
 	  	 subheading = @callhash[sh].encode!('UTF-8', 'binary', invalid: :replace, undef: :replace, replace: '')
 	  %>
-	  		<div  class="d-flex flex-column flex-nowrap"><a title="<%=subheading%>" class="border border-top-0 border-left-0 border-right-0 pl-1 ml-2 list-group-item-action" heading="<%=sh%>" href="<%=sh%>"><%=subheading%></a></div>
+	  		<div  class="d-flex flex-column flex-nowrap"><a title="<%=subheading%>" class="border border-top-0 border-left-0 border-right-0 pl-1 ml-2 list-group-item-action" heading="<%=sh%>" href="<%=sh%>" role="subheading"><%=subheading%></a></div>
 	  <%
 	  	end
 	  end
