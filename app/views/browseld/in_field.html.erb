@@ -4,7 +4,7 @@
   <tbody>
     <% for book in @books %>
       <tr>
-        <td><%= book['title'] %></td>
+        <td><%= link_to book['title'], controller: 'catalog', action: 'index', q: book['isbns'].join(' OR ') %></td>
         <td style="padding-left: 3em;">in <%= pluralize(book['syllabi'], 'syllabus') %></td>
       </tr>
     <% end %>
