@@ -27,8 +27,8 @@ var getOpenSyllabusRecommendations = {
             var numFound = solrResponse["responseJSON"]["response"]["numFound"]
             // When results in the catalog are found, add them to the page
             if (numFound > 0) {
-              // Remove "none" from display if somethign is found
-              $("#none-list").empty();
+              // Display the div if something is found
+              $(".browse-syllabi").show(500);
               // Format author string
               if (solrResponse["responseJSON"]["response"]["docs"][0]["author_display"]) {
                 var authorStringResponse = solrResponse["responseJSON"]["response"]["docs"][0]["author_display"];
@@ -38,7 +38,7 @@ var getOpenSyllabusRecommendations = {
               var authorNote = (authorFirst2Elements ? ' by '+authorFirst2Elements : '');
               // Set strings for title and href
               var recomTitle = solrResponse["responseJSON"]["response"]["docs"][0]["title_display"];
-              var recomQuery = 'http://localhost:3000/catalog?&q='+joinedList;
+              var recomQuery = '/catalog?&q='+joinedList;
               $("#recommended-list").append('<li><a href="'+recomQuery+'">'+recomTitle+'</a>'+authorNote+'</li>');
             }
           }
