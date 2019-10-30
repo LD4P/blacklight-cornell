@@ -1,0 +1,12 @@
+<h1>Browse <%= params[:field] %> books</h1>
+
+<table>
+  <tbody>
+    <% for book in @books %>
+      <tr>
+        <td><%= book['title'] %></td>
+        <td style="padding-left: 3em;">in <%= pluralize(book['syllabi'], 'syllabus') %></td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
