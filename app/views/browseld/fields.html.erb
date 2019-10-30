@@ -1,10 +1,16 @@
 <h1>Browse Fields</h1>
 
 <table>
+  <thead>
+    <tr>
+      <th>Field name</th>
+      <th style="padding-left: 3em;">CIP code</th>
+    </tr>
+  </thead>
   <tbody>
     <% for field in @fields %>
       <tr>
-        <td><%= field['field'] %></td>
+        <td><%= link_to field['field'], action: 'in_field', field: field['field'], cip: field['cip'] %></td>
         <td style="padding-left: 3em;"><%= field['cip'].truncate(100) %></td>
       </tr>
     <% end %>

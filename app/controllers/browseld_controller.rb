@@ -6,7 +6,7 @@ class BrowseldController < ApplicationController
 
   def subject
   	# Read the callhierarchy and call numbers json
-  	filepath =Rails.public_path.join("data/callhierarchy.json")
+  	filepath = Rails.public_path.join("data/callhierarchy.json")
   	@hierarchy = JSON.parse(File.read(filepath,:encoding => "UTF-8"))
   	@callhash = JSON.parse(File.read(Rails.public_path.join("data/callnumbers.json")),:encoding => "UTF-8")
   end
@@ -19,11 +19,16 @@ class BrowseldController < ApplicationController
   end
 
   def fields
-    require "net/http"
-    uri = URI.parse("https://cosine-cul.herokuapp.com/api/cips")
-    resp = Net::HTTP.get_response(uri)
-    data = resp.body
-    @fields = JSON.parse(data)
+    api = URI.parse("https://cosine-cul.herokuapp.com/api/cips")
+    resp = Net::HTTP.get_response(api)
+    parsed = JSON.parse(resp.body)
+    @fields = parsed.sort{|a,b| a['field'] <=> b['field']}
+  end
+
+  def in_field
+    api = URI.parse("https://cosine-cul.herokuapp.com/api/field?cip="+params[:cip])
+    resp = Net::HTTP.get_response(api)
+    @books = JSON.parse(resp.body)
   end
 
   private
