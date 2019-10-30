@@ -1,0 +1,12 @@
+<h1>Browse Fields</h1>
+
+<table>
+  <tbody>
+    <% for field in @fields %>
+      <tr>
+        <td><%= field['field'] %></td>
+        <td style="padding-left: 3em;"><%= field['cip'].truncate(100) %></td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
