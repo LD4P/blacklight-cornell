@@ -17,7 +17,7 @@ var browseLd = {
       $("#browsecontent").on("click", "div[headingtype='lcsh']", function(e) {
         return browseLd.handleLCSHClick(e, $(this));
       });
-      $("#subjectdescription").on("click", "li[lcsh='related']", function(e) {
+      $("#subjectdescription").on("click", "li[lcsh='related'] i", function(e) {
         return browseLd.handleRelated(e, $(this));
       });
     },
@@ -82,27 +82,50 @@ var browseLd = {
     handleLCSHClick: function(e, target) {
       e.preventDefault();
       var uri = target.attr("uri");
+      //Highlight selection
+      $("div[headingtype='lcsh']").removeClass("selectedCard");
+      target.addClass("selectedCard");
       browseLd.getLCSHRelationships(uri, browseLd.displaySubjectDetails);
       return false;
     },
     displaySubjectDetails : function(relationships) {    
+     //Get main entity info and link
      var label = relationships.label;
-      $("#subjectdescription").html(browseLd.generateSubjectDetailsDisplay(relationships.uri, label, relationships.dataHash, relationships.narrowerURIs, relationships.broaderURIs, relationships.closeURIs));
+     var baseUrl = $("#classification_headings").attr("base-url");
+     var fastURI = browseLd.extractFAST(relationships.closeURIs);
+     var searchFAST = "";
+     var searchFASTURL = "";
+     var searchLCSHURL = baseUrl + "?q=" + label + "&search_field=subject_cts";
+     if(fastURI != null) { 
+       var fastLabel = browseLd.extractFASTLabel(fastURI, relationships.dataHash);
+       searchFASTURL = baseUrl + "?f[fast_topic_facet][]=" + fastLabel + "&q=&search_field=all_fields";
+       searchFAST = "<a href='" + searchFASTURL + "'>Search Catalog (FAST)</a>";
+       browseLd.getCatalogResults(fastLabel);
+
+     }
+     
+     var entityLink = (searchFASTURL != "")? searchFASTURL: searchLCSHURL;
+     var locHtml = browseLd.generateLOCLink(relationships.uri);
+     var downChevron =   "<i class='fa fa-chevron-down' aria-hidden='true'></i>";
+     var entity = "<div><h4>" + downChevron + "<a href='" + entityLink + "'>" + label + "</a> " + locHtml + "</h4></div>";
+     		
+     //Add main level heading
+     $("#subjectdescription").html(entity);
+      $("#subjectdescription").append(browseLd.generateSubjectDetailsDisplay(relationships.uri, label, relationships.dataHash, relationships.narrowerURIs, relationships.broaderURIs, relationships.closeURIs));
       //Add searches
       var baseUrl = $("#classification_headings").attr("base-url");
       var fastURI = browseLd.extractFAST(relationships.closeURIs);
       var searchFAST = "";
-      var searchLCSH = "<a href='" + baseUrl + "?q=" + label + "&search_field=subject_cts'>Search Catalog (Subject)</a>";
-
-      if(fastURI != null) { 
-       var fastLabel = browseLd.extractFASTLabel(fastURI, relationships.dataHash);
-       searchFAST = "<a href='" + baseUrl + "?f[fast_topic_facet][]=" + fastLabel + "&q=&search_field=all_fields'>Search Catalog (FAST)</a>";
-       browseLd.getCatalogResults(fastLabel);
-      }
-      $("#subjectdescription").append(searchLCSH + "<br/>" + searchFAST);
-      //Also kick off search
+      var searchLCSH = "<a href='" + baseUrl + "?q=" + label + "&search_field=subject_cts'>Search Catalog (Subject)</a>"; 
+      //We are not appending actual links here
+      //$("#subjectdescription").append(searchLCSH + "<br/>" + searchFAST);
       
     },
+    generateLOCLink: function(uri) {
+      var locHtml = "<a target='_blank' class='data-src' data-toggle='tooltip' data-placement='top' data-original-title='See Library of Congress' href='" + uri + ".html'><img src='/assets/loc.png' /></a>";
+      return locHtml;
+    },
+    //create array of item display
     processRelatedURIs : function(rArray, dataHash) {
       var display = [];
       var prefLabel = "http://www.w3.org/2004/02/skos/core#prefLabel";
@@ -112,8 +135,13 @@ var browseLd = {
       });
       return display;
     },
+    //Using chevrons and not li
     generateRelatedSubject: function(uri, label) {
-      return "<li lcsh='related' uri='" + uri + "'>" + label + "<a href='" + uri + "'>link</a></li>";
+      var locHtml = browseLd.generateLOCLink(uri);
+      var baseUrl = $("#classification_headings").attr("base-url");
+      var searchUrl = baseUrl + "?q=" + label + "&search_field=subject_cts";
+      var rightChevron = "<i class='fa fa-chevron-right' aria-hidden='true' uri='" + uri + "'></i>";
+      return "<li lcsh='related' uri='" + uri + "'>" + rightChevron + "<a href='" + searchUrl + "'>" + label + "</a>" + locHtml + "</li>";
     },
     generateSubjectDetailsDisplay : function(uri, label, dataHash, narrowerURIs, broaderURIs, closeURIs) {
       var narrowerDisplay = browseLd.processRelatedURIs(narrowerURIs, dataHash);
@@ -121,9 +149,11 @@ var browseLd = {
       var closeDisplay = browseLd.processRelatedURIs(closeURIs, dataHash);
       var broader = "<div><ul>" + broaderDisplay.join(" ") + "</ul></div>";
       var entity = "<div><h4>" + label + "</h4></div>";
-      var narrower = "<div><ul>" + narrowerDisplay.join(" ") + "</ul></div>";
+      var narrower = "<div><ul class='relatedTree'>" + narrowerDisplay.join(" ") + "</ul></div>";
       var close = "<div><h5>Close Matches</h5><ul>" + closeDisplay.join(" ") + "</ul></div>";
-      return broader + entity + narrower + close;
+      //Include link to LOC source 
+      //return broader + entity + narrower + close;
+      return narrower + close;
     },
     //generate hash based on uris of ids to provide cleaner access given URI
     processLCSHJSON: function(jsonArray) {
@@ -192,29 +222,65 @@ var browseLd = {
       return {uri:uri, dataHash: dataHash, label: label, narrowerURIs: narrowerURIs, broaderURIs: broaderURIs, closeURIs: closeURIs};
     }, 
     getCatalogResults: function(fastHeading) {
+      //empty out documents
+      $("#documents").html("");
       var baseUrl = $("#classification_headings").attr("base-url"); 
       var searchLink = baseUrl + "?f[fast_topic_facet][]=" + fastHeading + "&q=&search_field=all_fields";
+      var searchFAST = "<a href='" + searchLink + "'>Search Catalog</a>";
       $.ajax({
         "url": searchLink,
         "type": "GET",
         "success" : function(data) {     
           var documents = $(data).find("#documents");
-          $("#documents").html(documents);
+          var pageEntries = $(data).find("span.page-entries");        
+          $("#page-entries").html("<a href='" + searchLink + "'>Search Results for " + fastHeading + ": " + pageEntries.html() + "</a>");
+          $("#documents").html(documents.html());
         }
       });
     },
+    //When clicking on narrower relationship (or broader), retrieve the relationships and then show the appropriate display
+    //This should toggle between expanding and collapsing, in the case of the former, we need to get data if it doesn't already exist
     handleRelated: function(e, target) {
       //For now, just getting narrower subjects
       var uri = target.attr("uri");
-      browseLd.getLCSHRelationships(uri, browseLd.displayNarrower);
+      console.log("Handle related function for " + uri);
+      browseLd.toggleChevron(target);
+      //Does narrower set already exist
+      var ulTree = target.parent().find("ul.relatedTree[uri='" + uri + "']");
+      if(ulTree.length) {
+        if(ulTree.is(":visible")) 
+          ulTree.hide();
+        else 
+          ulTree.show();
+      } else {
+        browseLd.getLCSHRelationships(uri, browseLd.displayNarrower);
+      }
     },
+    //display method for displaying narrower 
     displayNarrower: function(relationships) {
       var requestingURI = relationships.uri;
       var narrowerURIs = relationships.narrowerURIs;
+      var broaderURIs = relationships.broaderURIs;
+      //remove requesting URI from broader uri list of narrower object
+      broaderURIs = broaderURIs.filter(function(u) {return u !== requestingURI});
       var narrowerDisplay = browseLd.processRelatedURIs(narrowerURIs, relationships.dataHash);
-      $("li[lcsh='related'][uri='" + requestingURI + "']").append(narrowerDisplay.join(" "));
+      var broaderDisplay = browseLd.processRelatedURIs(broaderURIs, relationships.dataHash);
+      var broaderHtml = broaderDisplay.length? "Broader" + broaderDisplay.join(" ") : "";
+      var narrowerHtml = narrowerDisplay.length? "Narrower" + narrowerDisplay.join(" ") : "";
+      var display = narrowerDisplay.length || broaderDisplay.length? "<ul uri='" + requestingURI + "' class='relatedTree'>" +  broaderHtml + narrowerHtml + "</ul>": "";
+      $("li[lcsh='related'][uri='" + requestingURI + "']").append(display);
+    },
+    toggleChevron: function(target) {
+        //right = collapsed and should be expanded
+        if (target.hasClass("fa-chevron-right")) {
+          target.removeClass("fa-chevron-right");
+          target.addClass("fa-chevron-down");
+        }
+        else {
+          target.removeClass("fa-chevron-down");
+          target.addClass("fa-chevron-right");
+        }    
     }
-    
 }
 
 //Better to transform above into object later
