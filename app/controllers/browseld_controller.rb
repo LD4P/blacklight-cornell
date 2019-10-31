@@ -19,28 +19,27 @@ class BrowseldController < ApplicationController
   	@hierarchy = JSON.parse(File.read(filepath,:encoding => "UTF-8"))
   	@callhash = JSON.parse(File.read(Rails.public_path.join("data/callnumbers.json")),:encoding => "UTF-8")
   	#Tried out "selected subject"
-  	@selectedSubjectString = "Credulity"
-  	response = retrieveInfoForString @selectedSubjectString
-  	@selectedSubjectURI = ""
-  	@numfound = response["response"]["numFound"]
-  	@top_facet = ""
-  	@sub_facet = ""
-  	if(@numfound > 0)
-  		doc = response["response"]["docs"][0]
-  		@selectedSubjectURI = doc["uri_s"]
-  		#Sort for consistency
-  		@selectedSubjectFacets = doc["classification_facet"].sort
-  		@selectedSubjectFacets.each do |facet|
-  			if facet.length == 1
-  				@top_facet = facet
-  			else
-  				@sub_facet = facet
-  			end
-  		end
+  	@selectedSubjectString = params[:q]
+  	if(!@selectedSubjectString.nil? && selectedSubjectString != "")
+	  	response = retrieveInfoForString @selectedSubjectString
+	  	@selectedSubjectURI = ""
+	  	@numfound = response["response"]["numFound"]
+	  	@top_facet = ""
+	  	@sub_facet = ""
+	  	if(@numfound > 0)
+	  		doc = response["response"]["docs"][0]
+	  		@selectedSubjectURI = doc["uri_s"]
+	  		#Sort for consistency
+	  		@selectedSubjectFacets = doc["classification_facet"].sort
+	  		@selectedSubjectFacets.each do |facet|
+	  			if facet.length == 1
+	  				@top_facet = facet
+	  			else
+	  				@sub_facet = facet
+	  			end
+	  		end
+	  	end
   	end
-  	
-  	#@selectedSubjectURI = doc["uri"]
-  	#selectedSubjectFacets = doc["classification_facet"]
   	
   end
   

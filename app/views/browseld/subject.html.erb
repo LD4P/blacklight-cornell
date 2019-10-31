@@ -1,6 +1,8 @@
+<input type="hidden" id="topFacet" value="<%=@top_facet%>"/>
+<input type="hidden" id="subFacet" value="<%=@sub_facet%>"/>
+<input type="hidden" id="lcsh" value="<%=@selectedSubjectString%>"/>
+
 <div id="toplevelnav" class="d-flex flex-row flex-wrap">
-
-
 <% @hierarchy.keys.each do |key| 
 	if !@callhash[key].nil?
 	selectedClass = ""
@@ -28,8 +30,14 @@
 <div id="classification_headings" base-url="<%= root_url %>" class="border">
 <% @hierarchy.keys.each do |key| 
 	if !@callhash[key].nil?
+		selectedClass = ""
+		displayStyle = ";display:none"
+		if @top_facet != "" && @top_facet == key
+			displayStyle = ""
+			selectedClass = " selectedCard "
+		end
 %>
-	<div headingtype="sub" class="overflow-auto" style="height:600px;display:none" heading="<%=key%>"><a class="font-weight-bold pl-1 list-group-item-action" heading="<%=key%>" href="<%=key%>" title="<%=@callhash[key]%>" role="subheadingtop"><%=@callhash[key]%></a>
+	<div headingtype="sub" class="overflow-auto" style="height:600px<%=displayStyle%>" heading="<%=key%>"><a class="<%=selectedClass%>font-weight-bold pl-1 list-group-item-action" heading="<%=key%>" href="<%=key%>" title="<%=@callhash[key]%>" role="subheadingtop"><%=@callhash[key]%></a>
 	<%
 	  subheadings = @hierarchy[key]
 	  subheadings.each do |sh|

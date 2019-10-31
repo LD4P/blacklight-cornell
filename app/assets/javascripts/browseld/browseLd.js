@@ -29,6 +29,9 @@ var browseLd = {
       var heading = target.attr("heading");
       var headingtype = target.attr("headingtype");
       var headingTitle = target.attr("title");
+      //Any time a top level category or second level LCCN is selected, also clear out any content or parameter values
+      browseLd.clearContent();
+      browseLd.clearParameterValues();
       if (typeof headingtype !== typeof undefined && headingtype !== false && headingtype == "nav") {
         //Hide the top level nav categories and show heading for this subject
         $("a[headingtype='nav']").removeClass("selectedCard");
@@ -72,12 +75,19 @@ var browseLd = {
         }
       }
       $("#subjectcontent").html(htmlDisplay.join(" "));
+      //If a parameter is given for a particular subject heading, trigger clicking on it
+      var lcsh = $("#lcsh").val();
+      if(lcsh != "") {
+        var selectedLCSH = $("div[headingtype='lcsh'][label='" + lcsh + "']");
+        if(selectedLCSH.length) selectedLCSH.trigger("click");
+      }
     },
     generateSubjectDisplay: function(doc) {
       var html = "";
       var label = doc["label_s"];
       var uri = doc["uri_s"];
       var classification = doc["classification_s"];
+      var displayStyle = "";
       html += "<div headingtype='lcsh' uri='" + uri + "' label='" + label + "'>" + label + "</div>";
       return html;
     },
@@ -155,7 +165,8 @@ var browseLd = {
       var close = "<div><h5>Close Matches</h5><ul>" + closeDisplay.join(" ") + "</ul></div>";
       //Include link to LOC source 
       //return broader + entity + narrower + close;
-      return narrower + close;
+      //Leaving out close for now but may be able to do something different with display here
+      return narrower;
     },
     //generate hash based on uris of ids to provide cleaner access given URI
     processLCSHJSON: function(jsonArray) {
@@ -284,17 +295,55 @@ var browseLd = {
         }    
     },
     updateSelected:function() {
-      //if any 
-      var selectedSub = $("a[role='subheading'][className='selectedCard']");
-      if(selectedSub.length) {
-        //$("#toplevelnav").addClass("d-lg-none");
-        //$("#toplevelnavheading").show();
-        //Hide the subheadings and show only the one that corresponds to this top level
-        //$("div[headingtype='sub']").show();
-        //Show the appropriate sub categories of this top level LCCN category
-        //$("div[headingtype='sub'][heading='" + heading + "']").show();
-        
+      //Are there top level and sublevel facets selected
+      var topFacet = $("#subFacet").val();
+      var subFacet= $("#subFacet").val();
+      var lcsh = $("#lcsh").val();
+      //subject headings used have classification values, which means they will have both a top level facet and a sub facet
+      if(lcsh != "" && topFacet != "" && subFacet != "") {
+        //Mimic selection of the appropriate sub facet
+        //The facet will already be selected so we just need to find that element and trigger 
+        browseLd.hideLCCNTopLevels();
+        browseLd.selectLCCNSubheading($("a[heading='" + subFacet + "']"));
       }
+    },
+    //target in question can be either a tag for top level or lower level heading
+    selectLCCNSubheading: function(target) {
+      var heading = target.attr("heading");
+      var headingtype = target.attr("headingtype");
+      var headingTitle = target.attr("title");
+    
+      //Subheading has been selected
+      $("a[role='subheading']").removeClass("selectedCard");
+      target.addClass("selectedCard");       
+      
+     
+      var baseUrl = $("#classification_headings").attr("base-url");
+      var querySolr = baseUrl + "proxy/subjectbrowse?q=" + heading;
+      $.ajax({
+        "url": querySolr,
+        "type": "GET",
+        "success" : function(data) {              
+          browseLd.displaySubjectHeading(data, headingTitle);
+        }
+      });
+    }, 
+    //Target = top level LCCN category which is being selected
+    hideLCCNTopLevels: function() {
+      $("#toplevelnav").addClass("d-lg-none");
+      $("#toplevelnavheading").show();
+    },
+    //once a user has selected or navigated around, then go ahead and clear out the values
+    clearParameterValues: function() {
+      $("#subFacet").val("");
+      $("#subFacet").val("");
+      $("#lcsh").val("");
+    },
+    clearContent: function() {
+      $("#subjectcontent").html("");
+      $("#subjectdescription").html("");
+      $("#page-entries").html("");
+      $("#documents").html("");
     }
 }
 
