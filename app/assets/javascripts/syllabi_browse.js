@@ -49,7 +49,29 @@ var getOpenSyllabusRecommendations = {
 
 
   checkFieldBooks: function(books) {
-    console.log("========= test =======***")
+    var fieldBookList = $('#fieldBookList tr')    
+    fieldBookList.each(function(){
+      $(this).find('.isbns').each(function() {
+        var isbns = JSON.parse($(this).text());
+        var joinedIsbns = isbns.join(' OR ');
+
+        solrUrl = "http://da-prod-solr8.library.cornell.edu/solr/ld4p2-blacklight/select?&wt=json&rows=1&q="+joinedIsbns;
+        $.ajax({
+          url: solrUrl,
+          type: 'GET',
+          dataType: 'jsonp',
+          jsonp: 'json.wrf', // avoid CORS and CORB errors
+          complete: function(solrResponse) {
+            console.log(solrResponse);
+          }
+        });
+
+        // Modify CSS (by displaying) when successful. Below is a test.
+        // $(this).css("background-color", "green");
+
+      });
+    });
+
   }
 
 };
