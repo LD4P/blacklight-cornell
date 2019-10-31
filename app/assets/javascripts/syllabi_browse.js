@@ -45,11 +45,20 @@ var getOpenSyllabusRecommendations = {
         });
       });
     });
+  },
+
+
+  checkFieldBooks: function(books) {
+    console.log("========= test =======***")
   }
+
 };
 
 Blacklight.onLoad(function() {
   $('body.catalog-show').each(function() {
     getOpenSyllabusRecommendations.onLoad();
+  });
+  $('body.browseld-in_field').each(function() {
+    getOpenSyllabusRecommendations.checkFieldBooks();
   });
 });
