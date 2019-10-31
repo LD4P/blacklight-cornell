@@ -8,6 +8,8 @@ class BrowseldController < ApplicationController
   @@browse_index_subject = ENV['BROWSE_INDEX_SUBJECT'].nil? ? 'subject' : ENV['BROWSE_INDEX_SUBJECT']
   @@browse_index_authortitle = ENV['BROWSE_INDEX_AUTHORTITLE'].nil? ? 'authortitle' : ENV['BROWSE_INDEX_AUTHORTITLE']
   @@browse_index_callnumber = ENV['BROWSE_INDEX_CALLNUMBER'].nil? ? 'callnum' : ENV['BROWSE_INDEX_CALLNUMBER']
+  
+  @@browse_subject = ENV['SUBJECT_SOLR'].nil? ? '' : ENV['SUBJECT_SOLR']
   def heading
    @heading='Browse'
   end
@@ -16,7 +18,33 @@ class BrowseldController < ApplicationController
   	filepath =Rails.public_path.join("data/callhierarchy.json")
   	@hierarchy = JSON.parse(File.read(filepath,:encoding => "UTF-8"))
   	@callhash = JSON.parse(File.read(Rails.public_path.join("data/callnumbers.json")),:encoding => "UTF-8")
+  	#Tried out "selected subject"
+  	@selectedSubjectString = "Credulity"
+  	response = retrieveInfoForString @selectedSubjectString
+  	@selectedSubjectURI = ""
+  	@numfound = response["response"]["numFound"]
+  	@top_facet = ""
+  	@sub_facet = ""
+  	if(@numfound > 0)
+  		doc = response["response"]["docs"][0]
+  		@selectedSubjectURI = doc["uri_s"]
+  		#Sort for consistency
+  		@selectedSubjectFacets = doc["classification_facet"].sort
+  		@selectedSubjectFacets.each do |facet|
+  			if facet.length == 1
+  				@top_facet = facet
+  			else
+  				@sub_facet = facet
+  			end
+  		end
+  	end
+  	
+  	#@selectedSubjectURI = doc["uri"]
+  	#selectedSubjectFacets = doc["classification_facet"]
+  	
   end
+  
+
   
   def index
   end
@@ -24,4 +52,12 @@ class BrowseldController < ApplicationController
   def authors
   	#Query solr index and pass back information for timeline as json
   end
+  
+  ## These methods are called by the main ones above
+   def retrieveInfoForString subject_string
+   	require 'rsolr'
+    solr = RSolr.connect :url => @@browse_subject
+    response = solr.get 'select', :params => {:q=>"label_s:" + subject_string, :start=>0, :rows=>1}  
+    return response 	
+   end
 end

@@ -3,8 +3,12 @@
 
 <% @hierarchy.keys.each do |key| 
 	if !@callhash[key].nil?
+	selectedClass = ""
+	if @top_facet != "" && @top_facet == key
+		selectedClass = " selectedCard "
+	end
 %>
-  <a headingtype="nav" heading="<%=key%>" class="card w-25 px-3 list-group-item-action" href="<%=key%>" title="<%=@callhash[key]%>"><%=@callhash[key]%></a>
+  <a headingtype="nav" heading="<%=key%>" class="<%=selectedClass%>card w-25 px-3 list-group-item-action" href="<%=key%>" title="<%=@callhash[key]%>"><%=@callhash[key]%></a>
 <% 
 	end
   end 
@@ -30,9 +34,13 @@
 	  subheadings = @hierarchy[key]
 	  subheadings.each do |sh|
 	    if @callhash.key?(sh)
+	     selectedSubClass = ""
+		 if @sub_facet != "" && @sub_facet == sh
+			selectedSubClass = "selectedCard "
+		 end
 	  	 subheading = @callhash[sh].encode!('UTF-8', 'binary', invalid: :replace, undef: :replace, replace: '')
 	  %>
-	  		<div  class="d-flex flex-column flex-nowrap"><a title="<%=subheading%>" class="border border-top-0 border-left-0 border-right-0 list-group-item-action" heading="<%=sh%>" href="<%=sh%>" role="subheading"><%=subheading%></a></div>
+	  		<div  class="d-flex flex-column flex-nowrap"><a title="<%=subheading%>" class="<%=selectedSubClass%>border border-top-0 border-left-0 border-right-0 list-group-item-action" heading="<%=sh%>" href="<%=sh%>" role="subheading"><%=subheading%></a></div>
 	  <%
 	  	end
 	  end

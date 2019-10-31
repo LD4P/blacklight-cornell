@@ -1,5 +1,7 @@
 var browseLd = {
     onLoad: function() {
+      //If anything has been selected then we need to display this
+      browseLd.updateSelected();
       browseLd.bindEventHandlers();
     },
     bindEventHandlers: function() {
@@ -280,6 +282,19 @@ var browseLd = {
           target.removeClass("fa-chevron-down");
           target.addClass("fa-chevron-right");
         }    
+    },
+    updateSelected:function() {
+      //if any 
+      var selectedSub = $("a[role='subheading'][className='selectedCard']");
+      if(selectedSub.length) {
+        //$("#toplevelnav").addClass("d-lg-none");
+        //$("#toplevelnavheading").show();
+        //Hide the subheadings and show only the one that corresponds to this top level
+        //$("div[headingtype='sub']").show();
+        //Show the appropriate sub categories of this top level LCCN category
+        //$("div[headingtype='sub'][heading='" + heading + "']").show();
+        
+      }
     }
 }
 
