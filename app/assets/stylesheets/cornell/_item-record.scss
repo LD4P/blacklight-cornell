@@ -288,6 +288,14 @@ padding-left: 6em;
 	margin-bottom: 3em;
 	border-top: 5px solid $light-tan;
 }
+#fieldBookList {
+	td:first-child {
+		padding-right: 3em;
+	}
+	tbody tr, .isbns {
+		display: none;
+	}
+}
 
 // MEDIA QUERIES
 // -------------------------

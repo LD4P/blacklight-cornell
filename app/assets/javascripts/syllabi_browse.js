@@ -47,39 +47,39 @@ var getOpenSyllabusRecommendations = {
     });
   },
 
-
   checkFieldBooks: function(books) {
-    var fieldBookList = $('#fieldBookList tr')    
+    var fieldBookList = $('#fieldBookList tr')
     fieldBookList.each(function(){
-      $(this).find('.isbns').each(function() {
+      var row = $(this)
+      row.find('.isbns').each(function() {
         var isbns = JSON.parse($(this).text());
         var joinedIsbns = isbns.join(' OR ');
-
-        solrUrl = "http://da-prod-solr8.library.cornell.edu/solr/ld4p2-blacklight/select?&wt=json&rows=1&q="+joinedIsbns;
+        var solrUrl = "http://da-prod-solr8.library.cornell.edu/solr/ld4p2-blacklight/select?&wt=json&rows=0&q="+joinedIsbns;
         $.ajax({
           url: solrUrl,
           type: 'GET',
           dataType: 'jsonp',
           jsonp: 'json.wrf', // avoid CORS and CORB errors
           complete: function(solrResponse) {
-            console.log(solrResponse);
+            var numFound = solrResponse["responseJSON"]["response"]["numFound"]
+            if (numFound > 0) {
+              console.log(numFound);
+              row.show();
+            }
           }
         });
-
-        // Modify CSS (by displaying) when successful. Below is a test.
-        // $(this).css("background-color", "green");
-
       });
     });
-
   }
 
 };
 
 Blacklight.onLoad(function() {
+  // Run syllabus coassignment code in item view
   $('body.catalog-show').each(function() {
     getOpenSyllabusRecommendations.onLoad();
   });
+  // Run books in field code in syllabus browse
   $('body.browseld-in_field').each(function() {
     getOpenSyllabusRecommendations.checkFieldBooks();
   });
