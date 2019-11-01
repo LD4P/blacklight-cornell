@@ -2,8 +2,9 @@
 // For the moment, OSP suggestions come from a custom server called Cosine
 // Later, OSP is planning to implement an API to serve suggestions
 
+// This function adds co-assigned work suggestions to the item view for a work
 var getOpenSyllabusRecommendations = {
-  onLoad: function(suggestions) {
+  getCoassignedBooks: function(suggestions) {
     // Get ISBNs of current book from the page DOM
     var isbns = $( "#isbn-box" ).html();
     var isbnParsed = JSON.parse(isbns);
@@ -47,9 +48,15 @@ var getOpenSyllabusRecommendations = {
     });
   },
 
-  checkFieldBooks: function(books) {
-    var fieldBookList = $('#fieldBookList tr')
-    fieldBookList.each(function(){
+  // This function checks the catalog, in slices or pages, for works listed in an academic field
+  checkFieldBooks: function(sliceSize, sliceNum) {
+    // Prepare "More..." link at bottom of table
+    var footerMoreBox = $('#footerMoreBox');
+    $('#appendedMore').hide("slow", function(){ $(this).remove(); })
+    // Iterate on current slice of list of books
+    var fieldBookList = $('#fieldBookList tr');
+    var bookListSlice = fieldBookList.slice(sliceNum-sliceSize, sliceNum);
+    bookListSlice.each(function(){
       var row = $(this)
       row.find('.isbns').each(function() {
         var isbns = JSON.parse($(this).text());
@@ -63,8 +70,15 @@ var getOpenSyllabusRecommendations = {
           complete: function(solrResponse) {
             var numFound = solrResponse["responseJSON"]["response"]["numFound"]
             if (numFound > 0) {
-              console.log(numFound);
               row.show();
+            }
+            // On last book in this slice, show "More..." link to run next slice
+            if (row[0] === bookListSlice.last()[0]) {
+              var nextSliceNum = sliceNum + sliceSize;
+              footerMoreBox.append(
+                '<a id="appendedMore" href="javascript:getOpenSyllabusRecommendations.checkFieldBooks(20,'
+                +nextSliceNum+
+                ')">More...</a>');
             }
           }
         });
@@ -77,10 +91,10 @@ var getOpenSyllabusRecommendations = {
 Blacklight.onLoad(function() {
   // Run syllabus coassignment code in item view
   $('body.catalog-show').each(function() {
-    getOpenSyllabusRecommendations.onLoad();
+    getOpenSyllabusRecommendations.getCoassignedBooks();
   });
   // Run books in field code in syllabus browse
   $('body.browseld-in_field').each(function() {
-    getOpenSyllabusRecommendations.checkFieldBooks();
+    getOpenSyllabusRecommendations.checkFieldBooks(20,20);
   });
 });
