@@ -22,6 +22,7 @@
       <span class="filter-value"><%= raw(value) %></span>
     <%- end -%>
     <i class="fa fa-times fa-inverse"></i>
+    <%=check_subject_browse_info(options[:classes], value, options[:remove]).html_safe%>
 <%- unless options[:remove].blank? -%>
   </a>
 <%- end -%>

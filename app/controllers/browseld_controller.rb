@@ -20,7 +20,7 @@ class BrowseldController < ApplicationController
   	@callhash = JSON.parse(File.read(Rails.public_path.join("data/callnumbers.json")),:encoding => "UTF-8")
   	#Tried out "selected subject"
   	@selectedSubjectString = params[:q]
-  	if(!@selectedSubjectString.nil? && selectedSubjectString != "")
+  	if(!@selectedSubjectString.nil? && @selectedSubjectString != "")
 	  	response = retrieveInfoForString @selectedSubjectString
 	  	@selectedSubjectURI = ""
 	  	@numfound = response["response"]["numFound"]
