@@ -37,13 +37,22 @@ var getOpenSyllabusRecommendations = {
                 var authorFirst2Elements = authorDividedByComma.slice(0,2).join();
               }
               var authorNote = (authorFirst2Elements ? ' by '+authorFirst2Elements : '');
-              // Set strings for title and href
+              // Set strings for title, href, and OCLC id
               var recomTitle = solrResponse["responseJSON"]["response"]["docs"][0]["title_display"];
               var recomQuery = '/catalog?&q='+joinedList;
-              $("#recommended-list").append('<li><a href="'+recomQuery+'">'+recomTitle+'</a>'+authorNote+'</li>');
+              var oclcIdDisp = solrResponse["responseJSON"]["response"]["docs"][0]["oclc_id_display"][0]
+              // Compose the HTML that will be displayed on the page
+              // The image is currently not working; I fear the script that fills it in runs too late
+              var htmlString = '<p><a href="'+recomQuery+'">'+recomTitle+'</a><br>'+authorNote+'<br><div class="bookcover d-none d-sm-inline" id="OCLC:'+oclcIdDisp+'" data-oclc="'+oclcIdDisp+'">'+oclcIdDisp+'</div></p>'
+
+              $("#recommended-list").append(htmlString);
             }
           }
+        }).done(function(){
+          // Fill in cover images
+          window.bookcovers.onLoad();
         });
+
       });
     });
   },
