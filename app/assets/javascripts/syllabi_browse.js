@@ -12,7 +12,7 @@ var getOpenSyllabusRecommendations = {
     // Get JSON array of arrays from Cosine API. Outer array is list of books, inner is list of ISNBs per book.
     $.get( "https://cosine-cul.herokuapp.com/api/coassigned?" + isbnParams, function( cosineResponse ) {
       var bookIsbnLists = JSON.parse(cosineResponse);
-      var firstTenBooks = bookIsbnLists.slice(0, 9);
+      var firstTenBooks = bookIsbnLists.slice(0, 20);
       // Iterate over each book (ISBN list) among the first 10
       firstTenBooks.forEach(function(list){
         // Transform each ISBN list into a query string joined with ORs
@@ -43,14 +43,15 @@ var getOpenSyllabusRecommendations = {
               var oclcIdDisp = solrResponse["responseJSON"]["response"]["docs"][0]["oclc_id_display"][0]
               // Compose the HTML that will be displayed on the page
               // The image is currently not working; I fear the script that fills it in runs too late
-              var htmlString = '<p><a href="'+recomQuery+'">'+recomTitle+'</a><br>'+authorNote+'<br><div class="bookcover d-none d-sm-inline" id="OCLC:'+oclcIdDisp+'" data-oclc="'+oclcIdDisp+'">'+oclcIdDisp+'</div></p>'
+              var htmlString = '<figure><div class="imgframe"><a href="'+recomQuery+'"><img class="bookcover" id="OCLC:'+oclcIdDisp+'" data-oclc="'+oclcIdDisp+'" /></a></div><figcaption><a href="'+recomQuery+'">'+recomTitle+'</a> '+authorNote+'</figcaption></figure>'
 
               $("#recommended-list").append(htmlString);
             }
           }
         }).done(function(){
           // Fill in cover images
-          window.bookcovers.onLoad();
+          
+          setTimeout(function(){ window.bookcovers.onLoad() }, 500);
         });
 
       });
