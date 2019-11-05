@@ -93,6 +93,8 @@ devise_for :users, controllers: {
   get '/browseld/subject' => 'browseld#subject'
   get '/browseld/authors' => 'browseld#authors'
   get '/browseld' => 'browseld#index'
+  get '/browseld/fields' => 'browseld#fields'
+  get '/browseld/in_field' => 'browseld#in_field'
 
   match '/catalog/range_limit' => 'catalog', :via => [:get, :post, :put]
   get '/databases' => 'databases#index', :as => 'databases_index'

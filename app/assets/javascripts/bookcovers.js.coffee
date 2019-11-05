@@ -59,4 +59,6 @@ bookcovers =
           ''
 
 $(document).ready ->
-  bookcovers.onLoad()
+  bookcovers.onLoad();
+  # Make bookcovers usable outside coffeescript
+  window.bookcovers = bookcovers;
