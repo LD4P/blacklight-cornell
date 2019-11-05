@@ -5,10 +5,11 @@
 // This function adds co-assigned work suggestions to the item view for a work
 var getOpenSyllabusRecommendations = {
   getCoassignedBooks: function(suggestions) {
-    // Get ISBNs of current book from the page DOM
-    var isbns = $( "#isbn-box" ).html();
+    // Get ISBNs of current book and Solr URL from the page DOM
+    var isbns = $( "#isbns-json-data" ).html();
     var isbnParsed = JSON.parse(isbns);
     var isbnParams = "isbns[]=" + isbnParsed.join('&isbns[]=');
+    var solrServer = $( "#solr-server-url-data" ).html();
     // Get JSON array of arrays from Cosine API. Outer array is list of books, inner is list of ISNBs per book.
     $.get( "https://cosine-cul.herokuapp.com/api/coassigned?" + isbnParams, function( cosineResponse ) {
       var bookIsbnLists = JSON.parse(cosineResponse);
@@ -18,7 +19,7 @@ var getOpenSyllabusRecommendations = {
         // Transform each ISBN list into a query string joined with ORs
         var joinedList = list.join(' OR ');
         // Query the Cornell Library catalog Solr (later: don't hardcode URL)
-        solrUrl = "http://da-prod-solr8.library.cornell.edu/solr/ld4p2-blacklight/select?&wt=json&rows=1&q="+joinedList
+        solrUrl = solrServer + "/select?&wt=json&rows=1&q="+joinedList
         $.ajax({
           url: solrUrl,
           type: 'GET',
