@@ -50,13 +50,20 @@ class BrowseldController < ApplicationController
   
   def authors
   	#Query solr index and pass back information for timeline as json
+  	#@min_wdyear = -3759
+  	#@max_wdyear = 2019 #hardcoded but can be programmed to do 
+  	#@min_startyear = -631
+  	#@max_startyear = 2019
+  	@min_year = -3700
+  	@max_year = 2019
+  	@yearrange = 400
   end
   
   ## These methods are called by the main ones above
    def retrieveInfoForString subject_string
    	require 'rsolr'
     solr = RSolr.connect :url => @@browse_subject
-    response = solr.get 'select', :params => {:q=>"label_s:" + subject_string, :start=>0, :rows=>1}  
+    response = solr.get 'select', :params => {:q=>"label_s:\"" + subject_string + "\"", :start=>0, :rows=>1}  
     return response 	
    end
 end
