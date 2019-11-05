@@ -9,9 +9,10 @@ var buildAlternateSuggestions = {
   // function checks each suggested search to display only those with > 0 catalog results
   checkSuggestions: function(suggestions) {
     // first, the suggestions will be checked all at once with a faceted catalog solr query
+    var solrAddrs = buildAlternateSuggestions.getSolrAddrs();
     var facetList = '&facet.query=' + suggestions.join('&facet.query=')
-    var solrQuery = "http://da-prod-solr8.library.cornell.edu/solr/ld4p2-blacklight/select?indent=on&wt=json&rows=0&q=*.*&facet=true" + facetList
-    $.ajax({ // would be nice to pull url from env var rather than directly include it in code
+    var solrQuery = solrAddrs + "/select?&wt=json&rows=0&q=*.*&facet=true" + facetList
+    $.ajax({
       url: solrQuery,
       type: 'GET',
       dataType: 'jsonp',
@@ -44,10 +45,11 @@ var buildAlternateSuggestions = {
   // function creates an (unexecuted) solr catalog Ajax request promise for each unique string in a list of suggested searches
   // these will be used by checkSuggestions() to double-check each suggestion that didn't pass the faceted catalog check
   ajaxRequestsForDoubleCheck: function(suggestions) {
+    var solrAddrs = buildAlternateSuggestions.getSolrAddrs();
     var requests = []; // function returns an array of other functions, each of which is an Ajax request
     var unique = [...new Set(suggestions)]; // compell suggestion strings to be unique
     $.each(unique, function(i, val) {
-      var solrQuery = "http://da-prod-solr8.library.cornell.edu/solr/ld4p2-blacklight/select?wt=json&rows=0&facet=false&q=" + val
+      var solrQuery = solrAddrs + "/select?wt=json&rows=0&facet=false&q=" + val
       requests.push( // add each Ajax request to the array
         $.ajax({
           url: solrQuery,
@@ -116,7 +118,6 @@ var buildAlternateSuggestions = {
       return true;
   },
 
-
   displaySuggestions: function(suggestions) {
       var opening_html = "<div class='expand-search'><div class='card'><div class='card-header'>Related searches"
                      + "</div><div class='card-body'><ul class='fa-ul'>";
@@ -134,9 +135,14 @@ var buildAlternateSuggestions = {
           });
           $("#expanded-search").append(opening_html + list_html + closing_html);
       }
+  },
+
+  // pulling Solr URL from user-visible text now; might consider special-purpose hidden text
+  getSolrAddrs: function() {
+    return "http://" + $( ".solr-core" ).html().split(':')[1].trim();
   }
 
-};  
+};
   
 Blacklight.onLoad(function() {
   $('body.catalog-index').each(function() {
