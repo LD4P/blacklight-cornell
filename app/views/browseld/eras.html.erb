@@ -9,7 +9,7 @@
   <tbody>
     <% for era in @subject_eras %>
       <tr>
-        <td><%= era['label'] %></td>
+        <td><%= link_to era['label'], '/?f[fast_era_facet][]=' + era['label'].gsub('-', '+-+') %></td>
       </tr>
     <% end %>
   </tbody>
