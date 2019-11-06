@@ -1,0 +1,16 @@
+<h1>Browse subject eras</h1>
+
+<table>
+  <thead>
+    <tr>
+      <th>Era</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% for era in @subject_eras %>
+      <tr>
+        <td><%= era['label'] %></td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>

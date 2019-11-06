@@ -31,6 +31,14 @@ class BrowseldController < ApplicationController
     @books = JSON.parse(resp.body)
   end
 
+  def subject_era
+    filename = Rails.public_path.to_s + "/data/subject_eras.json"
+    era_file = File.read(filename)  # Read ndjson file from /data
+    era_json = era_file.split("\n") # Parse each line as JSON
+    era_data = era_json.map{|j| JSON.parse(j)}
+    @subject_eras = era_data.map{|d| d[0]} # Remove [] layer
+  end
+
   private
 
   def heading
