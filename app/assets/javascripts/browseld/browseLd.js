@@ -57,10 +57,14 @@ var browseLd = {
       $.ajax({
         "url": querySolr,
         "type": "GET",
-        "success" : function(data) {              
+        "success" : function(data) {     
+          //Also add border to subject heading list column
+          $("#browsecontent").addClass("border border-2");
           browseLd.displaySubjectHeading(data, headingTitle);
         }
       });
+      
+     
       return false;
     },
     displaySubjectHeading:function(data, title) {
@@ -104,34 +108,31 @@ var browseLd = {
      //Get main entity info and link
      var label = relationships.label;
      var baseUrl = $("#classification_headings").attr("base-url");
-     var fastURI = browseLd.extractFAST(relationships.closeURIs);
+     var fastURIArray = browseLd.extractFAST(relationships.closeURIs);
      var searchFAST = "";
      var searchFASTURL = "";
      var searchLCSHURL = baseUrl + "?q=" + label + "&search_field=subject_cts";
-     if(fastURI != null) { 
-       var fastLabel = browseLd.extractFASTLabel(fastURI, relationships.dataHash);
-       searchFASTURL = baseUrl + "?f[fast_topic_facet][]=" + fastLabel + "&q=&search_field=all_fields";
-       searchFAST = "<a href='" + searchFASTURL + "'>Search Catalog (FAST)</a>";
-       browseLd.getCatalogResults(fastLabel);
+     if(fastURIArray.length) { 
+       var fastInfo = browseLd.selectFASTMatch(fastURIArray, label, relationships.dataHash);
+       //var fastLabel = browseLd.extractFASTLabel(fastURI, relationships.dataHash);
+       if(fastInfo != null && "label" in fastInfo) {
+         var fastLabel = fastInfo.label;
+         searchFASTURL = baseUrl + "?f[fast_topic_facet][]=" + fastLabel + "&q=&search_field=all_fields";
+         searchFAST = "<a href='" + searchFASTURL + "'>Search Catalog (FAST)</a>";
+         browseLd.getCatalogResults(fastLabel);
+       }
 
-     }
-     
+     }     
      var entityLink = (searchFASTURL != "")? searchFASTURL: searchLCSHURL;
      var locHtml = browseLd.generateLOCLink(relationships.uri);
      var downChevron =   "<i class='fa fa-chevron-down' aria-hidden='true'></i>";
-     var entity = "<div><h4>" + downChevron + "<a href='" + entityLink + "'>" + label + "</a> " + locHtml + "</h4></div>";
+     var entity = "<div><h4><a href='" + entityLink + "'>" + label + "</a> " + locHtml + "</h4></div>";
      		
      //Add main level heading
+     //In case border is not present, add border
+     $("#subjectdetails").addClass("border border-2");
      $("#subjectdescription").html(entity);
-      $("#subjectdescription").append(browseLd.generateSubjectDetailsDisplay(relationships.uri, label, relationships.dataHash, relationships.narrowerURIs, relationships.broaderURIs, relationships.closeURIs));
-      //Add searches
-      var baseUrl = $("#classification_headings").attr("base-url");
-      var fastURI = browseLd.extractFAST(relationships.closeURIs);
-      var searchFAST = "";
-      var searchLCSH = "<a href='" + baseUrl + "?q=" + label + "&search_field=subject_cts'>Search Catalog (Subject)</a>"; 
-      //We are not appending actual links here
-      //$("#subjectdescription").append(searchLCSH + "<br/>" + searchFAST);
-      
+     $("#subjectdescription").append(browseLd.generateSubjectDetailsDisplay(relationships.uri, label, relationships.dataHash, relationships.narrowerURIs, relationships.broaderURIs, relationships.closeURIs));    
     },
     generateLOCLink: function(uri) {
       var locHtml = "<a target='_blank' class='data-src' data-toggle='tooltip' data-placement='top' data-original-title='See Library of Congress' href='" + uri + ".html'><img src='/assets/loc.png' /></a>";
@@ -141,10 +142,24 @@ var browseLd = {
     processRelatedURIs : function(rArray, dataHash) {
       var display = [];
       var prefLabel = "http://www.w3.org/2004/02/skos/core#prefLabel";
+      
+      //Sort array by label
+      //First generate array of objects with just uri and label
+      var rHashes = rArray.map(function(v) {
+        var uri = v["@id"];
+        return {"uri": uri, "label": dataHash[uri][prefLabel][0]["@value"]};
+      });
+      rHashes.sort(function (a, b) {
+        return (a.label > b.label) ? 1: ((a.label < b.label) ? -1: 0)
+      });
+      $.each(rHashes, function(i,v) {
+        display.push(browseLd.generateRelatedSubject(v.uri,v.label));
+      });
+      /*
       $.each(rArray, function(i,v) {
         var uri = v["@id"];
         display.push(browseLd.generateRelatedSubject(uri, dataHash[uri][prefLabel][0]["@value"]));
-      });
+      });*/
       return display;
     },
     //Using chevrons and not li
@@ -155,18 +170,20 @@ var browseLd = {
       var rightChevron = "<i class='fa fa-chevron-right' aria-hidden='true' uri='" + uri + "'></i>";
       return "<li lcsh='related' uri='" + uri + "'>" + rightChevron + "<a href='" + searchUrl + "'>" + label + "</a>" + locHtml + "</li>";
     },
+    //For right most column, generate display for subject including broader and narrower info
     generateSubjectDetailsDisplay : function(uri, label, dataHash, narrowerURIs, broaderURIs, closeURIs) {
       var narrowerDisplay = browseLd.processRelatedURIs(narrowerURIs, dataHash);
       var broaderDisplay = browseLd.processRelatedURIs(broaderURIs, dataHash);
       var closeDisplay = browseLd.processRelatedURIs(closeURIs, dataHash);
-      var broader = "<div><ul>" + broaderDisplay.join(" ") + "</ul></div>";
+      var broader = broaderDisplay.length? "<div><ul class='relatedTree'>Broader" + broaderDisplay.join(" ") + "</ul></div>" : "";
+
       var entity = "<div><h4>" + label + "</h4></div>";
-      var narrower = "<div><ul class='relatedTree'>" + narrowerDisplay.join(" ") + "</ul></div>";
+      var narrower = narrowerDisplay.length? "<div><ul class='relatedTree'>Narrower" + narrowerDisplay.join(" ") + "</ul></div>" : "";
       var close = "<div><h5>Close Matches</h5><ul>" + closeDisplay.join(" ") + "</ul></div>";
       //Include link to LOC source 
       //return broader + entity + narrower + close;
       //Leaving out close for now but may be able to do something different with display here
-      return narrower;
+      return broader + narrower;
     },
     //generate hash based on uris of ids to provide cleaner access given URI
     processLCSHJSON: function(jsonArray) {
@@ -181,22 +198,42 @@ var browseLd = {
       }
       return jsonHash;
     },
+    //Multiple fast values may be possible so this should return an array
     extractFAST: function(array) {
       var returnURI = null;
       var fastPrefix = "http://id.worldcat.org/fast";
+      var fastArray = [];
+      var fastHash = {};
       $.each(array, function(i, v) {
         var uri = v["@id"];
         if(uri.startsWith(fastPrefix)) {
           returnURI = uri;
-          return false;
+          fastArray.push(returnURI);
         }
       });
-      return returnURI;
+      return fastArray;
     },
     extractFASTLabel: function(URI, dataHash) {
       var prefLabel = "http://www.w3.org/2004/02/skos/core#prefLabel";
       if(URI in dataHash && prefLabel in dataHash[URI] && dataHash[URI][prefLabel].length && "@value" in dataHash[URI][prefLabel][0]) {
         return dataHash[URI][prefLabel][0]["@value"];
+      }
+      return null;
+    },
+    //return hash with fast uri and label to be employed
+    selectFASTMatch:function (fastArray, subjectLabel, dataHash) {    
+      if(fastArray.length == 1) return {"uri":fastArray[0], "label": browseLd.extractFASTLabel(fastArray[0], dataHash)};
+      if(fastArray.length > 1) {
+         fastArray.sort();
+         var matchingFAST = {"uri":fastArray[0], "label": browseLd.extractFASTLabel(fastArray[0], dataHash)};
+         $.each(fastArray, function(i, uri) {
+           var label = browseLd.extractFASTLabel(uri, dataHash);
+           if(label.trim() == subjectLabel.trim()) {
+             matchingFAST = {"uri":uri, "label": label};
+             return false;
+           }
+         });
+         return matchingFAST;
       }
       return null;
     },
@@ -236,7 +273,7 @@ var browseLd = {
     }, 
     getCatalogResults: function(fastHeading) {
       //empty out documents
-      $("#documents").html("");
+      browseLd.clearSearchResults();
       var baseUrl = $("#classification_headings").attr("base-url"); 
       var searchLink = baseUrl + "?f[fast_topic_facet][]=" + fastHeading + "&q=&search_field=all_fields";
       var searchFAST = "<a href='" + searchLink + "'>Search Catalog</a>";
@@ -245,9 +282,11 @@ var browseLd = {
         "type": "GET",
         "success" : function(data) {     
           var documents = $(data).find("#documents");
-          var pageEntries = $(data).find("span.page-entries");        
-          $("#page-entries").html("<a href='" + searchLink + "'>Search Results for " + fastHeading + ": " + pageEntries.html() + "</a>");
-          $("#documents").html(documents.html());
+          var pageEntries = $(data).find("span.page-entries");  
+          if(documents.length) {
+            $("#page-entries").html("<a href='" + searchLink + "'>Search Results for " + fastHeading + ": " + pageEntries.html() + "</a>");
+            $("#documents").html(documents.html());
+          }
         }
       });
     },
@@ -342,6 +381,9 @@ var browseLd = {
     clearContent: function() {
       $("#subjectcontent").html("");
       $("#subjectdescription").html("");
+      browseLd.clearSearchResults();
+    },
+    clearSearchResults: function() {
       $("#page-entries").html("");
       $("#documents").html("");
     }
