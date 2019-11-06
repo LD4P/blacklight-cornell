@@ -139,7 +139,7 @@ var buildAlternateSuggestions = {
 
   // pulling Solr URL from user-visible text now; might consider special-purpose hidden text
   getSolrAddrs: function() {
-    return "http://" + $( ".solr-core" ).html().split(':')[1].trim();
+    return $( "#solr-server-url-data" ).html();
   }
 
 };
