@@ -1,0 +1,22 @@
+//Browse LD styles
+
+.selectedCard {
+	background-color:#222 !important;
+	color: white !important;
+}
+
+.visitedCard {
+	background-color: #f3f3f3;
+}
+
+ul.relatedTree {
+	  list-style-type: none;
+}
+
+ul.relatedTree li {
+	cursor:pointer;
+}
+
+.cardLink {
+	cursor: pointer;
+}

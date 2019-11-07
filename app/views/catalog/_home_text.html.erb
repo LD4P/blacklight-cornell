@@ -14,8 +14,18 @@
                         <li>Or <a href="http://www.library.cornell.edu/feedback">send us comments or suggestions</a> that may help us improve the Catalog.</li>
                     </ul>
 
-                    <p>To search beyond Cornell holdings, follow the “Libraries Worldwide” link on the Catalog search results page, or use <a href="<%= ENV['WORLDCAT_URL'] %>">WorldCat</a>.</p>
+                    <p>To search beyond Cornell holdings, follow the â€œLibraries Worldwideâ€� link on the Catalog search results page, or use <a href="<%= ENV['WORLDCAT_URL'] %>">WorldCat</a>.</p>
                 </div>
+            </div>
+            
+            <!-- Adding browse sections -->
+            <div class="card-body d-flex flex-row flex-wrap">
+            	<div class="card w-50 px-3 m-2 list-group-item-action"><a href="/browseld/subject">Browse Subjects</a>
+            	</div>
+            	<div class="card w-50 px-3 m-2 list-group-item-action"><a href="/browseld/authors">Browse Author Timeline</a>
+            	</div>
+            	<div class="card w-50 px-3 m-2 list-group-item-action"><a href="/browseld/fields">Browse By Syllabi Fields</a>
+            	</div>
             </div>
 
 		<div class="other-resources">

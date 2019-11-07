@@ -1,10 +1,16 @@
-<div id="toplevelnav" class="d-flex flex-row flex-wrap ">
+<input type="hidden" id="topFacet" value="<%=@top_facet%>"/>
+<input type="hidden" id="subFacet" value="<%=@sub_facet%>"/>
+<input type="hidden" id="lcsh" value="<%=@selectedSubjectString%>"/>
 
-
+<div id="toplevelnav" class="d-flex flex-row flex-wrap">
 <% @hierarchy.keys.each do |key| 
 	if !@callhash[key].nil?
+	selectedClass = ""
+	if @top_facet != "" && @top_facet == key
+		selectedClass = " selectedCard "
+	end
 %>
-  <a headingtype="nav" heading="<%=key%>" class="card w-25 px-3 list-group-item-action" href="<%=key%>" title="<%=@callhash[key]%>"><%=@callhash[key]%></a>
+  <a headingtype="nav" heading="<%=key%>" class="<%=selectedClass%>card w-25 px-3 list-group-item-action" href="<%=key%>" title="<%=@callhash[key]%>"><%=@callhash[key]%></a>
 <% 
 	end
   end 
@@ -12,21 +18,37 @@
 
 </div>
 
-<hr/>
+<div id="toplevelnavheading" style="display:none">
+	<div class="card wd-50">
+		<div class="wd-25" id="expandlccn">View all <i class="fa fa-expand" aria-hidden="true"></i></div>
+	</div>
+</div>
+
+
 <div class="row">
-<div class="col-sm-2">
-<div id="classification_headings" base-url="<%= root_url %>" class="border">
+<div class="col-sm-3">
+<div id="classification_headings" base-url="<%= root_url %>">
 <% @hierarchy.keys.each do |key| 
 	if !@callhash[key].nil?
+		selectedClass = ""
+		displayStyle = ";display:none"
+		if @top_facet != "" && @top_facet == key
+			displayStyle = ""
+			selectedClass = " selectedCard "
+		end
 %>
-	<div headingtype="sub" class="overflow-auto" style="height:500px;display:none" heading="<%=key%>"><a class="font-weight-bold pl-1 list-group-item-action" heading="<%=key%>" href="<%=key%>" title="<%=@callhash[key]%>"><h3><%=@callhash[key]%></h3></a>
+	<div headingtype="sub" class="overflow-auto" style="height:600px<%=displayStyle%>" heading="<%=key%>"><a class="<%=selectedClass%>font-weight-bold pl-1 list-group-item-action" heading="<%=key%>" href="<%=key%>" title="<%=@callhash[key]%>" role="subheadingtop"><%=@callhash[key]%></a>
 	<%
 	  subheadings = @hierarchy[key]
 	  subheadings.each do |sh|
 	    if @callhash.key?(sh)
+	     selectedSubClass = ""
+		 if @sub_facet != "" && @sub_facet == sh
+			selectedSubClass = "selectedCard "
+		 end
 	  	 subheading = @callhash[sh].encode!('UTF-8', 'binary', invalid: :replace, undef: :replace, replace: '')
 	  %>
-	  		<div  class="d-flex flex-column flex-nowrap"><a title="<%=subheading%>" class="border border-top-0 border-left-0 border-right-0 pl-1 ml-2 w-25 list-group-item-action" heading="<%=sh%>" href="<%=sh%>"><%=subheading%></a></div>
+	  		<div  class="d-flex flex-column flex-nowrap"><a title="<%=subheading%>" class="<%=selectedSubClass%>border border-2 list-group-item-action" heading="<%=sh%>" href="<%=sh%>" role="subheading"><%=subheading%></a></div>
 	  <%
 	  	end
 	  end
@@ -40,18 +62,19 @@
 </div>
 </div>
 
-<div id="browsecontent" class="col-sm-3 border">
-<div id="subjectcontent" class="overflow-auto" style="height:500px">
+<div id="browsecontent" class="col-sm-3">
+<div id="subjectcontent" class="overflow-auto" style="height:600px">
 </div>
 </div>
 
-<div id="subjectdescription" class="col-sm-3 border">
-
-
+<div id="subjectdetails" class="col-sm-6">
+	<div id="subjectdescription">
+	
+	</div>
+	<div id="page-entries">
+	</div>
+	<div id="documents" class="overflow-auto" style="height:500px">
+		
+	</div>
 </div>
-<div id="documents" class="col-sm-4 border">
-
-
-</div>
-
 </div>
