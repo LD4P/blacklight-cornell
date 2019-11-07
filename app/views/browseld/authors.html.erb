@@ -1,22 +1,22 @@
-<input type="hidden" id="yearRange" value="<%=@yearrange%>" />
 <h1> Authors and Contributors </h1>
 
-
+<input type="hidden" id="yearRange" value="<%=@maxyearrange%>">
 <div id="container" base-url="<%= root_url %>"></div>
-<div id="years" class="d-flex flex-row flex-wrap border-1"> Go to year:
+<div id="years" class="d-flex flex-row flex-wrap border-1"> 
 <%
 year = @min_year
-begin_year = year
 while year < @max_year
 	begin_year = year
-	year += @yearrange
+	yearrange = begin_year < @rangecutoff ? @maxyearrange : @minyearrange
+	year += yearrange
 	if year > 2019
 		year = 2019
 	end
-	year_display = year < 0? (-year).to_s + " BCE" : year
+	year_display = begin_year < 0? (-begin_year).to_s + " BCE" : begin_year
 %>
 	<div style="width:50px"  class="card list-group-item-action m-1 cardLink" startYear="<%=begin_year%>" endYear="<%=year%>"><%= year_display %></div>
 <%
+
 end
 
 %>

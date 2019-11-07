@@ -1,7 +1,7 @@
 var browseAuthors = {
     onLoad: function() {
       browseAuthors.init();
-      browseAuthors.loadTimeline(null);
+      browseAuthors.loadTimeline(null, null);
       browseAuthors.bindEventHandlers();
     },
     init:function() {
@@ -17,22 +17,22 @@ var browseAuthors = {
          $("div[startYear]").removeClass("selectedCard");
          $(this).addClass("selectedCard");
          //load data
-         browseAuthors.loadTimeline(startYear);
+         browseAuthors.loadTimeline(startYear, endYear);
       });
     },
     //first time for loading timeline
-    loadTimeline: function(startYear) {
-      browseAuthors.getData(startYear);
+    loadTimeline: function(startYear, endYear) {
+      browseAuthors.getData(startYear, endYear);
     },
-    getData: function(startYear) {
-      browseAuthors.retrieveDataFromIndex(startYear, browseAuthors.displayData);
+    getData: function(startYear, endYear) {
+      browseAuthors.retrieveDataFromIndex(startYear, endYear, browseAuthors.displayData);
     },
-    retrieveDataFromIndex:function(startYear, callback) {
+    retrieveDataFromIndex:function(startYear, endYear, callback) {
       //AJAX call to solr
       var baseUrl = $("#container").attr("base-url"); 
       var querySolr = baseUrl + "proxy/authorbrowse";
-      if(startYear) {
-        var endYear = parseInt(startYear) + parseInt(browseAuthors.yearRange);
+      if(startYear && endYear) {
+        var endYear = parseInt(startYear) + parseInt(endYear);
         var range = "[" + startYear + " TO " + endYear + "]";
         querySolr += "?q=wd_birthy_i:" + range + " OR ld_birthy_i:" + range + "&sort=wd_birthy_i asc";
       }
@@ -58,7 +58,7 @@ var browseAuthors = {
         day: 1
       },
       zoom: {
-          initial: 49,
+          initial: 40,
           minimum: 0,
           maximum: 123, //changed default
           wheelStep: 0.1,
@@ -89,13 +89,14 @@ var browseAuthors = {
           //Use birth year if start year not available
           //Use death if end year not available
           var birthYear = ("loc_birthy_i" in v)? v["loc_birthy_i"] : ("wd_birthy_i" in v)? v["wd_birthy_i"]: v["wd_starty_i"];
+          var endYear = ("loc_deathy_i" in v)? v["loc_deathy_i"] : ("wd_deathy_i" in v)? v["wd_deathy_i"]: v["wd_endy_i"];
           //if (parseInt(birthYear) < 2020) {
             var id = v["loc_uri_s"];
             var wdURI = v["wd_uri_s"];
             var n = wdURI.lastIndexOf('/');
             var wdName = wdURI.substring(n + 1);
             var displayName = ("authlabel_s" in v)? v["authlabel_s"] : wdName;
-            var article = {id:id, title:displayName, from:{year: birthYear} , style:articleStyle};
+            var article = {id:id, title:displayName, from:{year: birthYear} , to:{year: endYear}, style:articleStyle, originalData: v};
             if("wd_birthy_i" in v) {
               article["to"] = {year: v["wd_birthy_i"]};
             }
@@ -122,9 +123,47 @@ var browseAuthors = {
       var baseUrl = $("#container").attr("base-url"); 
       //Get info from solr index with data we have and any additional from Wikidata that may be useful
       var searchLink = baseUrl + "?f[author_facet][]=" + title + "&q=&search_field=all_fields";
-      return "<div uri='" + uri +"'><h4>" + title + "</h4>" + uri+ ":" + article.data.from.year + 
-      "</div>";
-      //      "<a role='searchcatalog' href='" + searchLink + "'>Search Catalog</a>" + 
+      displayHtml = "<div uri='" + uri +"'><h4><a href='" + searchLink + "'>" + title + "</a></h4>";
+      var solrDoc = article.data.originalData;
+    //Add LOC and Wikidata links
+      var wikidataURI = article.data.originalData["wd_uri_s"];
+      var locURI = article.data.originalData["loc_uri_s"];
+      displayHtml += browseAuthors.generateLOCLink(locURI) + " " +  browseAuthors.generateWikidataLink(wikidataURI); 
+      
+      //displayHtml += JSON.stringify(article.data);
+      
+      var birth = "";
+      var death = "";
+     
+      var birthSource = "LOC";
+      var deathSource = "LOC";
+      if("loc_birthy_i" in solrDoc) {
+        birth = solrDoc["loc_birthy_i"];
+      } else if ("wd_birthy_i" in solrDoc) {
+        birth = solrDoc["wd_birthy_i"];
+        birthSource = "Wikidata";
+      }
+      if("loc_deathy_i" in solrDoc) {
+        death = solrDoc["loc_deathy_i"];
+      } else if ("wd_deathy_i" in solrDoc) {
+        death = solrDoc["wd_deathy_i"];
+        deathSource = "Wikidata";
+      }
+    
+     
+      if(birth != "") {displayHtml += "<br/>Birth (" + birthSource + "): " + birth;}
+      if(death != "") {displayHtml += "<br/>Death (" + deathSource + "): " + death;}
+
+     
+      if("wd_starty_i" in solrDoc) {
+        var startActivity = solrDoc["wd_starty_i"];
+        displayHtml += "<br/>Start Activity (Wikidata): " + startActivity;
+      }
+      if("wd_endy_i" in solrDoc) {
+        var endActivity = solrDoc["wd_endy_i"];
+        displayHtml += "<br/>End Activity (Wikidata): " + solrDoc["wd_endy_i"];
+      }
+      return displayHtml;
 
     },
     displaySearchResults:function(uri, title) {
@@ -142,6 +181,16 @@ var browseAuthors = {
           $("#page-entries").html("<a href='" + searchLink + "'>Search Results: " + pageEntries.html() + "</a>");
         }
       });
+    },
+    //This is also employed in browseLd so should be refactored elsewhere
+    generateLOCLink: function(uri) {
+      var locHtml = "<a target='_blank' class='data-src' data-toggle='tooltip' data-placement='top' data-original-title='See Library of Congress' href='" + uri + ".html'><img src='/assets/loc.png' /></a>";
+      return locHtml;
+    },
+    generateWikidataLink: function(uri) {
+      var title = "Wikidata";
+      return "<a target='_blank' class='data-src' data-toggle='tooltip' data-placement='top' data-original-title='" 
+      + title + "' href='" + uri + "'><img src='/assets/wikidata.png' /></a>";
     }
 }
 

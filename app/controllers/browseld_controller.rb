@@ -56,7 +56,9 @@ class BrowseldController < ApplicationController
   	#@max_startyear = 2019
   	@min_year = -3700
   	@max_year = 2019
-  	@yearrange = 400
+  	@minyearrange = 100
+  	@maxyearrange = 400
+  	@rangecutoff = 1300
   end
   
   ## These methods are called by the main ones above
