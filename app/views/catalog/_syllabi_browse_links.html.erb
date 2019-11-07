@@ -3,5 +3,6 @@
   <div id="recommended-list-carousel">
     <div id="recommended-list"></div>
   </div>
-  <div style="display: none;" id="isbn-box"><%= @document['isbn_t'].inspect %></div>
+  <div style="display: none;" id="isbns-json-data"><%= @document['isbn_t'].inspect %></div>
+  <div style="display: none;" id="solr-server-url-data"><%= ENV["SOLR_URL"] %></div>
 </div>
