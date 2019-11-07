@@ -280,6 +280,53 @@ padding-left: 6em;
 	}
 }
 
+// Browse by syllabi coassignments
+// ----------------------------
+.browse-syllabi {
+	display: none;
+	margin-top: 3em;
+	margin-bottom: 3em;
+	border-top: 5px solid $light-tan;
+}
+#recommended-list-carousel {
+	overflow-x: scroll;
+}
+#recommended-list {
+	display: flex;
+	align-items: baseline;
+}
+#recommended-list figure {
+	display: block;
+	margin-right: 7px;
+	flex-grow: 0;
+	flex-shrink: 0;
+	flex-basis: 8em;
+}
+#recommended-list figure .imgframe {
+	min-width: 70px;
+	min-height: 150px;
+	background-color: $light-tan;
+}
+#recommended-list figure div img {
+	display: block;
+	margin-bottom: 2px;
+}
+#recommended-list figure figcaption {
+	font-size: small;
+}
+
+#fieldBookList {
+	td:first-child {
+		padding-right: 3em;
+	}
+	tbody tr, .isbns {
+		display: none;
+	}
+	#footerMoreBox {
+		text-align: center;
+	}
+}
+
 // MEDIA QUERIES
 // -------------------------
 

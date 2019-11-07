@@ -4,15 +4,9 @@ class BrowseldController < ApplicationController
   include BlacklightCornell::CornellCatalog
   before_action :heading
   #attr_accessible :authq, :start, :order, :browse_type
-  @@browse_index_author = ENV['BROWSE_INDEX_AUTHOR'].nil? ? 'author' : ENV['BROWSE_INDEX_AUTHOR']
-  @@browse_index_subject = ENV['BROWSE_INDEX_SUBJECT'].nil? ? 'subject' : ENV['BROWSE_INDEX_SUBJECT']
-  @@browse_index_authortitle = ENV['BROWSE_INDEX_AUTHORTITLE'].nil? ? 'authortitle' : ENV['BROWSE_INDEX_AUTHORTITLE']
-  @@browse_index_callnumber = ENV['BROWSE_INDEX_CALLNUMBER'].nil? ? 'callnum' : ENV['BROWSE_INDEX_CALLNUMBER']
-  
+
   @@browse_subject = ENV['SUBJECT_SOLR'].nil? ? '' : ENV['SUBJECT_SOLR']
-  def heading
-   @heading='Browse'
-  end
+
   def subject
   	# Read the callhierarchy and call numbers json
   	filepath =Rails.public_path.join("data/callhierarchy.json")
@@ -68,4 +62,23 @@ class BrowseldController < ApplicationController
     response = solr.get 'select', :params => {:q=>"label_s:\"" + subject_string + "\"", :start=>0, :rows=>1}  
     return response 	
    end
+  
+   def fields
+    api = URI.parse("https://cosine-cul.herokuapp.com/api/cips")
+    resp = Net::HTTP.get_response(api)
+    parsed = JSON.parse(resp.body)
+    @fields = parsed.sort{|a,b| a['field'] <=> b['field']}
+  end
+
+  def in_field
+    api = URI.parse("https://cosine-cul.herokuapp.com/api/field?cip="+params[:cip])
+    resp = Net::HTTP.get_response(api)
+    @books = JSON.parse(resp.body)
+  end
+  
+   private
+
+  def heading
+    @heading='Browse'
+  end
 end

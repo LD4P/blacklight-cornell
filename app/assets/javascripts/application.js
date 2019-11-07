@@ -52,7 +52,8 @@
 //= require discogs.js
 //= require jquery.anchorscroll.js
 //= require browse_placeholder.js
-//= alternate_suggestions.js
+//= require alternate_suggestions.js
+//= require syllabi_browse.js
 //= require jquery.waypointz.js
 //= require zz_inview.js
 //= require tooltip.js

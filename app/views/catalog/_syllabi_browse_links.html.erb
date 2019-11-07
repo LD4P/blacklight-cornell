@@ -1,0 +1,8 @@
+<div class="browse-syllabi">
+  <h3 class="mt-4">Browse works often assigned with this one</h3>
+  <div id="recommended-list-carousel">
+    <div id="recommended-list"></div>
+  </div>
+  <div style="display: none;" id="isbns-json-data"><%= @document['isbn_t'].inspect %></div>
+  <div style="display: none;" id="solr-server-url-data"><%= ENV["SOLR_URL"] %></div>
+</div>
