@@ -4,12 +4,14 @@
   <thead>
     <tr>
       <th>Era</th>
+      <th>URI</th>
     </tr>
   </thead>
-  <tbody>
+  <tbody id="subject-eras">
     <% for era in @subject_eras %>
       <tr>
         <td><%= link_to era['label'], '/?f[fast_era_facet][]=' + era['label'].gsub('-', '+-+') %></td>
+        <td class="uri" data="<%= era['uri'] %>"><%= era['uri'] %></td>
       </tr>
     <% end %>
   </tbody>
