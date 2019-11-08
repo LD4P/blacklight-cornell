@@ -6,7 +6,6 @@ class BrowseldController < ApplicationController
   #attr_accessible :authq, :start, :order, :browse_type
 
   @@browse_subject = ENV['SUBJECT_SOLR'].nil? ? '' : ENV['SUBJECT_SOLR']
-  @@catalog_solr = ENV['SOLR_URL'].nil? ? '' : ENV['SOLR_URL']
   
   def subject
   	# Read the callhierarchy and call numbers json
@@ -66,11 +65,7 @@ class BrowseldController < ApplicationController
   
   ##geographic
   def browsemap
-  	require 'rsolr'
-    solr = RSolr.connect :url => @@catalog_solr
-    #q=*:*&rows=0&wt=json&facet=true&facet.field=fast_geo_facet&facet.limit=500
-    response = solr.get 'select', :params => {:q=>"*:*", :start=>0, :rows=>0, :facet_fields => "faset_geo_facet", :facet_limit => 500}  
-    return response 	
+  	
   end
    
    ## Syllabi fields  

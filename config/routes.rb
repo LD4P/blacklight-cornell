@@ -29,6 +29,8 @@ get 'proxy/search'
 get 'proxy/facet' 
 get 'proxy/subjectbrowse'
 get 'proxy/authorbrowse'
+get 'proxy/mapbrowse'
+get 'proxy/qafast'
 
   
 #get 'bookmarks/email_login_required' => 'bookmarks#email_login_required'
