@@ -117,6 +117,8 @@ var browseAuthors = {
       $("#authorDetails").html("");
       $("#authorDetails").html(browseAuthors.generateAuthorDisplay(article));
       browseAuthors.displaySearchResults(article.data.id, article.data.title);
+      //Include AJAX request with wikidata uri to bring back info where possible
+      browseAuthors.retrieveWikidataInfo(article.data["originalData"]["wd_uri_s"]);
     },
     generateAuthorDisplay:function(article) {
       var uri = article.data.id;
@@ -164,8 +166,52 @@ var browseAuthors = {
         var endActivity = solrDoc["wd_endy_i"];
         displayHtml += "<br/>End Activity (Wikidata): " + solrDoc["wd_endy_i"];
       }
+      var wikidataURILocalname = wikidataURI.substring(wikidataURI.lastIndexOf("/") + 1, wikidataURI.length);
+      displayHtml += "<div id='kp-" + wikidataURILocalname + "'></div>";
       return displayHtml;
 
+    },
+    //AJAX request for wikidata info
+    retrieveWikidataInfo: function(uri) {
+      var sparqlQuery = "SELECT (GROUP_CONCAT(DISTINCT ?occupationLabel; SEPARATOR = ' ,') AS ?o)  ?description WHERE { " + 
+      "<" + uri + "> wdt:P106 ?occupation . <" + uri + "> schema:description ?description . " + 
+      "FILTER(lang(?description) = 'en') " + 
+      "SERVICE wikibase:label { bd:serviceParam wikibase:language '[AUTO_LANGUAGE],en'. ?occupation rdfs:label ?occupationLabel . }" + 
+      "} GROUP BY  ?description";
+      var wikidataEndpoint = "https://query.wikidata.org/sparql?";
+     
+      $.ajax({
+        url : wikidataEndpoint,
+        headers : {
+          Accept : 'application/sparql-results+json'
+        },
+        data : {
+          query : sparqlQuery
+        },
+        success : function (data) {
+          if (data && "results" in data && "bindings" in data["results"]) {
+            var bindings = data["results"]["bindings"];
+            if (bindings.length) {
+              var binding = bindings[0];
+              var description = "";
+              var occupation = "";
+              if("description" in binding && "value" in binding["description"]) {
+                description = binding["description"]["value"];
+              }
+              if("o" in binding && "value" in binding["o"]) {
+                occupation = binding["o"]["value"];
+              }
+              var displayHtml = description;
+              if(description != "") displayHtml += "<br/>";
+              displayHtml += occupation != "" ? "Occupation: " + occupation: "";
+              var wlocal = uri.substring(uri.lastIndexOf("/") + 1, uri.length);
+              $("#kp-" + wlocal).html(displayHtml);
+            }
+          }
+        }
+      });
+        
+      
     },
     displaySearchResults:function(uri, title) {
       var baseUrl = $("#container").attr("base-url"); 
@@ -177,9 +223,14 @@ var browseAuthors = {
         "type": "GET",
         "success" : function(data) {     
           var documents = $(data).find("#documents");
-          $("#documents").html(documents);
-          var pageEntries = $(data).find("span.page-entries");        
-          $("#page-entries").html("<a href='" + searchLink + "'>Search Results: " + pageEntries.html() + "</a>");
+          if(documents.length) {
+            $("#documents").html(documents);
+            var pageEntries = $(data).find("span.page-entries");  
+            $("#page-entries").html("<a href='" + searchLink + "'>Search Results: " + pageEntries.html() + "</a>");
+          } else {
+            $("#page-entries").html("");
+            $("#documents").html("No search results found in catalog for " + title);
+          }
         }
       });
     },
