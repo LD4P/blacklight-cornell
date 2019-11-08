@@ -32,7 +32,7 @@ var browseAuthors = {
       var baseUrl = $("#container").attr("base-url"); 
       var querySolr = baseUrl + "proxy/authorbrowse";
       if(startYear && endYear) {
-        var endYear = parseInt(startYear) + parseInt(endYear);
+        //var endYear = parseInt(startYear) + parseInt(endYear);
         var range = "[" + startYear + " TO " + endYear + "]";
         querySolr += "?q=wd_birthy_i:" + range + " OR ld_birthy_i:" + range + "&sort=wd_birthy_i asc";
       }
@@ -41,7 +41,11 @@ var browseAuthors = {
         "type": "GET",
         "success" : function(data) {              
           callback(data);
-          browseAuthors.timeline.setStartDate(new Histropedia.Dmy(startYear, 1,1));
+          if(startYear) {
+            //browseAuthors.timeline.setStartDate(new Histropedia.Dmy(startYear, 1,1));
+            browseAuthors.timeline.setStartDate(startYear);
+
+          }
         }
       });
     },
@@ -83,30 +87,27 @@ var browseAuthors = {
       var articleStyle = {width:100, border:{width:1}};
       //try  map, 
       $.each(docs, function(i, v) {
-        if("loc_birthy_i" in v || "wd_birthy_i" in v || "wd_starty_i" in v  ) {
-          
+        if("loc_birthy_i" in v || "wd_birthy_i" in v || "wd_starty_i" in v  ) {         
           //Prefer start year and end year for display
           //Use birth year if start year not available
           //Use death if end year not available
-          var birthYear = ("loc_birthy_i" in v)? v["loc_birthy_i"] : ("wd_birthy_i" in v)? v["wd_birthy_i"]: v["wd_starty_i"];
-          var endYear = ("loc_deathy_i" in v)? v["loc_deathy_i"] : ("wd_deathy_i" in v)? v["wd_deathy_i"]: v["wd_endy_i"];
-          //if (parseInt(birthYear) < 2020) {
-            var id = v["loc_uri_s"];
-            var wdURI = v["wd_uri_s"];
-            var n = wdURI.lastIndexOf('/');
-            var wdName = wdURI.substring(n + 1);
-            var displayName = ("authlabel_s" in v)? v["authlabel_s"] : wdName;
-            var article = {id:id, title:displayName, from:{year: birthYear} , to:{year: endYear}, style:articleStyle, originalData: v};
-            if("wd_birthy_i" in v) {
-              article["to"] = {year: v["wd_birthy_i"]};
-            }
+          var birthYear = ("loc_birthy_i" in v)? v["loc_birthy_i"] : (("wd_birthy_i" in v)? v["wd_birthy_i"]: v["wd_starty_i"]);
+          var endYear = ("loc_deathy_i" in v)? v["loc_deathy_i"] : (("wd_deathy_i" in v)? v["wd_deathy_i"]: ("wd_endy_i" in v? v["wd_endy_i"]: null));
+          var id = v["loc_uri_s"];
+          var wdURI = v["wd_uri_s"];
+          var n = wdURI.lastIndexOf('/');
+          var wdName = wdURI.substring(n + 1);
+          var displayName = ("authlabel_s" in v)? v["authlabel_s"] : wdName;
+          if(birthYear != null && Number.isInteger(birthYear)) {
+            var article = {id:id, title:displayName, from:{year: birthYear} , style:articleStyle, originalData: v};
+            //Testing to date
+            if(endYear != null && Number.isInteger(endYear)) { article["to"] = {year: endYear}; }
             //testing image
             if("wd_image_s" in v) {
               article["imageUrl"] = v["wd_image_s"];
             }
-            //article["imageUrl"] = "https://upload.wikimedia.org/wikipedia/commons/thumb/6/63/Portrait_of_Charles_Dickens_%284671094%29.jpg/435px-Portrait_of_Charles_Dickens_%284671094%29.jpg";
             articles.push(article);
-          //}   
+          }
         }
       });
       return articles;

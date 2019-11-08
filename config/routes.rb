@@ -92,6 +92,8 @@ devise_for :users, controllers: {
   ## Try a separate browse everything page with browse controller
   get '/browseld/subject' => 'browseld#subject'
   get '/browseld/authors' => 'browseld#authors'
+  get '/browseld/browsemap' => 'browseld#browsemap'
+  
   get '/browseld' => 'browseld#index'
   get '/browseld/fields' => 'browseld#fields'
   get '/browseld/in_field' => 'browseld#in_field'
