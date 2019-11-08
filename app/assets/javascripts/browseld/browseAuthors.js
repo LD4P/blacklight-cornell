@@ -126,15 +126,14 @@ var browseAuthors = {
       var baseUrl = $("#container").attr("base-url"); 
       //Get info from solr index with data we have and any additional from Wikidata that may be useful
       var searchLink = baseUrl + "?f[author_facet][]=" + title + "&q=&search_field=all_fields";
-      displayHtml = "<div uri='" + uri +"'><h4><a href='" + searchLink + "'>" + title + "</a></h4>";
-      var solrDoc = article.data.originalData;
     //Add LOC and Wikidata links
       var wikidataURI = article.data.originalData["wd_uri_s"];
       var locURI = article.data.originalData["loc_uri_s"];
-      displayHtml += browseAuthors.generateLOCLink(locURI) + " " +  browseAuthors.generateWikidataLink(wikidataURI); 
-      
-      //displayHtml += JSON.stringify(article.data);
-      
+      var externalLinks =  browseAuthors.generateLOCLink(locURI) + " " +  browseAuthors.generateWikidataLink(wikidataURI); 
+
+      displayHtml = "<div uri='" + uri +"'><h4><a href='" + searchLink + "'>" + title + "</a>" + externalLinks + "</h4>";
+      var solrDoc = article.data.originalData;
+                
       var birth = "";
       var death = "";
      

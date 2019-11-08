@@ -61,9 +61,13 @@ var browseMap = {
     },
     //Get label, get FAST URI, get coordinates if possible from there or Wikidata
     getCoordinates:function(fastLabel, facetValue) {
-      var label = fastLabel.replace(/--/g, " > ")
+     // var label = fastLabel.replace(/--/g, " > ")
+     var label = fastLabel.replace(" > ", "--");
+
       var baseUrl = $("#map").attr("base-url"); 
-        var searchURL = baseUrl + "proxy/qafast?q=" + label
+      var searchURL =  "https://lookup.ld4l.org/authorities/search/linked_data/oclcfast_ld4l_cache/place?q=" + label + "&maxRecords=1";
+
+        //var searchURL = baseUrl + "proxy/qafast?q=" + label
         $.ajax({
             url: searchURL,
             type:'GET',

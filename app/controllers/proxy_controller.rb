@@ -65,7 +65,7 @@ class ProxyController < ApplicationController
   def qafast
    require "net/http"
     label = params[:q]
-  	query_url = "https://lookup.ld4l.org/authorities/search/linked_data/oclcfast_ld4l_cache/place?q=" + label
+  	query_url = "https://lookup.ld4l.org/authorities/search/linked_data/oclcfast_ld4l_cache/place?q=" + label + "&maxRecords=1"
     url = URI.parse(query_url)
     resp = Net::HTTP.get_response(url)
     data = resp.body
