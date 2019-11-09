@@ -14,20 +14,19 @@
                         <li>Or <a href="http://www.library.cornell.edu/feedback">send us comments or suggestions</a> that may help us improve the Catalog.</li>
                     </ul>
 
-                    <p>To search beyond Cornell holdings, follow the â€œLibraries Worldwideâ€� link on the Catalog search results page, or use <a href="<%= ENV['WORLDCAT_URL'] %>">WorldCat</a>.</p>
+                    <p>To search beyond Cornell holdings, follow the “Libraries Worldwide” link on the Catalog search results page, or use <a href="<%= ENV['WORLDCAT_URL'] %>">WorldCat</a>.</p>
                 </div>
             </div>
-            
-            <!-- Adding browse sections -->
+
+                 <!-- Adding browse sections -->
             <div class="card-body d-flex flex-row flex-wrap">
-            	<div class="card w-50 px-3 m-2 list-group-item-action"><a href="/browseld/subject">Browse Subjects</a>
+            	<div class="card w-50 m-2 list-group-item-action"><a href="/browseld/subject" title="Browse Subjects"><img src="/assets/cornell/browseld/btn_subjects.png"></a>
             	</div>
-            	<div class="card w-50 px-3 m-2 list-group-item-action"><a href="/browseld/authors">Browse Author Timeline</a>
+            	<div class="card w-50 m-2 list-group-item-action"><a href="/browseld/authors" title="Browse Author Timeline"><img src="/assets/cornell/browseld/btn_authortimeline.png"></a>
             	</div>
-            	<div class="card w-50 px-3 m-2 list-group-item-action"><a href="/browseld/fields">Browse By Syllabi Fields</a>
+            	<div class="card w-50 m-2 list-group-item-action"><a href="/browseld/fields" title="Browse Course by Subjects"><img src="/assets/cornell/browseld/btn_coursesubjects.png"></a>
             	</div>
             </div>
-
 		<div class="other-resources">
 			<h3>Other resources</h3>
     		<ul class="blacklight-nav">
@@ -40,3 +39,4 @@
 	</div>
 
 <% #Creates a bit space in the page -%>
+
