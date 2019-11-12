@@ -54,4 +54,23 @@ class ProxyController < ApplicationController
     render :json => result 
   end
   
+  def mapbrowse
+  	require 'rsolr'
+    solr = RSolr.connect :url => ENV["SOLR_URL"]
+    #q=*:*&rows=0&wt=json&facet=true&facet.field=fast_geo_facet&facet.limit=500
+    response = solr.get 'select', :params => {:q=>"*:*", :start=>0, :rows=>0, :facet => true, "facet.field" => "fast_geo_facet", "facet.limit" => 500}  
+    render :json => response	
+  end
+  
+  def qafast
+   require "net/http"
+    label = params[:q]
+  	query_url = "https://lookup.ld4l.org/authorities/search/linked_data/oclcfast_ld4l_cache/place?q=" + label + "&maxRecords=4"
+    url = URI.parse(query_url)
+    resp = Net::HTTP.get_response(url)
+    data = resp.body
+    result = JSON.parse(data)
+    render :json => result  	
+  end
+  
 end

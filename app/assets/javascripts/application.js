@@ -65,3 +65,4 @@
 //= require histropedia-1.1.1.min.js
 //= require browseld/browseLd.js
 //= require browseld/browseAuthors.js
+//= require browseld/browseMap.js

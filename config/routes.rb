@@ -29,6 +29,8 @@ get 'proxy/search'
 get 'proxy/facet' 
 get 'proxy/subjectbrowse'
 get 'proxy/authorbrowse'
+get 'proxy/mapbrowse'
+get 'proxy/qafast'
 
   
 #get 'bookmarks/email_login_required' => 'bookmarks#email_login_required'
@@ -92,6 +94,8 @@ devise_for :users, controllers: {
   ## Try a separate browse everything page with browse controller
   get '/browseld/subject' => 'browseld#subject'
   get '/browseld/authors' => 'browseld#authors'
+  get '/browseld/browsemap' => 'browseld#browsemap'
+  
   get '/browseld' => 'browseld#index'
   get '/browseld/fields' => 'browseld#fields'
   get '/browseld/in_field' => 'browseld#in_field'

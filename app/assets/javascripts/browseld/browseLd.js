@@ -90,9 +90,9 @@ var browseLd = {
       var html = "";
       var label = doc["label_s"];
       var uri = doc["uri_s"];
-      var classification = doc["classification_s"];
+      var classification = doc["classification_ss"];
       var displayStyle = "";
-      html += "<div headingtype='lcsh' uri='" + uri + "' label='" + label + "'>" + label + "</div>";
+      html += "<div classification='" + JSON.stringify(classification) + "' headingtype='lcsh' uri='" + uri + "' label='" + label + "'>" + label + "</div>";
       return html;
     },
     handleLCSHClick: function(e, target) {
@@ -126,13 +126,29 @@ var browseLd = {
      var entityLink = (searchFASTURL != "")? searchFASTURL: searchLCSHURL;
      var locHtml = browseLd.generateLOCLink(relationships.uri);
      var downChevron =   "<i class='fa fa-chevron-down' aria-hidden='true'></i>";
-     var entity = "<div><h4><a href='" + entityLink + "'>" + label + "</a> " + locHtml + "</h4></div>";
+     var classifications =  browseLd.extractLCCNForLCSH(relationships.uri);
+     classifications = (classifications == "") ? "" : "<span class='inlineLCCN'>LCCN:" + classifications + "</span>";
+     var entity = "<div><h4><a href='" + entityLink + "'>" + label + "</a> "  + locHtml  + "</h4></div>";
+    
      		
      //Add main level heading
      //In case border is not present, add border
      $("#subjectdetails").addClass("border border-2");
      $("#subjectdescription").html(entity);
      $("#subjectdescription").append(browseLd.generateSubjectDetailsDisplay(relationships.uri, label, relationships.dataHash, relationships.narrowerURIs, relationships.broaderURIs, relationships.closeURIs));    
+     $("#subjectdescription").append(classifications);    
+
+    },
+    extractLCCNForLCSH: function(uri) {
+      var lcshHeading = $("div[headingtype='lcsh'][uri='" + uri + "']");
+      if(lcshHeading) {
+        var classification = lcshHeading.attr("classification");
+        if(classification) {
+          var cArray  =JSON.parse(classification);
+          if(cArray && cArray.length) return cArray.join(" ,");
+        }
+      }
+      return "";
     },
     generateLOCLink: function(uri) {
       var locHtml = "<a target='_blank' class='data-src' data-toggle='tooltip' data-placement='top' data-original-title='See Library of Congress' href='" + uri + ".html'><img src='/assets/loc.png' /></a>";

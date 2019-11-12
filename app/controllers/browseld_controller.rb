@@ -6,7 +6,7 @@ class BrowseldController < ApplicationController
   #attr_accessible :authq, :start, :order, :browse_type
 
   @@browse_subject = ENV['SUBJECT_SOLR'].nil? ? '' : ENV['SUBJECT_SOLR']
-
+  
   def subject
   	# Read the callhierarchy and call numbers json
   	filepath =Rails.public_path.join("data/callhierarchy.json")
@@ -63,6 +63,12 @@ class BrowseldController < ApplicationController
     return response 	
    end
   
+  ##geographic
+  def browsemap
+  	
+  end
+   
+   ## Syllabi fields  
    def fields
     api = URI.parse("https://cosine-cul.herokuapp.com/api/cips")
     resp = Net::HTTP.get_response(api)
