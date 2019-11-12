@@ -1,6 +1,7 @@
 var browseMap = {
     onLoad: function() {
       browseMap.init();
+      browseMap.bindEventListeners();
       browseMap.loadData();
     },
     init:function() {
@@ -20,6 +21,12 @@ var browseMap = {
             detectRetina: false
           }
         ).addTo(this.mymap);      
+    },
+    bindEventListeners: function() {
+      $("#map").on("click", "a[auth]", function() {
+        var auth = $(this).attr("auth");
+        browseMap.getCatalogResults(auth);
+      });
     },
     loadData:function() {
       var baseUrl = $("#map").attr("base-url"); 
@@ -65,7 +72,30 @@ var browseMap = {
      var label = fastLabel.replace(" > ", "--");
 
       var baseUrl = $("#map").attr("base-url"); 
-      var searchURL =  "https://lookup.ld4l.org/authorities/search/linked_data/oclcfast_ld4l_cache/place?q=" + label + "&maxRecords=1";
+      
+      //Currently directly using FAST API 
+      
+      var geographicFacet = "suggest51";
+      var searchURL = "http://fast.oclc.org/searchfast/fastsuggest?query=" + label + "&fl=" + geographicFacet + "&queryReturn=id,*&rows=2&wt=json&json.wrf=?";
+
+      $.getJSON(searchURL,function(data){
+       if(data && "response" in data && "docs" in data["response"] && data["response"]["docs"].length) {
+                 var firstResult = data["response"]["docs"][0];
+                 if("id" in firstResult && "suggest51" in firstResult) {
+                    var rlabel = firstResult["suggest51"];
+                    var rId = firstResult["id"];
+                    //Get rid of fst
+                    rId = rId.slice(3);
+                    var rURI = rId.replace(/^[0]+/g,"");
+                    //var rURI = data[0]["uri"];
+                    console.log(rlabel + ":" + rURI);
+                    browseMap.getGeoInfo(rlabel, rURI, fastLabel, facetValue);
+                 }
+          }
+      });
+      
+      /*
+      var searchURL =  "https://lookup.ld4l.org/authorities/search/linked_data/oclcfast_ld4l_cache/place?q=" + label + "&maxRecords=4";
 
         //var searchURL = baseUrl + "proxy/qafast?q=" + label
         $.ajax({
@@ -81,9 +111,9 @@ var browseMap = {
                }
             }
           }
-        })
+        })*/
     },
-   getGeoInfo:function(fastLabel, fastURI, facetValue) {
+   getGeoInfo:function(fastLabel, fastURI, catalogLabel, facetValue) {
       var fastLocalName = fastURI.substring(fastURI.lastIndexOf("/") + 1, fastURI.length);
       var wikidataEndpoint = "https://query.wikidata.org/sparql?";
       var sparqlQuery = "SELECT ?wURI ?wlon ?slat ?elon ?nlat ?clon ?clat WHERE {?wURI wdt:P2163 \""
@@ -121,7 +151,8 @@ var browseMap = {
                 var lat = geoInfo["Point"]["lat"];
                 var lon = geoInfo["Point"]["lon"];
                   // mymap.setView([lat,lon], 10);
-                browseMap.addPointOverlay(browseMap.overlay, lat, lon, fastLabel + ":" + facetValue);
+                var link = "<a href='#' auth='" + catalogLabel + "'>" + catalogLabel + ":" + facetValue + "</a>";
+                browseMap.addPointOverlay(browseMap.overlay, lat, lon, link);
               }
 
              }
@@ -142,9 +173,7 @@ var browseMap = {
     return geoInfo;
   },
   addBoundsOverlay : function(overlay, bounds) {
-    console.log("add bounds overlay");
      if (bounds instanceof L.LatLngBounds) {
-       console.log("Add polygon layer");
        overlay.addLayer(L.polygon([
          bounds.getSouthWest(),
          bounds.getSouthEast(),
@@ -159,7 +188,31 @@ var browseMap = {
      marker.bindPopup(label);
      overlay.addLayer(marker);
    }
+ },
+ getCatalogResults: function(fastHeading) {
+   //empty out documents
+   browseMap.clearSearchResults();
+   var baseUrl = $("#container").attr("base-url"); 
+   var searchLink = baseUrl + "?f[fast_geo_facet][]=" + fastHeading + "&q=&search_field=all_fields";
+   var searchFAST = "<a href='" + searchLink + "'>Search Catalog</a>";
+   $.ajax({
+     "url": searchLink,
+     "type": "GET",
+     "success" : function(data) {     
+       var documents = $(data).find("#documents");
+       var pageEntries = $(data).find("span.page-entries");  
+       if(documents.length) {
+         $("#page-entries").html("<a href='" + searchLink + "'>Search Results for " + fastHeading + ": " + pageEntries.html() + "</a>");
+         $("#documents").html(documents.html());
+       }
+     }
+   });
+ },
+ clearSearchResults: function() {
+   $("#page-entries").html("");
+   $("#documents").html("");
  }
+ 
 }
 
 Blacklight.onLoad(function() {
