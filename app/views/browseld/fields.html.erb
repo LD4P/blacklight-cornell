@@ -11,7 +11,11 @@
     <% for field in @fields %>
       <tr>
         <td><%= link_to field['field'], action: 'in_field', field: field['field'], cip: field['cip'] %></td>
-        <td style="padding-left: 3em;"><%= field['cip'].truncate(100) %></td>
+        <td style="padding-left: 3em;">
+          <a href="http://id.loc.gov/search/?q=<%= field['field'].downcase %>&q=cs:http://id.loc.gov/authorities/subjects">
+            <%= field['cip'].truncate(100) %>
+          </a>
+        </td>
       </tr>
     <% end %>
   </tbody>
