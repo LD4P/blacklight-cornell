@@ -50,6 +50,8 @@
 //= require pops.js
 //= require wikidata.js
 //= require discogs.js
+//= require oclc.js
+//= require callnumber_browse.js
 //= require jquery.anchorscroll.js
 //= require browse_placeholder.js
 //= require alternate_suggestions.js

@@ -1,0 +1,77 @@
+console.log("start previous prepended -- no way");
+<%
+Rails.logger.info("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
+Rails.logger.info(@previous_doc.inspect)
+the_html = ""
+@previous_doc.each do |doc|
+
+    fa_string = ""
+    if doc['format'].downcase.include?("journal")
+      fa_string =  '<i class="fa fa-book-open"></i>'
+    elsif doc['format'].downcase.include?("book")
+      fa_string =  '<i class="fa fa-book"></i>'
+    elsif doc['format'].downcase.include?("microform")
+      fa_string =  '<i class="fa fa-film"></i>'
+    elsif doc['format'].downcase.include?("non-musical")
+      fa_string =  '<i class="fa fa-headphones"></i>'
+    elsif doc['format'].downcase.include?("musical score")
+      fa_string =  '<i class="fa fa-musical-score"></i>'
+    elsif doc['format'].downcase.include?("musical")
+      fa_string =  '<i class="fa fa-music">'
+    elsif doc['format'].downcase.include?("thesis")
+      fa_string =  '<i class="fa fa-file-text-o"></i>'
+    elsif doc['format'].downcase.include?("video")
+      fa_string =  '<i class="fa fa-video-camera"></i>'
+    elsif doc['format'].downcase.include?("manuscript")
+      fa_string =  '<i class="fa fa-archive"></i>'
+    elsif doc['format'].downcase.include?("map")
+      fa_string = '<i class="fa fa-globe"></i>'
+    end
+
+    the_title = doc['title'] 
+    if doc['title'].length > 48 
+    	the_title = doc['title'][0..48] + "..."
+    end 
+
+    pub_date = ""
+    if doc['pub_date'].present? 
+        pub_date = "(" + doc['pub_date'][0].sub("[","").sub("]","") + ")" 
+    end
+    
+    class_label = ""
+    if doc['class_label'].present? 
+        class_label = doc['class_label'] 
+    end
+    
+    availability = ""
+    avail = JSON.parse(doc["availability"])
+    if avail["availAt"].present? 
+        availability = '<div>' + avail["availAt"].first[0] + '</div><div><i class="fa fa-check" title="Available" alt="" aria-hidden="true"></i> Available</div>'
+    elsif avail["unavailAt"].present?
+    	availability = '<div><i class="fa fa-clock-o" title="Unavailable" alt="" aria-hidden="true"></i> ' + avail["unavailAt"].first[1] + '</div>'
+    elsif avail["online"].present? 
+        availability = '<div><i class="fa fa-check" title="Online" alt="" aria-hidden="true"></i> <span class="status-online badge badge-primary badge-online">Online</span></div>'
+    end 
+    
+    
+    the_html += '<div class="inner_container" style="position:relative;margin:0 10px;padding:4px;text-align:center;vertical-align:middle;display:inline-block;width:170px;height:410px;border:1px solid #dadada">'
+    the_html += '<div style="position:relative;margin:-5px;padding:0;text-align:center;;width:170px;background-color:#b31b1b;color:#ffffff;font-size:14px">' + doc["callnumber"] + '</div>'
+    the_html += '<div id="' + doc["id"] + '" style="margin-top:15px;display:inline-block;vertical-align:middle;border-bottom: solid 2px #ababab;;height:212px" data-title="' + doc["title"] 
+    the_html += '" data-callnumber="' + doc["callnumber"] + '" data-class-label="' + class_label + '">' + '<img width="120px" src="' + doc["img_url"].sub("&zoom=5","6&zoom=1") + '"/>' 
+    the_html += '</div><div style="white-space:normal;margin-top:6px">' + fa_string
+    the_html += '<a href="/catalog/' + doc["id"] + '" title="' + doc["title"] + '"><span style="font-size:18px;line-height:18px">' + the_title + '</span>'
+    the_html += '</a> ' + pub_date + '</div><div style="position:absolute;bottom:4px;white-space:normal;text-align:center;width:100%;right:0;padding: 0 2px;">'
+    the_html += availability + '</div></div>'
+end
+
+#Rails.logger.info("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
+#Rails.logger.info(the_html.html_safe.inspect)
+%>
+
+//console.log("current prev driver = " + $('#outer_container').children().eq(2).children().eq(1).attr("id"));
+//console.log("the_html = " + "<%=raw escape_javascript(the_html) %>");
+var prev_html = "<%=raw escape_javascript(the_html) %>";
+$('#outer_container').prepend(prev_html);
+$('#cn_carousel').scrollLeft(1520);
+//console.log("new prev driver = " + $('#outer_container').children().eq(2).children().eq(1).attr("id"));
+

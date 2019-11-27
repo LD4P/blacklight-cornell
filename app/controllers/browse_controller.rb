@@ -57,7 +57,6 @@ class BrowseController < ApplicationController
         start = {"start" => params[:start].gsub("\\"," ")}
         if params[:order] == "reverse"
           p =  {"q" => '[* TO "' + params[:authq].gsub("\\"," ").gsub('"',' ')+'"}' }
-
           @headingsResultString = dbclnt.get_content(base_solr + "/" + @@browse_index_subject + "/reverse?&wt=json&" + p.to_param + '&' + start.to_param  )
           @headingsResultString = @headingsResultString
         else
@@ -107,10 +106,10 @@ class BrowseController < ApplicationController
         dbclnt = HTTPClient.new
         if params[:order] == "reverse"
           p =  {"q" => '[* TO "' + params[:authq].gsub("\\"," ").gsub('"',' ') +'"}' }
-          url = call_no_solr + "/" + @@browse_index_callnumber + "/reverse?wt=json&" + p.to_param + '&' + start.to_param 
+          url = call_no_solr + "/" + @@browse_index_callnumber + "/reverse?wt=json&" + p.to_param + '&' + start.to_param
         else
           p =  {"q" => '["' + params[:authq].gsub("\\"," ").gsub('"',' ') +'" TO *]' }
-          url = call_no_solr + "/" + @@browse_index_callnumber + "/browse?wt=json&" + p.to_param + '&' + start.to_param 
+          url = call_no_solr + "/" + @@browse_index_callnumber + "/browse?wt=json&" + p.to_param + '&' + start.to_param
         end
         if params[:fq]
           url = url + '&fq=' + params[:fq]
@@ -124,10 +123,125 @@ class BrowseController < ApplicationController
        end
        @headingsResponse = @headingsResponseFull
        params[:authq].gsub!('%20', ' ')
+
+
+       @previous_four = get_surrounding_docs(params[:authq].gsub("\\"," ").gsub('"',' '),"reverse",0,8)
+       @next_four = get_surrounding_docs(params[:authq].gsub("\\"," ").gsub('"',' '),"forward",0,9)
+
        #Rails.logger.info("jgr25_debug #{__FILE__} #{__LINE__}  = headingResponse: " + @headingsResponse.inspect )
       end
-
     end
+    
+    def call_number_setup(callnumber,facet)
+      callnumber = callnumber_cleanup(callnumber)
+    	tmp_array = []
+    	return_hash = {}
+    	alpha = callnumber[0..1]
+    	if alpha =~ /\d/ 
+    		alpha = callnumber[0]
+    	end
+    	if facet.present?
+      	facet.each do |callnum|
+      		if callnum.include?(":")
+      			a = callnum.split(":")
+      			b = a[1][0..(a[1].index("-") -1)].gsub(" ","")
+      			if b == alpha
+      				tmp_array << callnum
+      			end
+      		end
+      	end
+      else
+        tmp_array << ""
+      end
+    	tmp_array.sort { |a, b| a <=> b}
+    	return_hash[callnumber] = tmp_array.last
+    	return return_hash
+    end
+
+    def get_surrounding_docs(callnumber,direction,start,rows)
+      base_solr_url = Blacklight.connection_config[:url].gsub(/\/solr\/.*/,'/solr')
+      dbclnt = HTTPClient.new
+      solrResponseFull = []
+      return_array = []
+      if direction == "reverse"
+        q =  {"q" => '[* TO "' + callnumber.gsub("\\"," ").gsub('"',' ') +'"}' }
+        url = base_solr_url + "/callnum/reverse?wt=json&" + q.to_param + '&start=' + start.to_s + '&rows=' + rows.to_s
+      else
+        q =  {"q" => '["' + callnumber.gsub("\\"," ").gsub('"',' ') +'" TO *]' }
+        url = base_solr_url + "/callnum/browse?wt=json&" + q.to_param + '&start=' + start.to_s + '&rows=' + rows.to_s
+      end
+      solrResultString = dbclnt.get_content( url )
+      if !solrResultString.nil?
+        y = solrResultString
+        solrResponseFull = JSON.parse(y)
+         solrResponseFull["response"]["docs"].each do |doc|          
+          tmp_hash = get_document_details(doc["bibid"])
+          return_array.push(tmp_hash)
+        end
+        #return solrResponseFull["response"]["docs"]
+      else
+        return_array.push("Could not find")
+      end
+      return return_array
+    end
+    
+    def get_document_details(id)
+      tmp_hash = {}
+      response, document = search_service.fetch(id)
+      tmp_hash["id"] = response["response"]["docs"][0]["id"]
+      tmp_hash["title"] = response["response"]["docs"][0]["title_display"]
+      tmp_hash["format"] = response["response"]["docs"][0]["format"][0]
+      tmp_hash["pub_date"] = response["response"]["docs"][0]["pub_date_display"]
+      tmp_hash["availability"] = response["response"]["docs"][0]["availability_json"]
+      cn = call_number_setup(response["response"]["docs"][0]["callnumber_display"][0],response["response"]["docs"][0]["lc_callnum_facet"])
+      tmp_hash["callnumber"] = cn.keys[0]
+      tmp_hash["class_label"] = cn.values[0].present? ? cn.values[0].gsub(":"," > ") : ""
+      tmp_hash["img_url"] = get_googlebooks_image(response["response"]["docs"][0]["oclc_id_display"], response["response"]["docs"][0]["isbn_t"])
+
+      Rails.logger.info("^^^^^^^^^ TITLE: " + response["response"]["docs"][0]["title_display"])
+      return tmp_hash
+    end
+
+    def previous_callnumber
+      Rails.logger.info("^^^^^^^^^^^^^^^^^^^^^^ PREVIOUS CALLNUMBER")
+      @previous_doc =  get_surrounding_docs(params["callnum"],"reverse",0,8)
+      respond_to do |format|
+        format.js
+      end
+    end
+    
+    def next_callnumber
+      Rails.logger.info("^^^^^^^^^^^^^^^^^^^^^^ NEXT CALLNUMBER")
+      @next_doc =  get_surrounding_docs(params["callnum"],"forward",1,8)
+      respond_to do |format|
+        format.js
+      end
+    end
+    
+    def callnumber_cleanup(callnumber)
+      callnumber.gsub("Oversize ","").gsub("Rare Books ","").gsub("ONLINE ","").gsub("Human Sexuality ","").gsub("Ellis ","").gsub("New & Noteworthy Books ","").gsub("A.D. White Oversize ","").sub("+ ","")
+    end
+
+    def get_googlebooks_image(oclc, isbn)
+      if oclc.present?
+        oclc_url = "https://books.google.com/books?bibkeys=OCLC:#{oclc[0]}&jscmd=viewapi&callback=?"
+        result = Net::HTTP.get(URI.parse(oclc_url))
+        result = eval(result.gsub("var _GBSBookInfo = ",""))
+        if result.present? && result.values[0].present? && result.values[0][:thumbnail_url].present?
+          return result.values[0][:thumbnail_url]
+        end
+      end
+      if isbn.present?
+        isbn_url = "https://books.google.com/books?bibkeys=OCLC:#{isbn[0]}&jscmd=viewapi&callback=?"
+        result = Net::HTTP.get(URI.parse(isbn_url))
+        result = eval(result.gsub("var _GBSBookInfo = ",""))
+        if result.present? && result.values[0].present? && result.values[0][:thumbnail_url].present?
+          return result.values[0][:thumbnail_url]
+        end
+      end
+      return "/assets/generic_cover.jpg"
+    end
+
     def info
       if !params[:authq].present? || !params[:browse_type].present?
         flash.now[:error] = "Please enter a complete query."

@@ -33,6 +33,9 @@ get 'proxy/mapbrowse'
 get 'proxy/qafast'
 
   
+get "/get_previous" => 'browse#previous_callnumber', as: 'get_previous'
+get "/get_next" => 'browse#next_callnumber', as: 'get_next'
+  
 #get 'bookmarks/email_login_required' => 'bookmarks#email_login_required'
 get 'bookmarks/show_email_login_required_bookmarks' => 'bookmarks#show_email_login_required_bookmarks'
 get 'bookmarks/show_email_login_required_item/:id' => 'bookmarks#show_email_login_required_item', :as => 'email_require_login'
