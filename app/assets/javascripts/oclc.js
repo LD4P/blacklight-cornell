@@ -182,7 +182,7 @@ var  processOclcData = {
           }
           processOclcData.assignFullBackgroundColors();
           ajaxCallStatus[locUri] = "closed";
-          console.log("ajaxCallStatus = " + ajaxCallStatus.toSource());
+          // console.log("ajaxCallStatus = " + ajaxCallStatus.toSource());
         } // complete
       });
   },
@@ -318,7 +318,6 @@ var  processOclcData = {
          }
          else {
              var arrayLength = (broaderArray.length + narrowerArray.length + relevantArray.length);
-             console.log("array length = " + arrayLength);
              if ( arrayLength == 0 ) {
                  $('#subj-container').html("");
                  $('#subj-type').text("No additional subjects found.");

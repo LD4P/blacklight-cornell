@@ -13,7 +13,14 @@
     </div>
   </div>
 <% end %>
+
 <% if @headingsResponse.present? %>
+
+
+  <%= render :partial => 'browse/call_number_browse_carousel' %>
+
+
+  <br/><br/><br/><br/><br/><br/>
   <h2>
     <% if params[:browse_type] == "Author" %>
       <%= 'Browse "' + params[:authq] + '" in author headings' %>

@@ -1,0 +1,91 @@
+<%
+ 	  classification = @next_four[0]['class_label']
+	  tmp_array = classification.split(">")
+	  class_array = []
+	  tmp_array.each do |cn|
+		str = "<a href='/browse?authq="
+		tmp1 = cn[0..(cn.index("-") -1)].rstrip
+		str += tmp1 + "&browse_type=Call-Number'>" + cn + "</a>"
+		class_array.push(str)
+	  end
+%>
+<div class="">
+  <div id="classification" class="" style="margin-bottom:20px;font-size:18px;" data-anchor-label="<%= class_array.join(' > ')%>"><%= class_array.join(" > ").html_safe %></div>
+    <div id="cn_carousel" style="margin-left:0;width:100%;height:450px;position:relative;display:inline-block;overflow-x:scroll;white-space:nowrap;overflow-y:visible;vertical-align:top">
+	  <div id="outer_container" style="display:inline-block">
+  	<% @previous_four.reverse.each do |doc| %>
+      <div class="inner_container" style="position:relative;margin:0 10px;padding:4px;text-align:center;vertical-align:middle;display:inline-block;width:170px;height:410px;border:1px solid #dadada">
+		<div style="position:relative;margin:-5px;padding:0;text-align:center;;width:170px;background-color:#b31b1b;color:#ffffff;font-size:14px"><%= doc['callnumber'] %></div>
+  		<div id="<%= doc['id'] %>" style="margin-top:15px;display:inline-block;vertical-align:middle;border-bottom: solid 2px #ababab;;height:212px" data-title="<%= doc['title'] %>" data-callnumber="<%= doc['callnumber'] %>" data-class-label="<%= doc['class_label'] %>">
+  			<img width="120px" src="<%= doc['img_url'].sub("&zoom=5","6&zoom=1") %>"/>
+		</div>
+		<div style="white-space:normal;margin-top:6px"><%= get_format_string(doc['format'].downcase)%> 
+			<a href="/catalog/<%= doc['id'] %>" title="<%= doc['title'] %>">
+				<span style="font-size:18px;line-height:18px">
+					<% if doc['title'].length <= 48 %>
+						<%= doc['title'] %>
+					<% else %>
+						<%= doc['title'][0..48] + "..."%>
+					<% end %>
+				</span>
+			</a> <% if doc['pub_date'].present? %>(<%= doc['pub_date'][0].sub("[","").sub("]","") %>) <% end %>
+		</div>
+		<div style="position:absolute;bottom:4px;white-space:normal;text-align:center;width:100%;right:0;padding: 0 2px;">
+		  <% avail = JSON.parse(doc["availability"]) %>
+		  <% if avail["availAt"].present? %>
+			<div><%= avail["availAt"].first[0] %></div>
+			<div><i class="fa fa-check" title="Available" alt="" aria-hidden="true"></i> Available</div>
+		  <% elsif avail["unavailAt"].present? %>
+			<div><i class="fa fa-clock-o" title="Unavailable" alt="" aria-hidden="true"></i> <%= avail["unavailAt"].first[1] %></div>
+		  <% elsif avail["online"].present? %>
+			<div><i class="fa fa-check" title="Online" alt="" aria-hidden="true"></i> <span class="status-online badge badge-primary badge-online">Online</span></div>
+		  <% end %>
+		</div>
+  	  </div>
+  	<% end %>
+  	<% @next_four.each_with_index do |doc, i| %>
+    <%
+		border_details = "1px solid #dadada"
+		cn_margin = "-5px"
+		anchor = ""
+		if i == 0
+			border_details = "5px solid #b31b1b"
+			cn_margin = "-9px"
+			anchor = "id=anchor"
+		end
+	%>
+    <div <%= anchor %> class="inner_container" style="position:relative;margin:0 10px;padding:4px;text-align:center;vertical-align:middle;display:inline-block;width:170px;height:410px;border:<%=border_details%>">
+		<div  style="position:relative;margin:<%=cn_margin%>;padding:0;text-align:center;;width:170px;background-color:#b31b1b;color:#ffffff;font-size:14px"><%= doc['callnumber'] %></div>
+  		<div id="<%= doc['id'] %>" style="margin-top:15px;display:inline-block;vertical-align:middle;border-bottom: solid 2px #ababab;height:212px" data-title="<%= doc['title'] %>" data-callnumber="<%= doc['callnumber'] %>" data-class-label="<%= doc['class_label'] %>">
+  			<img width="120px" src="<%= doc['img_url'].sub("&zoom=5","6&zoom=1") %>"/>
+		</div>
+		<div style="white-space:normal;margin-top:6px"><%= get_format_string(doc['format'].downcase)%> 
+			<a href="/catalog/<%= doc['id'] %>" title="<%= doc['title'] %>">
+				<span style="font-size:18px;line-height:18px">
+					<% if doc['title'].length <= 50 %>
+						<%= doc['title'] %>
+					<% else %>
+						<%= doc['title'][0..50] + "..."%>
+					<% end %>
+				</span>
+			</a> <% if doc['pub_date'].present? %>(<%= doc['pub_date'][0].sub("[","").sub("]","") %>) <% end %>
+		</div>
+		<div style="position:absolute;bottom:4px;white-space:normal;text-align:center;width:100%;right:0;padding: 0 2px;">
+		  <% avail = JSON.parse(doc["availability"]) %>
+		  <% if avail["availAt"].present? %>
+			<div><%= avail["availAt"].first[0] %></div>
+			<div><i class="fa fa-check" title="Available" alt="" aria-hidden="true"></i> Available</div>
+		  <% elsif avail["unavailAt"].present? %>
+			<div><i class="fa fa-clock-o" title="Unavailable" alt="" aria-hidden="true"></i> <%= avail["unavailAt"].first[1] %></div>
+		  <% elsif avail["online"].present? %>
+			<div><i class="fa fa-check" title="Online" alt="" aria-hidden="true"></i> <span class="status-online badge badge-primary badge-online">Online</span></div>
+		  <% end %>
+		</div>
+  	  </div>
+  	<% end %>
+      </div>
+    </div>
+  <br/><br/><br/><br/><br/>
+<br/><br/><br/><br/><br/>
+
+</div>
