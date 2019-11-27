@@ -87,7 +87,7 @@ var browseAuthors = {
       var articleStyle = {width:100, border:{width:1}};
       //try  map, 
       $.each(docs, function(i, v) {
-        if("loc_birthy_i" in v || "wd_birthy_i" in v || "wd_starty_i" in v  ) {         
+        if("loc_birthy_i" in v || "wd_birthy_i" in v || "wd_starty_i" in v  ) {   
           //Prefer start year and end year for display
           //Use birth year if start year not available
           //Use death if end year not available
@@ -172,7 +172,7 @@ var browseAuthors = {
     },
     //AJAX request for wikidata info
     retrieveWikidataInfo: function(uri) {
-      var sparqlQuery = "SELECT (GROUP_CONCAT(DISTINCT ?occupationLabel; SEPARATOR = ' ,') AS ?o)  ?description WHERE { " + 
+      var sparqlQuery = "SELECT (GROUP_CONCAT(DISTINCT ?occupationLabel; SEPARATOR = ', ') AS ?o)  ?description WHERE { " + 
       "<" + uri + "> wdt:P106 ?occupation . <" + uri + "> schema:description ?description . " + 
       "FILTER(lang(?description) = 'en') " + 
       "SERVICE wikibase:label { bd:serviceParam wikibase:language '[AUTO_LANGUAGE],en'. ?occupation rdfs:label ?occupationLabel . }" + 
