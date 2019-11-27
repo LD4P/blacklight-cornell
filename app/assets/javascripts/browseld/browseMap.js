@@ -88,7 +88,7 @@ var browseMap = {
                     rId = rId.slice(3);
                     var rURI = rId.replace(/^[0]+/g,"");
                     //var rURI = data[0]["uri"];
-                    console.log(rlabel + ":" + rURI);
+                    //console.log(rlabel + ":" + rURI);
                     browseMap.getGeoInfo(rlabel, rURI, fastLabel, facetValue);
                  }
           }
