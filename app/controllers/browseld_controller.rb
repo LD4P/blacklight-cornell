@@ -37,6 +37,8 @@ class BrowseldController < ApplicationController
     era_json = era_file.split("\n") # Parse each line as JSON
     era_data = era_json.map{|j| JSON.parse(j)}
     @subject_eras = era_data.map{|d| d[0]} # Remove [] layer
+
+    @subject_eras.reverse!
   end
 
   private
