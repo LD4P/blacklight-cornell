@@ -8,12 +8,11 @@ var getOpenSyllabusRecommendations = {
     // Get ISBNs of current book and Solr URL from the page DOM
     var isbns = $( "#isbns-json-data" ).html();
     var isbnParsed = JSON.parse(isbns);
-    var isbnParams = "isbns[]=" + isbnParsed.join('&isbns[]=');
+    var isbnParams = isbnParsed.join(',');
     var solrServer = $( "#solr-server-url-data" ).html();
     // Get JSON array of arrays from Cosine API. Outer array is list of books, inner is list of ISNBs per book.
-    $.get( "https://cosine-cul.herokuapp.com/api/coassigned?" + isbnParams, function( cosineResponse ) {
-      var bookIsbnLists = JSON.parse(cosineResponse);
-      var firstTenBooks = bookIsbnLists.slice(0, 20);
+    $.get( "https://api.opensyllabus.org/coassignments/isbn/"+isbnParams+"?format=json", function( ospResponse ) {
+      var firstTenBooks = getOpenSyllabusRecommendations.ospJsonParse(ospResponse, 10);
       // Iterate over each book (ISBN list) among the first 10
       firstTenBooks.forEach(function(list){
         // Transform each ISBN list into a query string joined with ORs
@@ -97,6 +96,10 @@ var getOpenSyllabusRecommendations = {
         });
       });
     });
+  },
+
+  ospJsonParse: function(ospResponse, num) {
+    console.log(ospResponse);
   }
 
 };
