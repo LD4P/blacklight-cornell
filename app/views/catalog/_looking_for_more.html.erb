@@ -11,3 +11,6 @@
   <% facet_value = facet_params(facet_name)  %>
   <%= render :partial => 'digital_collections_search', :locals => {facet_name:facet_name, facet_value:facet_value} %>
 <% end %> 
+
+<%# consider wrapping this with some parameter checking -%>
+<%= render :partial => 'semantic_recs' %>

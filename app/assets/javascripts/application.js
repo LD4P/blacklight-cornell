@@ -68,3 +68,6 @@
 //= require browseld/browseLd.js
 //= require browseld/browseAuthors.js
 //= require browseld/browseMap.js
+
+//Added for semantic search experiments
+//= require  semsearch/sem_recs.js
