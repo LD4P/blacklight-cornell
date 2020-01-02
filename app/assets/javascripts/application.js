@@ -56,6 +56,7 @@
 //= require browse_placeholder.js
 //= require alternate_suggestions.js
 //= require syllabi_browse.js
+//= require full_text_search.js
 //= require jquery.waypointz.js
 //= require zz_inview.js
 //= require tooltip.js
