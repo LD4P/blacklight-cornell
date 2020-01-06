@@ -11,7 +11,13 @@ var fullTextSearch = {
 
   parseBooksData: function(data) {
     data['items'].forEach(
-      element => $("#full-text-results").append(JSON.stringify(element['volumeInfo']['title']))
+      element => $("#full-text-results").append(
+        '<div><a href="?q=' +
+        element['volumeInfo']['industryIdentifiers'][0]['identifier'] +
+        '">' +
+        element['volumeInfo']['title'] +
+        '</a></div>'
+        )
     );
   }
 
