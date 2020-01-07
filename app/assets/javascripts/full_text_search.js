@@ -22,7 +22,11 @@ var fullTextSearch = {
         dataType: 'jsonp',
         jsonp: 'json.wrf', // avoid CORS and CORB errors
         complete: function(response) {
-          fullTextSearch.addBookToView(solrQuery, element['volumeInfo']['title'])
+          fullTextSearch.addBookToView(
+            solrQuery,
+            element['volumeInfo']['title'],
+            element['searchInfo']['textSnippet']
+          )
         }
       });
 
@@ -30,13 +34,12 @@ var fullTextSearch = {
     })
   },
 
-  addBookToView: function(href, title) {
+  addBookToView: function(href, title, excerpt) {
     $("#full-text-results").append(
-      '<div><a href="' +
-      href +
-      '">' +
-      title +
-      '</a></div>'
+      '<p><a href="' + href + '">' + title + '</a>' +
+        '<br>' +
+        excerpt +
+      '</p></div>'
     )
   },
 
