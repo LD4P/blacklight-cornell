@@ -10,15 +10,38 @@ var fullTextSearch = {
   },
 
   parseBooksData: function(data) {
-    data['items'].forEach(
-      element => $("#full-text-results").append(
-        '<div><a href="?q=' +
-        element['volumeInfo']['industryIdentifiers'][0]['identifier'] +
-        '">' +
-        element['volumeInfo']['title'] +
-        '</a></div>'
-        )
-    );
+    data['items'].forEach(function (element) {
+      // prepare Solr query string for a particular book
+      var solrAddrs = fullTextSearch.getSolrAddrs();
+      var BookQuery = element['volumeInfo']['industryIdentifiers'][0]['identifier'];
+      var solrQuery = solrAddrs + "/select?wt=json&rows=1&q=" + BookQuery;
+      // run the Solr query to check catalog for the book
+      $.ajax({
+        url: solrQuery,
+        type: 'GET',
+        dataType: 'jsonp',
+        jsonp: 'json.wrf', // avoid CORS and CORB errors
+        complete: function(response) {
+          fullTextSearch.addBookToView(solrQuery, element['volumeInfo']['title'])
+        }
+      });
+
+      
+    })
+  },
+
+  addBookToView: function(href, title) {
+    $("#full-text-results").append(
+      '<div><a href="' +
+      href +
+      '">' +
+      title +
+      '</a></div>'
+    )
+  },
+
+  getSolrAddrs: function() {
+    return $( "#solr-server-url-data" ).html();
   }
 
 };

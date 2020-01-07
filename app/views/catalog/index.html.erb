@@ -38,6 +38,7 @@
             <%end%>
             Libraries Worldwide</a> or <a href="https://www.library.cornell.edu/services/request/recommend"> recommend a purchase</a>.
           </p>
+          <div style="display: none;" id="solr-server-url-data"><%= ENV["SOLR_URL"] %></div>
           <div id="full-text-results"></div>
         <%else%>
           <% r = pluralize(@response.total_count,'catalog result') %>

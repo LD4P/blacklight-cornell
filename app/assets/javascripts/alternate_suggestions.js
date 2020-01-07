@@ -12,6 +12,7 @@ var buildAlternateSuggestions = {
     var solrAddrs = buildAlternateSuggestions.getSolrAddrs();
     var facetList = '&facet.query=' + suggestions.join('&facet.query=')
     var solrQuery = solrAddrs + "/select?&wt=json&rows=0&q=*.*&facet=true" + facetList
+    console.log(solrQuery);
     $.ajax({
       url: solrQuery,
       type: 'GET',
