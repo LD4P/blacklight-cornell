@@ -22,11 +22,14 @@ var fullTextSearch = {
         dataType: 'jsonp',
         jsonp: 'json.wrf', // avoid CORS and CORB errors
         complete: function(response) {
-          fullTextSearch.addBookToView(
-            solrQuery,
-            element['volumeInfo']['title'],
-            element['searchInfo']['textSnippet']
-          )
+          numFound = response['responseJSON']['response']['numFound']
+          if (numFound > 0) {
+            fullTextSearch.addBookToView(
+              solrQuery,
+              element['volumeInfo']['title'],
+              element['searchInfo']['textSnippet']
+            )
+          }
         }
       });
 
