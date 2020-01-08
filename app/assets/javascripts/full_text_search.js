@@ -22,11 +22,13 @@ var fullTextSearch = {
         dataType: 'jsonp',
         jsonp: 'json.wrf', // avoid CORS and CORB errors
         complete: function(response) {
-          numFound = response['responseJSON']['response']['numFound']
-          if (numFound > 0) {
-            fullTextSearch.addBookToView(
-              solrQuery,
-              element['volumeInfo']['title'],
+          var numFound = response['responseJSON']['response']['numFound']
+          if (numFound > 0) { // if found, prepare a link to the view of that book
+            var title = response['responseJSON']['response']['docs'][0]['title_display']
+            var idNum = response['responseJSON']['response']['docs'][0]['id']
+             fullTextSearch.addBookToView(
+              '/catalog/' + idNum,
+              title, // Use the catalog title rather than Google Books title
               element['searchInfo']['textSnippet']
             )
           }
