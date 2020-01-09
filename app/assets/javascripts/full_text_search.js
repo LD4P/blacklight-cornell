@@ -6,7 +6,6 @@ var fullTextSearch = {
   // Pass the user's query to Google Books
   queryFullText: function() {
     var q = $('input#q').val();
-    console.log(q);
     var googleBooksUrl = "https://www.googleapis.com/books/v1/volumes?q=" + q;
     fetch(googleBooksUrl)
       .then(response => response.json())
@@ -19,7 +18,6 @@ var fullTextSearch = {
     var queryKeys = ['ISBN_10', 'ISBN_13']
     // Iterate over each Goole Books result and see if it's in the catalog
     googleBooksResults['items'].forEach(function (gbResult) {
-      console.log(JSON.stringify(gbResult));
       // Discard identifiers that are not ISBNs
       var isbns = gbResult['volumeInfo']['industryIdentifiers'].filter(function(i){
         return queryKeys.includes(i['type'])
