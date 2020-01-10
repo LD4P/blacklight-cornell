@@ -26,8 +26,8 @@ var fullTextSearch = {
       if (isbns.length > 0) {
         // prepare Solr query string to search for a particular book
         var solrAddrs = fullTextSearch.getSolrAddrs();
-        var BookQuery = isbns.map(x => x['identifier']).join(' OR ');
-        var solrQuery = solrAddrs + "/select?wt=json&rows=1&q=" + BookQuery;
+        var BookQuery = isbns.map(x => x['identifier']).join(' OR isbnissn:');
+        var solrQuery = solrAddrs + "/select?wt=json&rows=1&q=isbnissn:" + BookQuery;
         // run the Solr query to check catalog for the book
         $.ajax({
           url: solrQuery,
@@ -52,7 +52,7 @@ var fullTextSearch = {
       }
     })
     // Fill in book cover images
-    setTimeout(function(){ window.bookcovers.onLoad() }, 700);
+    setTimeout(function(){ window.bookcovers.onLoad() }, 1000);
   },
 
   // Add the new search results to the page
