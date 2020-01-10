@@ -14,20 +14,24 @@ var fullTextSearch = {
   },
 
   parseBooksData: function(googleBooksResults) {
-    // ISBN types that will be extraced from Google Books results
-    var queryKeys = ['ISBN_10', 'ISBN_13']
     // Iterate over each Goole Books result and see if it's in the catalog
     googleBooksResults['items'].forEach(function (gbResult) {
-      // Discard identifiers that are not ISBNs
-      var isbns = gbResult['volumeInfo']['industryIdentifiers'].filter(function(i){
-        return queryKeys.includes(i['type'])
-      })
-      // Only search the catalog if there are ISBNs to search with
-      if (isbns.length > 0) {
+      // Extract 2 ISBN types, add field name prefixes, put them in array
+      var prefixedIsbns = gbResult['volumeInfo']['industryIdentifiers'].filter(function(i){
+        return ['ISBN_10', 'ISBN_13'].includes(i['type'])
+      }).map(x => 'isbnissn:' + x['identifier'])
+      // Extract OCLC ids, add field name prefixes, put into array
+      var prefixedOclcs = gbResult['volumeInfo']['industryIdentifiers'].filter(function(j){
+        return ('OCLC' == j['identifier'].split(':')[0])
+      }).map(y => 'number:' + y['identifier'].split(':')[1])
+      // Merge the arrays of prefixed ISBN and OCLC identifiers
+      var bookIdStrings = prefixedIsbns.concat(prefixedOclcs)      
+      // Only search the catalog if there are one or more identifiers to search with
+      if (bookIdStrings.length > 0) {
         // prepare Solr query string to search for a particular book
         var solrAddrs = fullTextSearch.getSolrAddrs();
-        var BookQuery = isbns.map(x => x['identifier']).join(' OR isbnissn:');
-        var solrQuery = solrAddrs + "/select?wt=json&rows=1&q=isbnissn:" + BookQuery;
+        var BookQuery = bookIdStrings.join(' OR '); // boolean join the prefixed ids
+        var solrQuery = solrAddrs + "/select?wt=json&rows=1&q=" + BookQuery;
         // run the Solr query to check catalog for the book
         $.ajax({
           url: solrQuery,
