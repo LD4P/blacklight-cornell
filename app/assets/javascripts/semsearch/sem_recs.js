@@ -147,7 +147,16 @@ var semRecs = {
     },
     //
     addContemporaries: function(uri, data) {
-      $("span[uri='" + uri + "']").html(uri);
+      var htmlArray = [];
+      if("response" in data && "docs" in data["response"]) {
+        var docs = data["response"]["docs"];
+        $.each(docs, function(i,v) {
+          if("authlabel_s" in v) {
+            htmlArray.push(v["authlabel_s"]);
+          }
+        });
+      }
+      $("span[uri='" + uri + "']").html(htmlArray.join(", "));
     }
 }
 
