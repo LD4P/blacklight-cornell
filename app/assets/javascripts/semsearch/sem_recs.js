@@ -12,7 +12,10 @@ var semRecs = {
       }
     },
     bindEventHandlers: function() {
-    
+      $("#semantic-recs").on("click", "span[uri]", function(e) {
+        var uri = $(this).attr("uri");
+        return semRecs.retrieveDataFromAuthorIndex(uri, 1956, 1983, semRecs.addContemporaries);
+      });
     },
     retrieveSubjectRecs:function(query) {
       //AJAX call to solr
@@ -57,7 +60,7 @@ var semRecs = {
         } 
       });
        
-      $("#semantic-results").html(htmlResults.join(","));
+      $("#semantic-results").html("<ul><li>" + htmlResults.join("</li><li>") + "</li></ul>");
     },
     processResult: function(item) {
       var htmlArray = [];
@@ -106,15 +109,45 @@ var semRecs = {
         }
       });
       
-      $("#semantic-person-results").html(htmlResults.join(","));
+      $("#semantic-person-results").html("<ul><li>" + htmlResults.join("</li><li>") + "</li></ul>");
     },
     processPersonResult: function(item) {
       var htmlArray = [];
       if("uri" in item && "label" in item) {
         var label = item["label"];
-        htmlArray.push(label);      
+        var uri = item["uri"];
+        //May need to pass along uri as well to get FAST facet link
+        var generateFacetLink = semRecs.generateFacetLink(label);
+        htmlArray.push(label + "<span uri='" + uri + "' label='" + label + "'>&nbsp;Related</span>");      
       }
       return htmlArray.join(", ");
+    },
+    //Copied partially from browseAuthor, should be refactored more
+    retrieveDataFromAuthorIndex:function(uri, startYear, endYear, callback) {
+      //AJAX call to solr
+      var baseUrl = $("#semantic-recs").attr("base-url"); 
+      var querySolr = baseUrl + "proxy/authorbrowse";
+      if(startYear && endYear) {
+        
+        var range = "[" + startYear + " TO " + endYear + "]";
+        querySolr += "?q=(wd_birthy_i:" + range + " OR ld_birthy_i:" + range + ") AND (wd_deathy_i:" + range + " OR ld_deathy_i:" + range + ")&sort=wd_birthy_i asc&rows=10";
+      }
+      $.ajax({
+        "url": querySolr,
+        "type": "GET",
+        "success" : function(data) {              
+          callback(uri, data);
+        }
+      });
+    },
+    generateFacetLink: function(label) {
+      var baseUrl = $("#semantic-recs").attr("base-url"); 
+      //this isn't preserving the entire query and search parameters but a particular person can be explored
+      return baseUrl + "?f[author_facet][]=" + label;
+    },
+    //
+    addContemporaries: function(uri, data) {
+      $("span[uri='" + uri + "']").html(uri);
     }
 }
 
