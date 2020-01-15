@@ -12,9 +12,10 @@ var semRecs = {
       }
     },
     bindEventHandlers: function() {
-      $("#semantic-recs").on("click", "span[uri]", function(e) {
+      $("#semantic-recs").on("click", "span[role='heading'][uri]", function(e) {
         var uri = $(this).attr("uri");
-        return semRecs.retrieveDataFromAuthorIndex(uri, 1956, 1983, semRecs.addContemporaries);
+        var label = $(this).attr("label");
+        return semRecs.retrieveAuthorData(uri, label);
       });
     },
     retrieveSubjectRecs:function(query) {
@@ -117,8 +118,8 @@ var semRecs = {
         var label = item["label"];
         var uri = item["uri"];
         //May need to pass along uri as well to get FAST facet link
-        var generateFacetLink = semRecs.generateFacetLink(label);
-        htmlArray.push(label + "<span uri='" + uri + "' label='" + label + "'>&nbsp;Related</span>");      
+        var generateFacetLink = "<a href='" + semRecs.generateFacetLink(label) + "'>" + label + "</a>";
+        htmlArray.push(generateFacetLink + "<span role='heading' uri='" + uri + "' label='" + label + "'>&nbsp;Related</span><div role='contemporaries' uri='" + uri + "'></div>");      
       }
       return htmlArray.join(", ");
     },
@@ -140,6 +141,41 @@ var semRecs = {
         }
       });
     },
+    //Could also get info from loc but for now let's just use this
+    retrieveAuthorData: function(uri, label) {
+      //Get author from author index and get birth and death info if it exists
+      //AJAX call to solr
+      var baseUrl = $("#semantic-recs").attr("base-url"); 
+      var querySolr = baseUrl + "proxy/authorlookup?q=" + label;
+     
+      $.ajax({
+        "url": querySolr,
+        "type": "GET",
+        "success" : function(data) {              
+          if("response" in data && "docs" in data["response"]) {
+            var docs = data["response"]["docs"];
+            if(docs.length) {
+              var doc = docs[0];
+              var birthyear = null, deathyear = null;
+              if("wd_birthy_i" in doc) {
+                birthyear = doc["wd_birthy_i"];
+              } else if("loc_birthy_i" in doc) {
+                birthyear = doc["loc_birthy_i"];
+              }
+              if("wd_deathy_i" in doc) {
+                deathyear = doc["wd_deathy_i"];
+              } else if("loc_deathy_i" in doc) {
+                deathyear = doc["loc_deathy_i"];
+              }
+              if(birthyear != null && deathyear != null) {
+                semRecs.retrieveDataFromAuthorIndex(uri, birthyear, deathyear, semRecs.addContemporaries);
+
+              }
+            }
+          }
+        }
+      });
+    },
     generateFacetLink: function(label) {
       var baseUrl = $("#semantic-recs").attr("base-url"); 
       //this isn't preserving the entire query and search parameters but a particular person can be explored
@@ -156,7 +192,7 @@ var semRecs = {
           }
         });
       }
-      $("span[uri='" + uri + "']").html(htmlArray.join(", "));
+      $("div[role='contemporaries'][uri='" + uri + "']").html(htmlArray.join(", "));
     }
 }
 

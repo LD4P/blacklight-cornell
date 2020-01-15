@@ -55,6 +55,19 @@ class ProxyController < ApplicationController
     render :json => result 
   end
   
+  #lookup specific author
+  def authorlookup
+  	require "net/http"
+    # Query parameter
+    query = params[:q] 
+    sep_solr_url = ENV["AUTHOR_SOLR"] + "/select?q=authlabel_s:\"" +query + "\"&wt=json";
+    url = URI.parse(sep_solr_url)
+    resp = Net::HTTP.get_response(url)
+    data = resp.body
+    result = JSON.parse(data)
+    render :json => result 
+  end
+  
   def mapbrowse
   	require 'rsolr'
     solr = RSolr.connect :url => ENV["SOLR_URL"]

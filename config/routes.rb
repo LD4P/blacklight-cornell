@@ -31,6 +31,7 @@ get 'proxy/subjectbrowse'
 get 'proxy/authorbrowse'
 get 'proxy/mapbrowse'
 get 'proxy/qafast'
+get 'proxy/authorlookup'
 
 #semantic search controller: a place to park some (though not necessarily all) sem search stuff
 get 'sem/qalookup'
