@@ -2,14 +2,10 @@ var semRecs = {
     onLoad: function() {
       semRecs.init();
       semRecs.bindEventHandlers();
+      semRecs.retrieveAndDisplay();
     },
     init:function() {
-      var query =  $("#semantic-recs").attr("query");
-      if(query != "") {
-        semRecs.retrieveSubjectRecs(query);
-        semRecs.retrievePeopleRecs(query);
-
-      }
+      this.baseUrl =  $("#semantic-recs").attr("base-url");      
     },
     bindEventHandlers: function() {
       $("#semantic-recs").on("click", "span[role='heading'][uri]", function(e) {
@@ -18,9 +14,21 @@ var semRecs = {
         return semRecs.retrieveAuthorData(uri, label);
       });
     },
-    retrieveSubjectRecs:function(query) {
+    retrieveAndDisplay: function() {
+      var query =  $("#semantic-recs").attr("query");
+      if(query != "") {
+        semRecs.retrieveSubjectRecs(query, semRecs.displayData);
+        semRecs.retrievePeopleRecs(query, semRecs.displayPersonData);
+        semRecs.retrieveAnnifRecs(query);
+        semRecs.processFacetValues();
+      }
+    },
+    //All data retrieval methods
+    //DAVE's LCSH lookup - matches based on string matching against preferred and variant labels
+    //Returns data with uris and labels as well as extended context for subject headings
+    retrieveSubjectRecs:function(query, processFunc) {
       //AJAX call to solr
-      var baseUrl = $("#semantic-recs").attr("base-url"); 
+      //var baseUrl = $("#semantic-recs").attr("base-url"); 
       //Timing out through controller, need to review why
       //var queryUrl = baseUrl + "sem/qalookup?q=" + query;
       var queryUrl = "https://lookup.ld4l.org/authorities/search/linked_data/locsubjects_ld4l_cache?q=" + query + "&maxRecords=8&context=true";
@@ -30,11 +38,12 @@ var semRecs = {
         type: "GET",
          dataType:'json',
         success : function(data) {              
-            semRecs.displayData(data);
+            processFunc(data);
         }
       });
     },
-    retrievePeopleRecs:function(query) {
+    //LCNAF RWO lookup 
+    retrievePeopleRecs:function(query, processFunc) {
       //AJAX call to solr
       var baseUrl = $("#semantic-recs").attr("base-url"); 
       //Timing out through controller, need to review why
@@ -46,10 +55,14 @@ var semRecs = {
         type: "GET",
          dataType:'json',
         success : function(data) {              
-            semRecs.displayPersonData(data);
+            processFunc(data);
         }
       });
-    },
+    }, 
+    //Display methods
+  
+   
+    //Display subject results
     displayData: function(data) {     
       //Convert data to format required to display
       var htmlResults = [];
@@ -61,7 +74,7 @@ var semRecs = {
         } 
       });
        
-      $("#semantic-results").html("<ul><li>" + htmlResults.join("</li><li>") + "</li></ul>");
+      $("#semantic-results").html("<ul class='list-unstyled'><li class='d-inline'>" + htmlResults.join("</li><li class='d-inline'>") + "</li></ul>");
     },
     processResult: function(item) {
       var htmlArray = [];
@@ -193,7 +206,39 @@ var semRecs = {
         });
       }
       $("div[role='contemporaries'][uri='" + uri + "']").html(htmlArray.join(", "));
+    },
+    retrieveAuthorFacetValues:function() {
+      var authorFacetValues = $("#semantic-recs").attr("author-facet");
+      return JSON.parse(authorFacetValues);
+    },
+    retrieveSubjectFacetValues:function() {
+      var subjectFacetValues = $("#semantic-recs").attr("subject-facet");
+      return JSON.parse(subjectFacetValues);
+    },
+    processFacetValues: function() {
+      var authors = semRecs.retrieveAuthorFacetValues();
+      var subjects = semRecs.retrieveSubjectFacetValues();
+      $("#semantic-facet-results").html(subjects.join(", "));
+      $("#semantic-person-facet-results").html(authors.join(", "));
+
+    },
+    retrieveAnnifRecs: function(query) {
+      //AJAX request to grab annif recommendations
+      //Returns URIS and labels, append to section
+      var annifUrl = semRecs.baseUrl + "annif/v1/projects/tfidf-en/suggest";
+    
+      var jqxhr = $.post( annifUrl, {text: query, limit: 10})
+        .done(function(data) {
+          if("results" in data && data["results"].length) {      
+            var results = data["results"];
+            var html = "ANNIF:" + $.map(results, function(v,i) {return v.label}).join(", ");
+            $("#annif-results").html(html);
+          }
+        })
+        
+       
     }
+    
 }
 
 //Better to transform above into object later
