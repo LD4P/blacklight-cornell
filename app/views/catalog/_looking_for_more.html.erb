@@ -1,3 +1,6 @@
+<%# consider wrapping this with some parameter checking -%>
+<%= render :partial => 'semantic_recs' %>
+
 <% if expandable_search? %>
   <%= render :partial => 'expand_search' %>
 <% end %>
@@ -12,5 +15,3 @@
   <%= render :partial => 'digital_collections_search', :locals => {facet_name:facet_name, facet_value:facet_value} %>
 <% end %> 
 
-<%# consider wrapping this with some parameter checking -%>
-<%= render :partial => 'semantic_recs' %>

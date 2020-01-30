@@ -20,7 +20,13 @@ var semRecs = {
         var uri = $(this).attr("uri");
         var label = $(this).attr("label");
         var context = $(this).data("context");
-        semRecs.displaySubjectCard(uri, label, context);
+        var ldsource = $(this).attr("ldsource");
+        semRecs.displaySubjectCard(uri, label, context, ldsource);
+        //If the source is LC
+        if(ldsource == "lcsh" || ldsource == "annif") {
+        //Also retrieve subject info from LCSH to include
+          semRecs.retrieveInfoForLCSH(uri);
+        }
       });
     },
     retrieveAndDisplay: function() {
@@ -40,7 +46,8 @@ var semRecs = {
       //var baseUrl = $("#semantic-recs").attr("base-url"); 
       //Timing out through controller, need to review why
       //var queryUrl = baseUrl + "sem/qalookup?q=" + query;
-      var queryUrl = "https://lookup.ld4l.org/authorities/search/linked_data/locsubjects_ld4l_cache?q=" + query + "&maxRecords=8&context=true";
+      //Asking without context to check for performance improvement
+      var queryUrl = "https://lookup.ld4l.org/authorities/search/linked_data/locsubjects_ld4l_cache?q=" + query + "&maxRecords=8";
 
       $.ajax({
         url: queryUrl,
@@ -73,6 +80,67 @@ var semRecs = {
       var subjectFacetValues = $("#semantic-recs").attr("subject-facet");
       return JSON.parse(subjectFacetValues);
     },
+    //For a particular LCSH subject URI, get related information and display
+    retrieveInfoForLCSH: function(uri) {
+      semRecs.getLCSHRelationships(uri, semRecs.addSubjectInfoToCard);
+    },
+    retrieveInfoForFAST: function(uri) {
+      
+    },
+    //copied from browseLd
+    getLCSHRelationships: function(uri, callback) {
+      $.ajax({
+        "url": uri + ".jsonld",
+        "type": "GET",
+        "success" : function(data) {              
+          var relationships = semRecs.extractLCSHRelationships(uri, data);
+          callback(relationships);
+        }
+      });
+    },
+    extractLCSHRelationships: function(uri, data) {
+      var dataHash = semRecs.processLCSHJSON(data);
+      var entity = dataHash[uri];
+      var narrowerProperty = "http://www.loc.gov/mads/rdf/v1#hasNarrowerAuthority";
+      var broaderProperty = "http://www.loc.gov/mads/rdf/v1#hasBroaderAuthority";
+      var closeProperty = "http://www.loc.gov/mads/rdf/v1#hasCloseExternalAuthority";
+      var exactMatchProperty = "http://www.loc.gov/mads/rdf/v1#hasExactExternalAuthority";
+      var labelProperty = "http://www.w3.org/2004/02/skos/core#prefLabel";
+      var narrowerURIs = [];
+      var broaderURIs = [];
+      var closeURIs = [];
+      var exactMatchURIs = [];
+
+      if(narrowerProperty in entity) {
+        narrowerURIs = entity[narrowerProperty];
+      }
+      if(broaderProperty in entity) {
+        broaderURIs = entity[broaderProperty];
+      }
+      if(closeProperty in entity) {
+        closeURIs = entity[closeProperty];
+      }
+      if(exactMatchProperty in entity) {
+        exactMatchURIs = entity[exactMatchProperty];
+      }
+    
+      var label = entity[labelProperty][0]["@value"];
+      return {uri:uri, dataHash: dataHash, label: label, narrowerURIs: narrowerURIs, broaderURIs: broaderURIs, closeURIs: closeURIs, exactMatchURIs: exactMatchURIs};
+    }, 
+    //generate hash based on uris of ids to provide cleaner access given URI
+    processLCSHJSON: function(jsonArray) {
+      var len = jsonArray.length;
+      var l;
+      var jsonObj;
+      var jsonHash = {};
+      for(l = 0; l < len; l++) {
+        jsonObj = jsonArray[l];
+        var id = jsonObj["@id"];
+        jsonHash[id] = jsonObj;
+      }
+      return jsonHash;
+    },
+    //Author information
     retrieveAuthorFacetValues:function() {
       var authorFacetValues = $("#semantic-recs").attr("author-facet");
       return JSON.parse(authorFacetValues);
@@ -127,18 +195,27 @@ var semRecs = {
         var uri = $(this).attr("uri");
         $(this).data("context", contextData[uri]);
       });
-
+      
     },
     //Display subject card
     //When subject from list is clicked, populate the subject card
-    displaySubjectCard: function(uri, label, context) {
+    displaySubjectCard: function(uri, label, context, ldsource) {
+      var labelLink = semRecs.generateLabelLink(ldsource, uri, label.replace(/--/g, " > "));
       var html = "<div class='card-body'>" + 
-      "<h5 class='card-title'>" + label.replace(/--/g, " > ") + "</h5>";
+      "<h5 class='card-title'>" + labelLink + "</h5>";
     
-      html += semRecs.generateContextDisplay(context);
+      html += "<div role='context' uri='" + uri + "'>" + semRecs.generateContextDisplay(context) + "</div>";
       html += "</div>";
       $("#subject-card").html(html);
-      
+
+    },
+    generateLabelLink: function(ldsource, uri, label) {
+      if(ldsource == "annif" || ldsource == "lcsh") {
+        var locLink = semRecs.generateLOCLink(uri);
+        var catalogLink = semRecs.generateCatalogLCSHLink(label);
+        return catalogLink + " " + locLink;
+      }
+      return label;
     },
     generateContextDisplay: function(context) {
       var html = "";
@@ -192,33 +269,7 @@ var semRecs = {
       }
       return relationships;
     },
-    //for printing out all narrower and broader for particular item given context
-    /*
-    processResult: function(item) {
-      var htmlArray = [];
-      if("uri" in item && "label" in item) {
-        var label = item["label"];
-        htmlArray.push(label);
-        if("context" in item) {
-          var mappedContext = semRecs.processContext(item["context"]);
-          if("Broader" in mappedContext && "values" in mappedContext["Broader"]) {
-            var broader = mappedContext["Broader"]["values"];
-            $.each(broader, function(i, v) {
-              htmlArray.push(v["label"]);
-            });
-            
-          }
-          if("Narrower" in mappedContext && "values" in mappedContext["Narrower"]) {
-            var narrower = mappedContext["Narrower"]["values"];            
-            $.each(narrower, function(i, v) {
-              htmlArray.push(v["label"]);
-            });
-
-          }
-        }
-      }
-      return htmlArray.join(", ");
-    },*/
+  
     //Take array of context and return hash by property name
     processContext: function(context) {
       var mappedContext = {};
@@ -228,6 +279,88 @@ var semRecs = {
         }
       });
       return mappedContext;
+    },
+    //Add LCSH URI info
+    addSubjectInfoToCard: function(relationships) {
+      var requestingURI = relationships.uri;
+      var narrowerURIs = relationships.narrowerURIs;
+      var broaderURIs = relationships.broaderURIs;
+      var exactMatchURIs = relationships.exactMatchURIs;
+      var closeURIs = relationships.closeURIs;
+      var narrowerDisplay = semRecs.processRelatedURIs(narrowerURIs, relationships.dataHash);
+      var broaderDisplay = semRecs.processRelatedURIs(broaderURIs, relationships.dataHash);
+      var exactDisplay = semRecs.displayWikidataLink(exactMatchURIs, relationships.dataHash);
+      var closeDisplay = semRecs.displayWikidataLink(closeURIs, relationships.dataHash);
+     //Get card part that corresponds and add info
+      var display = "";
+      
+      
+      
+      if(exactDisplay != "") {
+        display += exactDisplay + "<br>";
+      }
+      if(closeDisplay != "") {
+        display += "Close: " + closeDisplay + "<br>";        
+      }
+      if(broaderDisplay != "") {
+        display += "Broader: " + broaderDisplay + "<br>";        
+      }
+      if(narrowerDisplay != "") {
+        display += "Narrower: " + narrowerDisplay + "<br>";        
+      }
+      $("div[role='context'][uri='" + requestingURI + "']").append(display);
+
+    },
+    displayWikidataLink: function(rArray, dataHash) {
+      //check for any URLs that start with Wikidata 
+      var wikidataURIs = [];
+      var wikidataPrefix = "http://www.wikidata.org/";
+      $.each(rArray, function(i,v){
+        var uri = v["@id"];
+        if(uri.startsWith(wikidataPrefix)) {
+          wikidataURIs.push(v);
+        }
+      });
+      return semRecs.processRelatedURIs(wikidataURIs, dataHash);
+    },
+    processRelatedURIs : function(rArray, dataHash) {
+      var display = [];
+      var prefLabel = "http://www.w3.org/2004/02/skos/core#prefLabel";
+      
+      //Sort array by label
+      //First generate array of objects with just uri and label
+      var rHashes = rArray.map(function(v) {
+        var uri = v["@id"];
+        return {"uri": uri, "label": dataHash[uri][prefLabel][0]["@value"]};
+      });
+      rHashes.sort(function (a, b) {
+        return (a.label > b.label) ? 1: ((a.label < b.label) ? -1: 0)
+      });
+      $.each(rHashes, function(i,v) {
+        display.push(semRecs.generateRelatedSubject(v.uri,v.label));
+      });
+     
+      return display;
+    },
+    generateRelatedSubject: function(uri, label) {
+      var wikidataPrefix = "http://www.wikidata.org/";
+
+      if(uri.startsWith(wikidataPrefix)) {
+        return label + " " + semRecs.generateWikidataLink(uri);
+      } else {
+        return semRecs.generateCatalogLCSHLink(label);
+      }
+    },
+    //copied from browseLd, generate LOC link
+    generateLOCLink: function(uri) {
+      var locHtml = "<a target='_blank' class='data-src' data-toggle='tooltip' data-placement='top' data-original-title='See Library of Congress' href='" + uri + ".html'><img src='/assets/loc.png' /></a>";
+      return locHtml;
+    },
+    generateCatalogLCSHLink: function(label) {
+      return "<a href='" + semRecs.baseUrl + "?q=" + label + "&search_field=subject_cts'>" + label + "</a>";
+    },
+    generateWikidataLink: function(wikidataURI) {
+      return "<a href='" + wikidataURI + "' target='_blank' class='data-src'><img src='/assets/wikidata.png' /></a>";
     },
     //Get people info
     displayPersonData: function(data) {     
