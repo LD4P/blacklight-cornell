@@ -8,19 +8,28 @@ var semRecs = {
       this.baseUrl =  $("#semantic-recs").attr("base-url");      
     },
     bindEventHandlers: function() {
+      //Click on person will show contemporary info
       $("#semantic-recs").on("click", "span[role='heading'][uri]", function(e) {
         var uri = $(this).attr("uri");
         var label = $(this).attr("label");
         return semRecs.retrieveAuthorData(uri, label);
       });
+      
+      //Click on subject will populate subject card
+      $("#semantic-recs").on("click", "li[role='subject'][uri]", function(e) {
+        var uri = $(this).attr("uri");
+        var label = $(this).attr("label");
+        var context = $(this).data("context");
+        semRecs.displaySubjectCard(uri, label, context);
+      });
     },
     retrieveAndDisplay: function() {
       var query =  $("#semantic-recs").attr("query");
       if(query != "") {
-        semRecs.retrieveSubjectRecs(query, semRecs.displayData);
+        semRecs.retrieveSubjectRecs(query, semRecs.displaySubjectData);
         semRecs.retrievePeopleRecs(query, semRecs.displayPersonData);
-        semRecs.retrieveAnnifRecs(query);
-        semRecs.processFacetValues();
+        semRecs.retrieveAnnifRecs(query, semRecs.displaySubjectData);
+        semRecs.processFacetValues(semRecs.displaySubjectData);
       }
     },
     //All data retrieval methods
@@ -38,9 +47,35 @@ var semRecs = {
         type: "GET",
          dataType:'json',
         success : function(data) {              
-            processFunc(data);
+            processFunc(data, "semantic-results", "lcsh");
         }
       });
+    },   
+    retrieveAnnifRecs: function(query, processFunc) {
+      //AJAX request to grab annif recommendations
+      //Returns URIS and labels, append to section
+      var annifUrl = semRecs.baseUrl + "annif/v1/projects/tfidf-en/suggest";
+    
+      var jqxhr = $.post( annifUrl, {text: query, limit: 10})
+        .done(function(data) {
+          if("results" in data) {
+            processFunc(data["results"], "annif-results", "annif");
+          }
+          /*
+          if("results" in data && data["results"].length) {      
+            var results = data["results"];
+            var html = "ANNIF:" + $.map(results, function(v,i) {return v.label}).join(", ");
+            $("#annif-results").html(html);
+          }*/
+        });       
+    },
+    retrieveSubjectFacetValues:function() {
+      var subjectFacetValues = $("#semantic-recs").attr("subject-facet");
+      return JSON.parse(subjectFacetValues);
+    },
+    retrieveAuthorFacetValues:function() {
+      var authorFacetValues = $("#semantic-recs").attr("author-facet");
+      return JSON.parse(authorFacetValues);
     },
     //LCNAF RWO lookup 
     retrievePeopleRecs:function(query, processFunc) {
@@ -62,20 +97,103 @@ var semRecs = {
     //Display methods
   
    
-    //Display subject results
-    displayData: function(data) {     
+    //Display subject results that can be clicked
+    //Data: expected to be array of objects with at least URI and label
+    //May include object for context
+    displaySubjectData: function(data, elementId, source) {     
       //Convert data to format required to display
       var htmlResults = [];
       //This may be better with mapping
+      var contextData = {};
       $.each(data, function(i, v) {
-        var item = semRecs.processResult(v);
-        if(item != "") {
-          htmlResults.push(semRecs.processResult(v));
-        } 
+        if("label" in v) {
+          var label = v["label"];
+          var uri = "uri" in v? v["uri"]: null;
+          //"class":"d-inline" will show these inline
+          var props = {"label": label, "uri": uri, role:"subject", ldsource: source};
+          if("context" in v) {
+            var context = semRecs.retrieveContextRelationships(v);
+            contextData[uri] = context;
+          }
+          htmlResults.push(semRecs.generateListItem(props));
+        }
       });
        
-      $("#semantic-results").html("<ul class='list-unstyled'><li class='d-inline'>" + htmlResults.join("</li><li class='d-inline'>") + "</li></ul>");
+      //$("#semantic-results").html("<ul class='list-unstyled'><li class='d-inline'>" + htmlResults.join("</li><li class='d-inline'>") + "</li></ul>");
+      $("#" + elementId).html("<ul class='list-unstyled'>" + htmlResults.join(" ") + "</ul>");
+      //Add data
+      
+      $("li[role='subject'][uri]").each(function(i,v) {
+        var uri = $(this).attr("uri");
+        $(this).data("context", contextData[uri]);
+      });
+
     },
+    //Display subject card
+    //When subject from list is clicked, populate the subject card
+    displaySubjectCard: function(uri, label, context) {
+      var html = "<div class='card-body'>" + 
+      "<h5 class='card-title'>" + label.replace(/--/g, " > ") + "</h5>";
+    
+      html += semRecs.generateContextDisplay(context);
+      html += "</div>";
+      $("#subject-card").html(html);
+      
+    },
+    generateContextDisplay: function(context) {
+      var html = "";
+      var htmlArray = [];
+      if(context && ("narrower" in context || "broader" in context)) {
+        if("narrower" in context) {
+          var narrower = context["narrower"];
+          $.each(narrower, function(i, v) {
+            htmlArray.push(v["label"]);
+          });
+          html += "Narrower: " + htmlArray.join(", ");
+        }
+        if("broader" in context) {
+          htmlArray = [];
+          var broader = context["broader"];
+          $.each(broader, function(i, v) {
+            htmlArray.push(v["label"]);
+          });
+          if(html != "") html += "<br/>";
+          html += "Broader: " + htmlArray.join(", ");
+        }
+      }
+      return html;
+    },
+    generateListItem: function(properties) {
+      var html = "<li ";
+      var label = properties["label"];
+        var propsArray = [];
+        $.each(properties, function(k,v) {
+          //Find better way to handle "data" attributes
+       
+          propsArray.push(k + "=\"" + v + "\"");
+          
+        });
+        html += propsArray.join(" ");
+      
+      html += ">" + label + "</li>";
+      return html;
+    },
+    //return narrower and broader specifically from QA context
+    retrieveContextRelationships: function(item) {
+      var relationships = {};
+      if("context" in item) {
+        var mappedContext = semRecs.processContext(item["context"]);
+        if("Broader" in mappedContext && "values" in mappedContext["Broader"]) {
+          relationships["broader"] = mappedContext["Broader"]["values"];            
+        }
+        if("Narrower" in mappedContext && "values" in mappedContext["Narrower"]) {
+          relationships["narrower"] = mappedContext["Narrower"]["values"];            
+        }
+      }
+      return relationships;
+    },
+    //for printing out all narrower and broader for particular item given context
+    /*
     processResult: function(item) {
       var htmlArray = [];
       if("uri" in item && "label" in item) {
@@ -100,7 +218,7 @@ var semRecs = {
         }
       }
       return htmlArray.join(", ");
-    },
+    },*/
     //Take array of context and return hash by property name
     processContext: function(context) {
       var mappedContext = {};
@@ -207,36 +325,48 @@ var semRecs = {
       }
       $("div[role='contemporaries'][uri='" + uri + "']").html(htmlArray.join(", "));
     },
-    retrieveAuthorFacetValues:function() {
-      var authorFacetValues = $("#semantic-recs").attr("author-facet");
-      return JSON.parse(authorFacetValues);
-    },
-    retrieveSubjectFacetValues:function() {
-      var subjectFacetValues = $("#semantic-recs").attr("subject-facet");
-      return JSON.parse(subjectFacetValues);
-    },
-    processFacetValues: function() {
+  
+    processFacetValues: function(processFunc) {
       var authors = semRecs.retrieveAuthorFacetValues();
-      var subjects = semRecs.retrieveSubjectFacetValues();
-      $("#semantic-facet-results").html(subjects.join(", "));
       $("#semantic-person-facet-results").html(authors.join(", "));
+      //Subject retrieval
+      //This provides array of facet labels, but to get broader and narrower, we will need URIs
+      var subjects = semRecs.retrieveSubjectFacetValues();
+      var subjectData = $.map(subjects, function(v, i){
+        return {label: v};
+      });
+      processFunc(subjectData, "semantic-facet-results", "facets");
+      var subjectData = semRecs.addURIsForSubjectFacets(subjects);
+     // $("#semantic-facet-results").html(subjects.join(", "));
+      //Subject retrieval
 
     },
-    retrieveAnnifRecs: function(query) {
-      //AJAX request to grab annif recommendations
-      //Returns URIS and labels, append to section
-      var annifUrl = semRecs.baseUrl + "annif/v1/projects/tfidf-en/suggest";
-    
-      var jqxhr = $.post( annifUrl, {text: query, limit: 10})
-        .done(function(data) {
-          if("results" in data && data["results"].length) {      
-            var results = data["results"];
-            var html = "ANNIF:" + $.map(results, function(v,i) {return v.label}).join(", ");
-            $("#annif-results").html(html);
+    addURIsForSubjectFacets: function(subjectLabels) {
+      $.each(subjectLabels, function(i, v) {
+        //Query FAST for URI
+        semRecs.getFASTURI(v, semRecs.addFASTURI);
+      });
+    },
+    addFASTURI: function(fastLabel, URI) {
+      $("li[role='subject'][ldsource='facets'][label='" + fastLabel + "']").attr("uri", URI);
+    },
+    getFASTURI: function(label, callback) {
+      var topicFacet = "suggest50";
+      var searchURL = "http://fast.oclc.org/searchfast/fastsuggest?query=" + label + "&fl=" + topicFacet + "&queryReturn=id,*&rows=2&wt=json&json.wrf=?";
+      var URI = null;
+      $.getJSON(searchURL,function(data){
+       if(data && "response" in data && "docs" in data["response"] && data["response"]["docs"].length) {
+                 var firstResult = data["response"]["docs"][0];
+                 if("id" in firstResult && topicFacet in firstResult) {
+                    var rlabel = firstResult[topicFacet];
+                    var rId = firstResult["id"];
+                    //Get rid of fst
+                    rId = rId.slice(3);
+                    URI = rId.replace(/^[0]+/g,"");
+                    callback(label, URI);
+                 }
           }
-        })
-        
-       
+      });
     }
     
 }
