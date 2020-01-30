@@ -8,12 +8,6 @@ var semRecs = {
       this.baseUrl =  $("#semantic-recs").attr("base-url");      
     },
     bindEventHandlers: function() {
-      //Click on person will show contemporary info
-      $("#semantic-recs").on("click", "span[role='heading'][uri]", function(e) {
-        var uri = $(this).attr("uri");
-        var label = $(this).attr("label");
-        return semRecs.retrieveAuthorData(uri, label);
-      });
       
       //Click on subject will populate subject card
       $("#semantic-recs").on("click", "li[role='subject'][uri]", function(e) {
@@ -34,6 +28,28 @@ var semRecs = {
         $("li[role='subject']").removeClass("active");
         $(this).addClass("active");
       });
+      
+      //Click on person will populate person card
+      $("#semantic-recs").on("click", "li[role='person'][uri]", function(e) {
+        var uri = $(this).attr("uri");
+        var label = $(this).attr("label");
+        var context = $(this).data("context");
+        var ldsource = $(this).attr("ldsource");
+        semRecs.displayPersonCard(uri, label, context, ldsource);
+        //If the source is LC
+        if(ldsource == "lcnaf" || ldsource == "author facet") {
+        //Also retrieve additional author data such as contemporary info from the index
+          semRecs.retrieveAuthorData(uri, label);
+          //Retrieve Wikidata info where available
+        }
+        if(ldsource == "author facet") {
+            //Use LCNAF URI to get Wikidata info
+           semRecs.getWikidataInfoForAuthor(uri, semRecs.displayWikidataInfoForAuthor);
+        }
+        //Set color to active
+        $("li[role='person']").removeClass("active");
+        $(this).addClass("active");
+      });
     },
     retrieveAndDisplay: function() {
       var query =  $("#semantic-recs").attr("query");
@@ -41,7 +57,7 @@ var semRecs = {
         semRecs.retrieveSubjectRecs(query, semRecs.displaySubjectData);
         semRecs.retrievePeopleRecs(query, semRecs.displayPersonData);
         semRecs.retrieveAnnifRecs(query, semRecs.displaySubjectData);
-        semRecs.processFacetValues(semRecs.displaySubjectData);
+        semRecs.processFacetValues(semRecs.displaySubjectData, semRecs.displayPersonData);
       }
     },
     //All data retrieval methods
@@ -116,6 +132,7 @@ var semRecs = {
         semRecs.getFASTURI(v, semRecs.addFASTURI);
       });
     },
+   
     addFASTURI: function(fastLabel, URI) {
       $("li[role='subject'][ldsource='facet'][label='" + fastLabel + "']").attr("uri", URI);
     },
@@ -191,7 +208,7 @@ var semRecs = {
       }
       return jsonHash;
     },
-    //Author information
+    //Author/people information information
     retrieveAuthorFacetValues:function() {
       var authorFacetValues = $("#semantic-recs").attr("author-facet");
       return JSON.parse(authorFacetValues);
@@ -209,10 +226,161 @@ var semRecs = {
         type: "GET",
          dataType:'json',
         success : function(data) {              
-            processFunc(data);
+            processFunc(data, "semantic-person-results", "lcnaf");
         }
       });
     }, 
+    //Copied partially from browseAuthor, should be refactored more
+    retrieveDataFromAuthorIndex:function(uri, startYear, endYear, callback) {
+      //AJAX call to solr
+      var querySolr = semRecs.baseUrl + "proxy/authorbrowse";
+      if(startYear && endYear) {
+        
+        var range = "[" + startYear + " TO " + endYear + "]";
+        querySolr += "?q=(wd_birthy_i:" + range + " OR ld_birthy_i:" + range + ") AND (wd_deathy_i:" + range + " OR ld_deathy_i:" + range + ")&sort=wd_birthy_i asc&rows=5";
+      }
+      $.ajax({
+        "url": querySolr,
+        "type": "GET",
+        "success" : function(data) {              
+          callback(uri, data);
+        }
+      });
+    },
+    //Could also get info from loc but for now let's just use this
+    retrieveAuthorData: function(uri, label) {
+      //Get author from author index and get birth and death info if it exists
+      //AJAX call to solr
+     
+      var querySolr = semRecs.baseUrl + "proxy/authorlookup?q=" + label;
+     
+      $.ajax({
+        "url": querySolr,
+        "type": "GET",
+        "success" : function(data) {              
+          if("response" in data && "docs" in data["response"]) {
+            var docs = data["response"]["docs"];
+            if(docs.length) {
+              var doc = docs[0];
+              var birthyear = null, deathyear = null;
+              if("wd_birthy_i" in doc) {
+                birthyear = doc["wd_birthy_i"];
+              } else if("loc_birthy_i" in doc) {
+                birthyear = doc["loc_birthy_i"];
+              }
+              if("wd_deathy_i" in doc) {
+                deathyear = doc["wd_deathy_i"];
+              } else if("loc_deathy_i" in doc) {
+                deathyear = doc["loc_deathy_i"];
+              }
+              if(birthyear != null && deathyear != null) {
+                semRecs.retrieveDataFromAuthorIndex(uri, birthyear, deathyear, semRecs.addContemporaries);
+
+              }
+            }
+          }
+        }
+      });
+    },
+    addURIsForAuthorFacets: function(authorLabels) {
+      $.each(authorLabels, function(i, v) {
+        //Query FAST for URI
+        semRecs.queryLCNAFSuggestions(v, semRecs.addPersonFacetURI);
+      });
+    },
+    //LC lookup specifics
+    //Get LCNAF suggestion based on label, copied from knowledge panel work
+    queryLCNAFSuggestions: function(label, callback) {   
+      var lookupURL = "http://id.loc.gov/authorities/names/suggest/?q=" + label + "&rdftype=PersonalName" + "&count=1";
+      $.ajax({
+        url : lookupURL,
+        dataType : 'jsonp',
+        success : function (data) {
+          urisArray = semRecs.parseLOCSuggestions(data);
+          if (urisArray && urisArray.length) {
+            var locURI = urisArray[0]; 
+            callback(label, locURI);
+          }
+        }
+      });
+    },
+    
+    //Add LCNAF URI for people
+    addPersonFacetURI: function(label, uri) {
+      $("li[role='person'][ldsource='author facet'][label='" + label + "']").attr("uri", uri);
+
+    },
+    // function to process results from LOC lookup
+
+    parseLOCSuggestions: function(suggestions) {
+      var urisArray = [];
+      if (suggestions && suggestions[1] !== undefined) {
+        for (var s = 0; s < suggestions[1].length; s++) {
+          // var l = suggestions[1][s];
+          var u = suggestions[3][s];
+          urisArray.push(u);
+        }
+      }
+      return urisArray;
+
+    },
+    // Query wikidata
+    //Do a combined query for image (optional) and some set of influences
+    getWikidataInfoForAuthor: function(LOCURI, callback) {
+      // Given loc uri, can you get matching wikidata entities
+      var wikidataEndpoint = "https://query.wikidata.org/sparql?";
+      var localname = semRecs.getLocalLOCName(LOCURI);
+      var sparqlQuery = "SELECT ?entity ?entityLabel ?image WHERE {?entity wdt:P244 \"" + localname + "\" . " 
+        + " OPTIONAL {?entity wdt:P18 ?image . }"
+        + " SERVICE wikibase:label { bd:serviceParam wikibase:language \"[AUTO_LANGUAGE],en\". }}";        
+        
+      $.ajax({
+        url : wikidataEndpoint,
+        headers : {
+          Accept : 'application/sparql-results+json'
+        },
+        data : {
+          query : sparqlQuery
+        },
+        success : function (data) {
+          var wikidataParsedData = semRecs.parseWikidataSparqlResults(data);
+          callback(LOCURI, wikidataParsedData);
+        }
+
+      });
+
+    },
+
+    // function to parse sparql query results from wikidata, getting URI
+    // and author name
+    parseWikidataSparqlResults: function(data) {
+      output = {}
+      if (data && "results" in data && "bindings" in data["results"]) {
+        var bindings = data["results"]["bindings"];
+        if (bindings.length) {
+          var binding = bindings[0];
+          if ("entity" in binding && "value" in binding["entity"]) {
+            output.uriValue = binding["entity"]["value"];
+          }
+          if ("entityLabel" in binding
+              && "value" in binding["entityLabel"]) {
+            output.authorLabel = binding["entityLabel"]["value"];
+          }
+          if ("image" in binding && "value" in binding["image"] 
+          && binding["image"]["value"]) {
+            output.image = binding["image"]["value"];
+          }
+        }
+      }
+      return output;
+    },
+
+    // function to get localname from LOC URI
+    getLocalLOCName:function (uri) {
+      // Get string right after last slash if it's present
+      // TODO: deal with hashes later
+      return uri.split("/").pop();
+    },
     //Display methods
   
    
@@ -267,10 +435,18 @@ var semRecs = {
         var catalogLink = semRecs.generateCatalogLCSHLink(label);
         return catalogLink + " " + locLink;
       } 
-      if(ldsource == "facet") {
-        //the facets in this case are FACT
-       
+      if(ldsource == "lcnaf") {
+        var locLink = semRecs.generateLOCLink(uri);
+        //Assuming LCNAF author facet will work the same as what is used in the facet field
+        var authorFacet =  semRecs.generateFacetLink(label);
+        return authorFacet + " " + locLink;
+
+      }
+      if(ldsource == "facet") {       
         return semRecs.generateTopicFacetLink(label);
+      }
+      if(ldsource == "author facet") {
+        return semRecs.generateFacetLink(label);
       }
       return label;
     },
@@ -423,20 +599,7 @@ var semRecs = {
     generateWikidataLink: function(wikidataURI) {
       return "<a href='" + wikidataURI + "' target='_blank' class='data-src'><img src='/assets/wikidata.png' /></a>";
     },
-    //Get people info
-    displayPersonData: function(data) {     
-      //Convert data to format required to display
-      var htmlResults = [];
-      //This may be better with mapping
-      $.each(data, function(i, v) {
-        var item = semRecs.processPersonResult(v);
-        if(item != "") {
-          htmlResults.push(semRecs.processPersonResult(v));
-        }
-      });
-      
-      $("#semantic-person-results").html("<ul><li>" + htmlResults.join("</li><li>") + "</li></ul>");
-    },
+  
     processPersonResult: function(item) {
       var htmlArray = [];
       if("uri" in item && "label" in item) {
@@ -448,63 +611,12 @@ var semRecs = {
       }
       return htmlArray.join(", ");
     },
-    //Copied partially from browseAuthor, should be refactored more
-    retrieveDataFromAuthorIndex:function(uri, startYear, endYear, callback) {
-      //AJAX call to solr
-      var baseUrl = $("#semantic-recs").attr("base-url"); 
-      var querySolr = baseUrl + "proxy/authorbrowse";
-      if(startYear && endYear) {
-        
-        var range = "[" + startYear + " TO " + endYear + "]";
-        querySolr += "?q=(wd_birthy_i:" + range + " OR ld_birthy_i:" + range + ") AND (wd_deathy_i:" + range + " OR ld_deathy_i:" + range + ")&sort=wd_birthy_i asc&rows=10";
-      }
-      $.ajax({
-        "url": querySolr,
-        "type": "GET",
-        "success" : function(data) {              
-          callback(uri, data);
-        }
-      });
-    },
-    //Could also get info from loc but for now let's just use this
-    retrieveAuthorData: function(uri, label) {
-      //Get author from author index and get birth and death info if it exists
-      //AJAX call to solr
-      var baseUrl = $("#semantic-recs").attr("base-url"); 
-      var querySolr = baseUrl + "proxy/authorlookup?q=" + label;
-     
-      $.ajax({
-        "url": querySolr,
-        "type": "GET",
-        "success" : function(data) {              
-          if("response" in data && "docs" in data["response"]) {
-            var docs = data["response"]["docs"];
-            if(docs.length) {
-              var doc = docs[0];
-              var birthyear = null, deathyear = null;
-              if("wd_birthy_i" in doc) {
-                birthyear = doc["wd_birthy_i"];
-              } else if("loc_birthy_i" in doc) {
-                birthyear = doc["loc_birthy_i"];
-              }
-              if("wd_deathy_i" in doc) {
-                deathyear = doc["wd_deathy_i"];
-              } else if("loc_deathy_i" in doc) {
-                deathyear = doc["loc_deathy_i"];
-              }
-              if(birthyear != null && deathyear != null) {
-                semRecs.retrieveDataFromAuthorIndex(uri, birthyear, deathyear, semRecs.addContemporaries);
-
-              }
-            }
-          }
-        }
-      });
-    },
+  
     generateFacetLink: function(label) {
       var baseUrl = $("#semantic-recs").attr("base-url"); 
       //this isn't preserving the entire query and search parameters but a particular person can be explored
-      return baseUrl + "?f[author_facet][]=" + label;
+      var authorFacet = baseUrl + "?f[author_facet][]=" + label;
+      return "<a href='" + authorFacet + "'>" + label + "</a>";
     },
     //
     addContemporaries: function(uri, data) {
@@ -513,27 +625,75 @@ var semRecs = {
         var docs = data["response"]["docs"];
         $.each(docs, function(i,v) {
           if("authlabel_s" in v) {
-            htmlArray.push(v["authlabel_s"]);
+            var label = v["authlabel_s"];
+            console.log(label);
+            var authLink = semRecs.generateFacetLink(label);
+            htmlArray.push(authLink);
           }
         });
       }
-      $("div[role='contemporaries'][uri='" + uri + "']").html(htmlArray.join(", "));
+      var html = htmlArray.length? "Contemporaries include:" + "<ul class='list-unstyled'><li>" + htmlArray.join("</li><li>") + "</li>" : "";
+      $("div[role='contemporaries'][uri='" + uri + "']").html(html);
     },
   
-    processFacetValues: function(processFunc) {
-      var authors = semRecs.retrieveAuthorFacetValues();
-      $("#semantic-person-facet-results").html(authors.join(", "));
+    processFacetValues: function(subjectProcessFunc, personProcessFunc) {
       //Subject retrieval
       //This provides array of facet labels, but to get broader and narrower, we will need URIs
       var subjects = semRecs.retrieveSubjectFacetValues();
       var subjectData = $.map(subjects, function(v, i){
         return {label: v};
       });
-      processFunc(subjectData, "semantic-facet-results", "facet");
-      var subjectData = semRecs.addURIsForSubjectFacets(subjects);
-     // $("#semantic-facet-results").html(subjects.join(", "));
-      //Subject retrieval
+      subjectProcessFunc(subjectData, "semantic-facet-results", "facet");
+      semRecs.addURIsForSubjectFacets(subjects);
+      //Author retrieval
+      var authors = semRecs.retrieveAuthorFacetValues();
+      var authorData =  $.map(authors, function(v, i){
+        return {label: v};
+      });
+      personProcessFunc(authorData, "semantic-person-facet-results", "author facet");
+      semRecs.addURIsForAuthorFacets(authors);
 
+    },
+    //Display subject results that can be clicked
+    //Data: expected to be array of objects with at least URI and label
+    //May include object for context
+    displayPersonData: function(data, elementId, source) {     
+      //Convert data to format required to display
+      var htmlResults = [];
+      //This may be better with mapping
+      var contextData = {};
+      $.each(data, function(i, v) {
+        if("label" in v) {
+          var label = v["label"];
+          var uri = "uri" in v? v["uri"]: null;      
+          var props = {"label": label, "uri": uri, role:"person", ldsource: source, class: "list-group-item p-0 mx-0 mb-1 mt-0"};
+          htmlResults.push(semRecs.generateListItem(props));
+        }
+      });
+       
+      $("#" + elementId).html("<ul class='list-group'>" + htmlResults.join(" ") + "</ul>");
+      
+    },
+    
+    //Display person card
+    displayPersonCard: function(uri, label, context, ldsource) {
+      var labelLink = semRecs.generateLabelLink(ldsource, uri, label.replace(/--/g, " > "));
+      var html = "<div class='card-body'>" + 
+      "<h5 class='card-subtitle'>" + labelLink + "</h5>";
+      html += "<div class='card-text' role='wikidata' uri='" + uri + "'></div>";
+      html += "<div class='card-text' role='contemporaries' uri='" + uri + "'></div>";
+      html += "<div class='card-text'>Source: " + ldsource + "</div>";
+      html += "</div>";
+      $("#person-card").html(html);
+    },
+    displayWikidataInfoForAuthor: function(locuri, data) {
+      var wikidataURI = data['uriValue'];
+      var authorLabel = data['authorLabel'];
+      
+      if("image" in data) {
+        var imgHtml = "<img class='rounded float-left img-thumbnail w-25' src='" + data["image"] + "'>";
+        $("div[role='wikidata'][uri='" + locuri + "']").append(imgHtml);
+      }
     }
     
 }

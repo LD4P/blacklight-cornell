@@ -2,11 +2,11 @@
 
 .suggestionSection {
 	overflow:auto;
-	height:200px;
+	height:100px;
 }
 
 .semDisplayCard {
-	height:90px;
+	height:100px;
 	overflow:auto;
 	font-size:0.9rem;
 }
