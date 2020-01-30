@@ -9,28 +9,32 @@ subject-facet="<%= facet_by_field_name('fast_topic_facet').items.map{|item| item
 		<div class="card-body">
 			<h5>Subjects</h5>
 			<div id="subject-results">
-				<div id="subject-card" class="card">
+				<div id="subject-card" class="card p-1 semDisplayCard">
 				</div>
-				<div id="semantic-facet-results">
-				
-				</div>
-				<div id="annif-results">
-				
-				</div>
-				<div id="semantic-results">
+				<div class="suggestionSection mt-1">
+					<div id="semantic-facet-results">
 					
+					</div>
+					<div id="annif-results">
+					
+					</div>
+					<div id="semantic-results">
+						
+					</div>
 				</div>
 			</div>
 			
 			<h5>People and Organizations</h5>
 			<div id="person-results">
-				<div id="person-card" class="card">
+				<div id="person-card" class="card p-1 semDisplayCard">
 				</div>
-				<div id="semantic-person-results">
-					
-				</div>
-				<div id="semantic-person-facet-results">
-					
+				<div class="suggestionSection mt-1">
+					<div id="semantic-person-results">
+						
+					</div>
+					<div id="semantic-person-facet-results">
+						
+					</div>				
 				</div>
 			</div>
 		</div>

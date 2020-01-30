@@ -27,6 +27,12 @@ var semRecs = {
         //Also retrieve subject info from LCSH to include
           semRecs.retrieveInfoForLCSH(uri);
         }
+        if(ldsource == "facet") {
+          //USE the FAST URI to get Wikidata information
+        }
+        //Set color to active
+        $("li[role='subject']").removeClass("active");
+        $(this).addClass("active");
       });
     },
     retrieveAndDisplay: function() {
@@ -85,8 +91,53 @@ var semRecs = {
       semRecs.getLCSHRelationships(uri, semRecs.addSubjectInfoToCard);
     },
     retrieveInfoForFAST: function(uri) {
+      //The problem with using auth lookup is it returns json (which is great) but it doesn't return labels for broader and narrower
+      //var url = "https://lookup.ld4l.org/authorities/show/linked_data/oclcfast_direct/" + id;
+      //var url = "https://lookup.ld4l.org/authorities/show/linked_data/oclcfast_direct/" + id;
+      var url = uri + ".rdf.xml";
+      $.ajax({
+        "url": url,
+        "type": "GET",
+        "success" : function(data) {              
+          var relationships = semRecs.extractFASTRelationships(uri, data);
+          callback(relationships);
+        }
+      });
+    },
+    extractFASTRelationships:function(uri, data) {
+      var broader = [];
+      var narrower = [];
+      
       
     },
+    addURIsForSubjectFacets: function(subjectLabels) {
+      $.each(subjectLabels, function(i, v) {
+        //Query FAST for URI
+        semRecs.getFASTURI(v, semRecs.addFASTURI);
+      });
+    },
+    addFASTURI: function(fastLabel, URI) {
+      $("li[role='subject'][ldsource='facet'][label='" + fastLabel + "']").attr("uri", URI);
+    },
+    getFASTURI: function(label, callback) {
+      var topicFacet = "suggest50";
+      var searchURL = "http://fast.oclc.org/searchfast/fastsuggest?query=" + label + "&fl=" + topicFacet + "&queryReturn=id,*&rows=2&wt=json&json.wrf=?";
+      var URI = null;
+      $.getJSON(searchURL,function(data){
+       if(data && "response" in data && "docs" in data["response"] && data["response"]["docs"].length) {
+                 var firstResult = data["response"]["docs"][0];
+                 if("id" in firstResult && topicFacet in firstResult) {
+                    var rlabel = firstResult[topicFacet];
+                    var rId = firstResult["id"];
+                    //Get rid of fst
+                    rId = rId.slice(3);
+                    URI = rId.replace(/^[0]+/g,"");
+                    callback(label, "http://id.worldcat.org/fast/" + URI);
+                 }
+          }
+      });
+    },
+   
     //copied from browseLd
     getLCSHRelationships: function(uri, callback) {
       $.ajax({
@@ -178,7 +229,7 @@ var semRecs = {
           var label = v["label"];
           var uri = "uri" in v? v["uri"]: null;
           //"class":"d-inline" will show these inline
-          var props = {"label": label, "uri": uri, role:"subject", ldsource: source};
+          var props = {"label": label, "uri": uri, role:"subject", ldsource: source, class: "list-group-item p-0 mx-0 mb-1 mt-0"};
           if("context" in v) {
             var context = semRecs.retrieveContextRelationships(v);
             contextData[uri] = context;
@@ -188,7 +239,7 @@ var semRecs = {
       });
        
       //$("#semantic-results").html("<ul class='list-unstyled'><li class='d-inline'>" + htmlResults.join("</li><li class='d-inline'>") + "</li></ul>");
-      $("#" + elementId).html("<ul class='list-unstyled'>" + htmlResults.join(" ") + "</ul>");
+      $("#" + elementId).html("<ul class='list-group'>" + htmlResults.join(" ") + "</ul>");
       //Add data
       
       $("li[role='subject'][uri]").each(function(i,v) {
@@ -202,9 +253,10 @@ var semRecs = {
     displaySubjectCard: function(uri, label, context, ldsource) {
       var labelLink = semRecs.generateLabelLink(ldsource, uri, label.replace(/--/g, " > "));
       var html = "<div class='card-body'>" + 
-      "<h5 class='card-title'>" + labelLink + "</h5>";
+      "<h5 class='card-subtitle'>" + labelLink + "</h5>";
     
-      html += "<div role='context' uri='" + uri + "'>" + semRecs.generateContextDisplay(context) + "</div>";
+      html += "<div class='card-text' role='context' uri='" + uri + "'>" + semRecs.generateContextDisplay(context) + "</div>";
+      html += "<div class='card-text'>Source: " + ldsource + "</div>";
       html += "</div>";
       $("#subject-card").html(html);
 
@@ -214,8 +266,17 @@ var semRecs = {
         var locLink = semRecs.generateLOCLink(uri);
         var catalogLink = semRecs.generateCatalogLCSHLink(label);
         return catalogLink + " " + locLink;
+      } 
+      if(ldsource == "facet") {
+        //the facets in this case are FACT
+       
+        return semRecs.generateTopicFacetLink(label);
       }
       return label;
+    },
+    generateTopicFacetLink: function(label) {
+      var facetLink = semRecs.baseUrl + "?f[fast_topic_facet][]=" + label + "&q=&search_field=all_fields";
+      return "<a href='" + facetLink + "'>" + label + "</a>";
     },
     generateContextDisplay: function(context) {
       var html = "";
@@ -468,38 +529,11 @@ var semRecs = {
       var subjectData = $.map(subjects, function(v, i){
         return {label: v};
       });
-      processFunc(subjectData, "semantic-facet-results", "facets");
+      processFunc(subjectData, "semantic-facet-results", "facet");
       var subjectData = semRecs.addURIsForSubjectFacets(subjects);
      // $("#semantic-facet-results").html(subjects.join(", "));
       //Subject retrieval
 
-    },
-    addURIsForSubjectFacets: function(subjectLabels) {
-      $.each(subjectLabels, function(i, v) {
-        //Query FAST for URI
-        semRecs.getFASTURI(v, semRecs.addFASTURI);
-      });
-    },
-    addFASTURI: function(fastLabel, URI) {
-      $("li[role='subject'][ldsource='facets'][label='" + fastLabel + "']").attr("uri", URI);
-    },
-    getFASTURI: function(label, callback) {
-      var topicFacet = "suggest50";
-      var searchURL = "http://fast.oclc.org/searchfast/fastsuggest?query=" + label + "&fl=" + topicFacet + "&queryReturn=id,*&rows=2&wt=json&json.wrf=?";
-      var URI = null;
-      $.getJSON(searchURL,function(data){
-       if(data && "response" in data && "docs" in data["response"] && data["response"]["docs"].length) {
-                 var firstResult = data["response"]["docs"][0];
-                 if("id" in firstResult && topicFacet in firstResult) {
-                    var rlabel = firstResult[topicFacet];
-                    var rId = firstResult["id"];
-                    //Get rid of fst
-                    rId = rId.slice(3);
-                    URI = rId.replace(/^[0]+/g,"");
-                    callback(label, URI);
-                 }
-          }
-      });
     }
     
 }
