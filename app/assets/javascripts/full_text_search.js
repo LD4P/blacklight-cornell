@@ -75,13 +75,55 @@ var fullTextSearch = {
   // Get a URL from a hidden div in the search page
   getSolrAddrs: function() {
     return $( "#solr-server-url-data" ).html();
-  }
+  },
 
+  // split query up by words and pass each to be synonymed
+  findSynonyms: function() {
+    var q = $('input#q').val();
+    var words = q.split(" ");
+    for (var word of words) {
+      fullTextSearch.queryWord(word);
+    }
+  },
+
+  queryWord: function (word) {
+    var sparqlQuery = "SELECT * {" +
+      "VALUES ?lemma1 {'"+ word +"'@en}" +
+      "?lexeme1 wikibase:lemma ?lemma1 ." +
+      "?lexeme1 ontolex:sense ?sense1 ." +
+      "?sense1 wdt:P5973 ?sense2 ." +
+      "?lexeme2 wikibase:lemma ?lemma2 ." +
+      "?lexeme2 ontolex:sense ?sense2 ." +
+    "}";
+    var wikidataEndpoint = "https://query.wikidata.org/sparql?";
+    $.ajax({
+      url : wikidataEndpoint,
+      headers : {
+        Accept : 'application/sparql-results+json'
+      },
+      data : {
+        query : sparqlQuery
+      },
+      success : function (data) {
+        if (data && "results" in data && "bindings" in data["results"]) {
+          var bindings = data["results"]["bindings"];
+          if (bindings.length) {
+            var binding = bindings[0];
+            var synonym = binding["lemma2"]["value"]
+            console.log(JSON.stringify(synonym));
+
+          }
+        }
+
+      }
+    });
+  }
 };
   
 // Run code when the normal search process returns zero results
 Blacklight.onLoad(function() {
   $('p#zero-results').each(function() {
     fullTextSearch.queryFullText();
+    fullTextSearch.findSynonyms();
   });
 });
