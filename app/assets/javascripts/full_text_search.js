@@ -90,8 +90,8 @@ var fullTextSearch = {
         hints.push(newWords.join(' '))
       }
     }
-    const topHint = fullTextSearch.narrowSuggestions(hints)
-    fullTextSearch.addSuggestionsToView(topHint)
+    const topHint = await fullTextSearch.narrowSuggestions(hints);
+    fullTextSearch.addSuggestionsToView(topHint);
   },
 
   queryWord: async function (word) {
@@ -114,8 +114,23 @@ var fullTextSearch = {
     }); // return an array of synonym strings
   },
 
-  narrowSuggestions: function (hints) {
-    return hints[0];
+  // find the first search hint with catalog results
+  narrowSuggestions: async function (hints) {
+    const solrAddress = fullTextSearch.getSolrAddrs();
+    for (const hint of hints) {
+      const solrUrl = solrAddress + "/select?&wt=json&rows=0&q=" + hint
+      const solrResponse = await $.ajax({
+        url: solrUrl,
+        type: 'GET',
+        dataType: 'jsonp',
+        jsonp: 'json.wrf'
+      });
+      const numFound = solrResponse["response"]["numFound"]
+      if (numFound > 0) {
+        return hint;
+        break
+      }
+    }
   },
 
   addSuggestionsToView: function (hint) {
