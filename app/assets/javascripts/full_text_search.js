@@ -79,12 +79,18 @@ var fullTextSearch = {
 
   // split query up by words and pass each to be synonymed
   findSynonyms: async function() {
-    const q = $('input#q').val();
-    const words = q.split(" ");
-    for (const word of words) {
+    const query = $('input#q').val();
+    const words = query.split(" ");
+    const hints = new Array
+    for (const [index, word] of words.entries()) {
       const synonyms = await fullTextSearch.queryWord(word);
+      for (const synonym of synonyms) {
+        newWords = [...words]
+        newWords[index] = synonym
+        hints.push(newWords.join(' '))
+      }
 
-      console.log("syn: " + synonyms)
+      console.log("syn: " + hints)
     }
 
   },
@@ -97,28 +103,17 @@ var fullTextSearch = {
       "?sense1 wdt:P5973 ?sense2 ." +
       "?lexeme2 wikibase:lemma ?synonym ." +
       "?lexeme2 ontolex:sense ?sense2 ." +
-    "}";
+    "}"; // run a SPARQL query that gets synonymous lexemes
     const wikidataSparqlUrl = "https://query.wikidata.org/sparql?";
     const wikidataApiResult = await $.ajax({
       url:     wikidataSparqlUrl,
       headers: {Accept: 'application/sparql-results+json'},
       data:    {query: sparqlQuery}
     });
-    const parsedWikidata = fullTextSearch.parseWikidataSynonyms(wikidataApiResult);
-    return parsedWikidata;
+    return wikidataApiResult["results"]["bindings"].map(function (binding) {
+      return binding['synonym']['value']
+    }); // return an array of synonym strings
   },
-
-  parseWikidataSynonyms: async function (wikidataResponse) {
-    const synonyms = new Array;
-    if (wikidataResponse["results"]) {
-      const bindings = wikidataResponse["results"]["bindings"];
-      for (const binding of bindings) {
-        const word = binding['synonym']['value'];
-        synonyms.push(word);
-      }
-    }
-    return synonyms;
-  }
 
 };
 
