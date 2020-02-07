@@ -77,7 +77,7 @@ var fullTextSearch = {
     return $( "#solr-server-url-data" ).html();
   },
 
-  // split query up by words and pass each to be synonymed
+  // split query up by words, pass each to be synonymed, write one to document
   findSynonyms: async function() {
     const query = $('input#q').val();
     const words = query.split(" ");
@@ -89,10 +89,9 @@ var fullTextSearch = {
         newWords[index] = synonym
         hints.push(newWords.join(' '))
       }
-
-      console.log("syn: " + hints)
     }
-
+    const topHint = fullTextSearch.narrowSuggestions(hints)
+    fullTextSearch.addSuggestionsToView(topHint)
   },
 
   queryWord: async function (word) {
@@ -114,6 +113,16 @@ var fullTextSearch = {
       return binding['synonym']['value']
     }); // return an array of synonym strings
   },
+
+  narrowSuggestions: function (hints) {
+    return hints[0];
+  },
+
+  addSuggestionsToView: function (hint) {
+    $("#main-container").prepend(
+      'Did you mean <a href="?q='+hint+'">'+hint+'</a>?'
+    );
+  }
 
 };
 
