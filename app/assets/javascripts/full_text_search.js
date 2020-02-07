@@ -91,7 +91,9 @@ var fullTextSearch = {
       }
     }
     const topHint = await fullTextSearch.narrowSuggestions(hints);
-    fullTextSearch.addSuggestionsToView(topHint);
+    if (topHint !== undefined) {
+      fullTextSearch.addSuggestionsToView(topHint);
+    }
   },
 
   queryWord: async function (word) {
