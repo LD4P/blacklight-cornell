@@ -78,48 +78,50 @@ var fullTextSearch = {
   },
 
   // split query up by words and pass each to be synonymed
-  findSynonyms: function() {
-    var q = $('input#q').val();
-    var words = q.split(" ");
-    for (var word of words) {
-      fullTextSearch.queryWord(word);
+  findSynonyms: async function() {
+    const q = $('input#q').val();
+    const words = q.split(" ");
+    for (const word of words) {
+      const synonyms = await fullTextSearch.queryWord(word);
+
+      console.log("syn: " + synonyms)
     }
+
   },
 
-  queryWord: function (word) {
-    var sparqlQuery = "SELECT * {" +
+  queryWord: async function (word) {
+    const sparqlQuery = "SELECT * {" +
       "VALUES ?lemma1 {'"+ word +"'@en}" +
       "?lexeme1 wikibase:lemma ?lemma1 ." +
       "?lexeme1 ontolex:sense ?sense1 ." +
       "?sense1 wdt:P5973 ?sense2 ." +
-      "?lexeme2 wikibase:lemma ?lemma2 ." +
+      "?lexeme2 wikibase:lemma ?synonym ." +
       "?lexeme2 ontolex:sense ?sense2 ." +
     "}";
-    var wikidataEndpoint = "https://query.wikidata.org/sparql?";
-    $.ajax({
-      url : wikidataEndpoint,
-      headers : {
-        Accept : 'application/sparql-results+json'
-      },
-      data : {
-        query : sparqlQuery
-      },
-      success : function (data) {
-        if (data && "results" in data && "bindings" in data["results"]) {
-          var bindings = data["results"]["bindings"];
-          if (bindings.length) {
-            var binding = bindings[0];
-            var synonym = binding["lemma2"]["value"]
-            console.log(JSON.stringify(synonym));
-
-          }
-        }
-
-      }
+    const wikidataSparqlUrl = "https://query.wikidata.org/sparql?";
+    const wikidataApiResult = await $.ajax({
+      url:     wikidataSparqlUrl,
+      headers: {Accept: 'application/sparql-results+json'},
+      data:    {query: sparqlQuery}
     });
+    const parsedWikidata = fullTextSearch.parseWikidataSynonyms(wikidataApiResult);
+    return parsedWikidata;
+  },
+
+  parseWikidataSynonyms: async function (wikidataResponse) {
+    const synonyms = new Array;
+    if (wikidataResponse["results"]) {
+      const bindings = wikidataResponse["results"]["bindings"];
+      for (const binding of bindings) {
+        const word = binding['synonym']['value'];
+        synonyms.push(word);
+      }
+    }
+    return synonyms;
   }
+
 };
-  
+
 // Run code when the normal search process returns zero results
 Blacklight.onLoad(function() {
   $('p#zero-results').each(function() {
