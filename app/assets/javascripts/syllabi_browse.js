@@ -3,7 +3,24 @@
 // Later, OSP is planning to implement an API to serve suggestions
 
 // This function adds co-assigned work suggestions to the item view for a work
-var getOpenSyllabusRecommendations = {
+const getOpenSyllabusRecommendations = {
+
+  getCoassignedBooksLocal: async function(suggestions) {
+    const isbns = $( "#isbns-json-data" ).html();
+    const isbnParsed = JSON.parse(isbns);
+    const isbnParams = isbnParsed.join(',');
+
+    const coAssigned = await getOpenSyllabusRecommendations.queryOspCoassignmentsApi('fake')
+
+    console.log(coAssigned)
+  },
+
+
+  queryOspCoassignmentsApi: function(isbns) {
+    return $.get('/browseld/osp_coassignments?isbns=1440506604')
+
+  },
+
   getCoassignedBooks: function(suggestions) {
     // Get ISBNs of current book and Solr URL from the page DOM
     var isbns = $( "#isbns-json-data" ).html();
@@ -107,7 +124,7 @@ var getOpenSyllabusRecommendations = {
 Blacklight.onLoad(function() {
   // Run syllabus coassignment code in item view
   $('body.catalog-show').each(function() {
-    getOpenSyllabusRecommendations.getCoassignedBooks();
+    getOpenSyllabusRecommendations.getCoassignedBooksLocal();
   });
   // Run books in field code in syllabus browse
   $('body.browseld-in_field').each(function() {
