@@ -1,6 +1,4 @@
 // This code displays book suggestions that come from Open Syllabus Project
-// For the moment, OSP suggestions come from a custom server called Cosine
-// Later, OSP is planning to implement an API to serve suggestions
 
 // This function adds co-assigned work suggestions to the item view for a work
 const getOpenSyllabusRecommendations = {
@@ -9,70 +7,53 @@ const getOpenSyllabusRecommendations = {
     const isbns = $( "#isbns-json-data" ).html();
     const isbnParsed = JSON.parse(isbns);
     const isbnParams = isbnParsed.join(',');
-
-    const coAssigned = await getOpenSyllabusRecommendations.queryOspCoassignmentsApi('fake')
-
-    console.log(coAssigned)
+    const coAssigned = await getOpenSyllabusRecommendations.queryOspCoassignmentsApi(isbnParams);
+    for (const assignment of coAssigned) {
+      const joinIsbn = assignment.join(' OR ');
+      const queryCat = await getOpenSyllabusRecommendations.querySolrCheckSuggestion(joinIsbn);
+      const numFound = queryCat["response"]["numFound"];
+      if (numFound > 0) {
+        const result = queryCat["response"]["docs"][0]
+        getOpenSyllabusRecommendations.formatAndListSuggestions(result, joinIsbn); // write HTML
+      }
+    }
+    setTimeout(function(){ window.bookcovers.onLoad() }, 300); // fill cover images
   },
 
 
-  queryOspCoassignmentsApi: function(isbns) {
-    return $.get('/browseld/osp_coassignments?isbns=1440506604')
-
+  queryOspCoassignmentsApi: function(isbnParams) {
+    const localRoute = '/browseld/osp_coassignments?isbns=';
+    return $.get(localRoute + isbnParams);
   },
 
-  getCoassignedBooks: function(suggestions) {
-    // Get ISBNs of current book and Solr URL from the page DOM
-    var isbns = $( "#isbns-json-data" ).html();
-    var isbnParsed = JSON.parse(isbns);
-    var isbnParams = isbnParsed.join(',');
-    var solrServer = $( "#solr-server-url-data" ).html();
-    // Get JSON array of arrays from Cosine API. Outer array is list of books, inner is list of ISNBs per book.
-    $.get( "https://api.opensyllabus.org/coassignments/isbn/"+isbnParams+"?format=json", function( ospResponse ) {
-      var firstTenBooks = getOpenSyllabusRecommendations.ospJsonParse(ospResponse, 10);
-      // Iterate over each book (ISBN list) among the first 10
-      firstTenBooks.forEach(function(list){
-        // Transform each ISBN list into a query string joined with ORs
-        var joinedList = list.join(' OR ');
-        // Query the Cornell Library catalog Solr
-        solrUrl = solrServer + "/select?&wt=json&rows=1&q=" + joinedList
-        $.ajax({
-          url: solrUrl,
-          type: 'GET',
-          dataType: 'jsonp',
-          jsonp: 'json.wrf', // avoid CORS and CORB errors
-          complete: function(solrResponse) {
-            var numFound = solrResponse["responseJSON"]["response"]["numFound"]
-            // When results in the catalog are found, add them to the page
-            if (numFound > 0) {
-              // Display the div if something is found
-              $(".browse-syllabi").show(500);
-              // Format author string
-              if (solrResponse["responseJSON"]["response"]["docs"][0]["author_display"]) {
-                var authorStringResponse = solrResponse["responseJSON"]["response"]["docs"][0]["author_display"];
-                var authorDividedByComma = authorStringResponse.split(",");
-                var authorFirst2Elements = authorDividedByComma.slice(0,2).join();
-              }
-              var authorNote = (authorFirst2Elements ? ' by '+authorFirst2Elements : '');
-              // Set strings for title, href, and OCLC id
-              var recomTitle = solrResponse["responseJSON"]["response"]["docs"][0]["title_display"];
-              var recomQuery = '/catalog?&q='+joinedList;
-              var oclcIdDisp = solrResponse["responseJSON"]["response"]["docs"][0]["oclc_id_display"][0]
-              // Compose the HTML that will be displayed on the page
-              // The image is currently not working; I fear the script that fills it in runs too late
-              var htmlString = '<figure><div class="imgframe"><a href="'+recomQuery+'"><img class="bookcover" id="OCLC:'+oclcIdDisp+'" data-oclc="'+oclcIdDisp+'" /></a></div><figcaption><a href="'+recomQuery+'">'+recomTitle+'</a> '+authorNote+'</figcaption></figure>'
-
-              $("#recommended-list").append(htmlString);
-            }
-          }
-        }).done(function(){
-          // Fill in cover images
-          
-          setTimeout(function(){ window.bookcovers.onLoad() }, 500);
-        });
-
-      });
+  querySolrCheckSuggestion: function(joinIsbn) {
+    const solrServer = $( "#solr-server-url-data" ).html();
+    const solrParams = "/select?&wt=json&rows=1&q=" + joinIsbn;
+    return $.ajax({
+      url: solrServer + solrParams,
+      type: 'GET',
+      dataType: 'jsonp',
+      jsonp: 'json.wrf'
     });
+  },
+
+  formatAndListSuggestions: function(result, joinIsbn) {
+    // Display the div if something is found
+    $(".browse-syllabi").show(500);
+    // Format author string
+    if (result["author_display"]) {
+      var authorStringResponse = result["author_display"];
+      var authorDividedByComma = authorStringResponse.split(",");
+      var authorFirst2Elements = authorDividedByComma.slice(0,2).join();
+    }
+    const authorNote = (authorFirst2Elements ? ' by '+authorFirst2Elements : '');
+    // Set strings for title, href, and OCLC id
+    const recomTitle = result["title_display"];
+    const recomQuery = '/catalog?&q='+joinIsbn;
+    const oclcIdDisp = result["oclc_id_display"][0]
+    // Compose the HTML that will be displayed on the page
+    const htmlString = '<figure><div class="imgframe"><a href="'+recomQuery+'"><img class="bookcover" id="OCLC:'+oclcIdDisp+'" data-oclc="'+oclcIdDisp+'" /></a></div><figcaption><a href="'+recomQuery+'">'+recomTitle+'</a> '+authorNote+'</figcaption></figure>'
+    $("#recommended-list").append(htmlString);
   },
 
   // This function checks the catalog, in slices or pages, for works listed in an academic field
@@ -113,17 +94,13 @@ const getOpenSyllabusRecommendations = {
         });
       });
     });
-  },
-
-  ospJsonParse: function(ospResponse, num) {
-    console.log(ospResponse);
   }
 
 };
 
 Blacklight.onLoad(function() {
   // Run syllabus coassignment code in item view
-  $('body.catalog-show').each(function() {
+  $('body.catalog-show, body.blacklight-catalog-show').each(function() {
     getOpenSyllabusRecommendations.getCoassignedBooksLocal();
   });
   // Run books in field code in syllabus browse
