@@ -23,6 +23,7 @@ var semRecs = {
         }
         if(ldsource == "facet") {
           //USE the FAST URI to get Wikidata information
+          semRecs.retrieveInfoForFAST(uri);
         }
         //Set color to active
         $("li[role='subject']").removeClass("active");
@@ -108,23 +109,53 @@ var semRecs = {
     },
     retrieveInfoForFAST: function(uri) {
       //The problem with using auth lookup is it returns json (which is great) but it doesn't return labels for broader and narrower
+      var url = "https://lookup.ld4l.org/authorities/fetch/linked_data/oclcfast_ld4l_cache?format=jsonld&uri=" + uri;
       //var url = "https://lookup.ld4l.org/authorities/show/linked_data/oclcfast_direct/" + id;
-      //var url = "https://lookup.ld4l.org/authorities/show/linked_data/oclcfast_direct/" + id;
-      var url = uri + ".rdf.xml";
+      //var url = uri + ".rdf.xml";
       $.ajax({
         "url": url,
         "type": "GET",
         "success" : function(data) {              
           var relationships = semRecs.extractFASTRelationships(uri, data);
+          console.log(relationships);
           callback(relationships);
         }
       });
     },
     extractFASTRelationships:function(uri, data) {
-      var broader = [];
-      var narrower = [];
-      
-      
+      var broaderURIs = [];
+      var narrowerURIs = [];
+      var closeURIs = [];
+      var narrowerProperty = "skos:narrower";
+      var broaderProperty = "skos:broader";
+      var closeProperty = "skos:related";
+      var labelProperty = "skos:prefLabel";
+      //Data = @context, @graph = [ {@id: id..., etc.]
+      var dataHash = semRecs.processLCSHJSON(data["@graph"]);
+      narrowerURIs = semRecs.processFASTEntityJSON(dataHash, narrowerProperty, uri);
+      broaderURIs = semRecs.processFASTEntityJSON(dataHash, broaderProperty, uri);
+      closeURIs = semRecs.processFASTEntityJSON(dataHash, closeProperty, uri);
+
+      var entity = dataHash[uri];
+      var label = entity[labelProperty];
+      return {uri:uri, dataHash: dataHash, label: label, narrowerURIs: narrowerURIs, broaderURIs: broaderURIs, closeURIs: closeURIs};      
+    },
+    processFASTEntityJSON: function(dataHash, property, uri) {
+      var returnURIs = [];
+      var entity = dataHash[uri];
+      if(property in entity) {
+        var relationship = entity[property];
+        if(!Array.isArray(relationship)) {
+          relationship = [entity[property]];
+        }      
+        $.each(relationship, function (i,v) {
+          var uri = v["@id"];
+          var uentity = dataHash[uri];
+          var label = uentity["skos:prefLabel"];
+          returnURIs.push({uri:uri, label:label});
+        });
+      }
+      return returnURIs;
     },
     addURIsForSubjectFacets: function(subjectLabels) {
       $.each(subjectLabels, function(i, v) {
@@ -397,7 +428,7 @@ var semRecs = {
           var label = v["label"];
           var uri = "uri" in v? v["uri"]: null;
           //"class":"d-inline" will show these inline
-          var props = {"label": label, "uri": uri, role:"subject", ldsource: source, class: "list-group-item p-0 mx-0 mb-1 mt-0"};
+          var props = {"label": label, "uri": uri, role:"subject", ldsource: source, class: "list-group-item p-0 mx-0 mb-1 mt-0 border-0"};
           if("context" in v) {
             var context = semRecs.retrieveContextRelationships(v);
             contextData[uri] = context;
@@ -420,12 +451,10 @@ var semRecs = {
     //When subject from list is clicked, populate the subject card
     displaySubjectCard: function(uri, label, context, ldsource) {
       var labelLink = semRecs.generateLabelLink(ldsource, uri, label.replace(/--/g, " > "));
-      var html = "<div class='card-body'>" + 
-      "<h5 class='card-subtitle'>" + labelLink + "</h5>";
+      var html = "<h5 class='card-subtitle'>" + labelLink + "</h5>";
     
       html += "<div class='card-text' role='context' uri='" + uri + "'>" + semRecs.generateContextDisplay(context) + "</div>";
       html += "<div class='card-text'>Source: " + ldsource + "</div>";
-      html += "</div>";
       $("#subject-card").html(html);
 
     },
@@ -666,7 +695,7 @@ var semRecs = {
         if("label" in v) {
           var label = v["label"];
           var uri = "uri" in v? v["uri"]: null;      
-          var props = {"label": label, "uri": uri, role:"person", ldsource: source, class: "list-group-item p-0 mx-0 mb-1 mt-0"};
+          var props = {"label": label, "uri": uri, role:"person", ldsource: source, class: "list-group-item p-0 mx-0 mb-1 mt-0 border-0"};
           htmlResults.push(semRecs.generateListItem(props));
         }
       });
@@ -678,12 +707,10 @@ var semRecs = {
     //Display person card
     displayPersonCard: function(uri, label, context, ldsource) {
       var labelLink = semRecs.generateLabelLink(ldsource, uri, label.replace(/--/g, " > "));
-      var html = "<div class='card-body'>" + 
-      "<h5 class='card-subtitle'>" + labelLink + "</h5>";
+      var html = "<h5 class='card-subtitle'>" + labelLink + "</h5>";
       html += "<div class='card-text' role='wikidata' uri='" + uri + "'></div>";
       html += "<div class='card-text' role='contemporaries' uri='" + uri + "'></div>";
       html += "<div class='card-text'>Source: " + ldsource + "</div>";
-      html += "</div>";
       $("#person-card").html(html);
     },
     displayWikidataInfoForAuthor: function(locuri, data) {

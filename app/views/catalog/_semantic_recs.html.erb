@@ -1,42 +1,51 @@
-<div id="semantic-recs" class="expand-search" base-url="<%= root_url %>" query="<%=params[:q]%>" 
+<div id="semantic-recs"  base-url="<%= root_url %>" query="<%=params[:q]%>" 
 author-facet="<%= facet_by_field_name('author_facet').items.map{|item| item.value}.to_json.to_s %>"
 subject-facet="<%= facet_by_field_name('fast_topic_facet').items.map{|item| item.value}.to_json.to_s %>" >
-	
-	<div class="card">
-		<div class="card-header">
-			Related subjects and people
-		</div>
-		<div class="card-body">
-			<h5>Subjects</h5>
-			<div id="subject-results">
-				<div id="subject-card" class="card p-1 semDisplayCard">
-				</div>
-				<div class="suggestionSection mt-1">
-					<div id="semantic-facet-results">
-					
+
+	<div class="expand-search">	
+		<div class="card">
+			<div class="card-header">
+				Related subjects searches
+			</div>
+			<div class="card-body">
+				<div id="subject-results">
+					<div id="subject-card" class="card p-1 semDisplayCard">
 					</div>
-					<div id="annif-results">
-					
-					</div>
-					<div id="semantic-results">
+					<div class="suggestionSection mt-1">
+						<div id="semantic-facet-results">
 						
+						</div>
+						<div id="annif-results">
+						
+						</div>
+						<div id="semantic-results">
+							
+						</div>
 					</div>
 				</div>
 			</div>
-			
-			<h5>People and Organizations</h5>
-			<div id="person-results">
-				<div id="person-card" class="card p-1 semDisplayCard">
-				</div>
-				<div class="suggestionSection mt-1">					
-					<div id="semantic-person-facet-results">
-						
-					</div>	
-					<div id="semantic-person-results">
-						
-					</div>			
-				</div>
-			</div>
-		</div>
+		</div>	
 	</div>
+	<div class="expand-search">	
+		
+			<div class="card">
+			<div class="card-header">
+				Related people and organization searches
+			</div>
+			<div class="card-body">		
+				<div id="person-results">
+					<div id="person-card" class="card p-1 semDisplayCard">
+					</div>
+					<div class="suggestionSection mt-1">					
+						<div id="semantic-person-facet-results">
+							
+						</div>	
+						<div id="semantic-person-results">
+							
+						</div>			
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>	
 </div>

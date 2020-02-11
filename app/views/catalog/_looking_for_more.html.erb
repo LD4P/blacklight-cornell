@@ -1,5 +1,7 @@
 <%# consider wrapping this with some parameter checking -%>
+<% if params[:q].present? %>
 <%= render :partial => 'semantic_recs' %>
+<% end %>
 
 <% if expandable_search? %>
   <%= render :partial => 'expand_search' %>
