@@ -54,8 +54,8 @@ class BrowseldController < ApplicationController
     # sort and return top results if found
     sort_rank = json_body.sort_by{|a| a['count'] }.reverse
     top_items = sort_rank[range]
-    isbn_nums = top_items.map{|b| b['isbns'].map{|c| c.to_i }}
-    
+    isbn_nums = top_items.map{|b| b['isbns'].map{|c| c.to_i }}.reject { |d| d.empty? }
+
     render json: isbn_nums, status: cnctn.status
   end
   
