@@ -20,10 +20,10 @@ var semRecs = {
         if(ldsource == "lcsh" || ldsource == "annif") {
         //Also retrieve subject info from LCSH to include
           semRecs.retrieveInfoForLCSH(uri);
-        }
+        } 
         if(ldsource == "facet") {
           //USE the FAST URI to get Wikidata information
-          semRecs.retrieveInfoForFAST(uri);
+          semRecs.retrieveInfoForFAST(uri,semRecs.addFASTSubjectInfoToCard);
         }
         //Set color to active
         $("li[role='subject']").removeClass("active");
@@ -107,7 +107,7 @@ var semRecs = {
     retrieveInfoForLCSH: function(uri) {
       semRecs.getLCSHRelationships(uri, semRecs.addSubjectInfoToCard);
     },
-    retrieveInfoForFAST: function(uri) {
+    retrieveInfoForFAST: function(uri, callback) {
       //The problem with using auth lookup is it returns json (which is great) but it doesn't return labels for broader and narrower
       var url = "https://lookup.ld4l.org/authorities/fetch/linked_data/oclcfast_ld4l_cache?format=jsonld&uri=" + uri;
       //var url = "https://lookup.ld4l.org/authorities/show/linked_data/oclcfast_direct/" + id;
@@ -117,11 +117,11 @@ var semRecs = {
         "type": "GET",
         "success" : function(data) {              
           var relationships = semRecs.extractFASTRelationships(uri, data);
-          console.log(relationships);
           callback(relationships);
         }
       });
     },
+    
     extractFASTRelationships:function(uri, data) {
       var broaderURIs = [];
       var narrowerURIs = [];
@@ -138,7 +138,7 @@ var semRecs = {
 
       var entity = dataHash[uri];
       var label = entity[labelProperty];
-      return {uri:uri, dataHash: dataHash, label: label, narrowerURIs: narrowerURIs, broaderURIs: broaderURIs, closeURIs: closeURIs};      
+      return {uri:uri, dataHash: dataHash, label: label, narrowerURIs: narrowerURIs, broaderURIs: broaderURIs, closeURIs: closeURIs, exactMatchURIs:[]};      
     },
     processFASTEntityJSON: function(dataHash, property, uri) {
       var returnURIs = [];
@@ -446,6 +446,8 @@ var semRecs = {
         $(this).data("context", contextData[uri]);
       });
       
+      //Select the first item to be displayed
+      $("li[role='subject'][uri]").first().trigger("click");
     },
     //Display subject card
     //When subject from list is clicked, populate the subject card
@@ -577,6 +579,39 @@ var semRecs = {
       $("div[role='context'][uri='" + requestingURI + "']").append(display);
 
     },
+    //FAST is processed differently, this should be refactored further
+    //or all the data, regardless of whether it's from the JSON-LD representation
+    //OR context should have the same structure
+    addFASTSubjectInfoToCard: function(relationships) {
+      var requestingURI = relationships.uri;
+      var narrowerURIs = relationships.narrowerURIs;
+      var broaderURIs = relationships.broaderURIs;
+      var exactMatchURIs = relationships.exactMatchURIs;
+      var closeURIs = relationships.closeURIs;
+      var narrowerDisplay = semRecs.processFASTRelatedURIs(narrowerURIs, relationships.dataHash);
+      var broaderDisplay = semRecs.processFASTRelatedURIs(broaderURIs, relationships.dataHash);
+      //var exactDisplay = semRecs.processFASTRelatedURIs(exactMatchURIs, relationships.dataHash);
+      var closeDisplay = semRecs.processFASTRelatedURIs(closeURIs, relationships.dataHash);
+     //Get card part that corresponds and add info
+      var display = "";
+      
+      
+      /*
+      if(exactDisplay != "") {
+        display += exactDisplay + "<br>";
+      }*/
+      if(closeDisplay != "") {
+        display += "Close: " + closeDisplay + "<br>";        
+      }
+      if(broaderDisplay != "") {
+        display += "Broader: " + broaderDisplay + "<br>";        
+      }
+      if(narrowerDisplay != "") {
+        display += "Narrower: " + narrowerDisplay + "<br>";        
+      }
+      $("div[role='context'][uri='" + requestingURI + "']").append(display);
+
+    },
     displayWikidataLink: function(rArray, dataHash) {
       //check for any URLs that start with Wikidata 
       var wikidataURIs = [];
@@ -608,11 +643,22 @@ var semRecs = {
      
       return display;
     },
+    processFASTRelatedURIs: function(rArray) {
+      var display = [];
+      $.each(rArray, function(i,v) {
+        display.push(semRecs.generateRelatedSubject(v.uri,v.label));
+      });
+     
+      return display;
+    },
     generateRelatedSubject: function(uri, label) {
       var wikidataPrefix = "http://www.wikidata.org/";
-
+      var fastPrefix = "http://id.worldcat.org/fast/";
       if(uri.startsWith(wikidataPrefix)) {
         return label + " " + semRecs.generateWikidataLink(uri);
+      } else if(uri.startsWith(fastPrefix)) {
+        return semRecs.generateFASTFacetLink(label);
+
       } else {
         return semRecs.generateCatalogLCSHLink(label);
       }
@@ -647,6 +693,12 @@ var semRecs = {
       var authorFacet = baseUrl + "?f[author_facet][]=" + label;
       return "<a href='" + authorFacet + "'>" + label + "</a>";
     },
+   generateFASTFacetLink: function(label) {
+     var baseUrl = $("#semantic-recs").attr("base-url"); 
+     //this isn't preserving the entire query and search parameters but a particular person can be explored
+     var facet = baseUrl + "?f[fast_topic_facet][]=" + label;
+     return "<a href='" + facet + "'>" + label + "</a>";
+   },
     //
     addContemporaries: function(uri, data) {
       var htmlArray = [];
@@ -683,7 +735,7 @@ var semRecs = {
       semRecs.addURIsForAuthorFacets(authors);
 
     },
-    //Display subject results that can be clicked
+    //Display person results that can be clicked
     //Data: expected to be array of objects with at least URI and label
     //May include object for context
     displayPersonData: function(data, elementId, source) {     
@@ -701,6 +753,8 @@ var semRecs = {
       });
        
       $("#" + elementId).html("<ul class='list-group'>" + htmlResults.join(" ") + "</ul>");
+      //Select the first item to be displayed
+      $("li[role='person'][uri]").first().trigger("click");
       
     },
     
