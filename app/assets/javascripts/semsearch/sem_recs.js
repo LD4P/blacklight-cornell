@@ -473,8 +473,10 @@ var semRecs = {
         return authorFacet + " " + locLink;
 
       }
-      if(ldsource == "facet") {       
-        return semRecs.generateTopicFacetLink(label);
+      if(ldsource == "facet") {   
+        var facetCatalogLink = semRecs.generateTopicFacetLink(label);
+        var iconLink = semRecs.generateFASTIconLink(uri);
+        return facetCatalogLink + " " + iconLink;
       }
       if(ldsource == "author facet") {
         return semRecs.generateFacetLink(label);
@@ -482,8 +484,13 @@ var semRecs = {
       return label;
     },
     generateTopicFacetLink: function(label) {
+
       var facetLink = semRecs.baseUrl + "?f[fast_topic_facet][]=" + label + "&q=&search_field=all_fields";
+
       return "<a href='" + facetLink + "'>" + label + "</a>";
+    },
+    generateFASTIconLink: function(uri) {
+      return "<a target='_blank' class='data-src' data-toggle='tooltip' data-placement='top' data-original-title='See OCLC FAST' href='" + uri + ".html'><img src='/assets/oclc.png' /></a>";
     },
     generateContextDisplay: function(context) {
       var html = "";
@@ -511,6 +518,7 @@ var semRecs = {
     generateListItem: function(properties) {
       var html = "<li ";
       var label = properties["label"];
+      var displayLabel = label.replace(/--/g, " > ");
         var propsArray = [];
         $.each(properties, function(k,v) {
           //Find better way to handle "data" attributes
@@ -520,7 +528,7 @@ var semRecs = {
         });
         html += propsArray.join(" ");
       
-      html += ">" + label + "</li>";
+      html += ">" + displayLabel + "</li>";
       return html;
     },
     //return narrower and broader specifically from QA context
@@ -672,7 +680,7 @@ var semRecs = {
       return "<a href='" + semRecs.baseUrl + "?q=" + label + "&search_field=subject_cts'>" + label + "</a>";
     },
     generateWikidataLink: function(wikidataURI) {
-      return "<a href='" + wikidataURI + "' target='_blank' class='data-src'><img src='/assets/wikidata.png' /></a>";
+      return "<a href='" + wikidataURI + "' target='_blank' class='data-src' data-toggle='tooltip' data-placement='top' data-original-title='See Wikidata'><img src='/assets/wikidata.png' /></a>";
     },
   
     processPersonResult: function(item) {

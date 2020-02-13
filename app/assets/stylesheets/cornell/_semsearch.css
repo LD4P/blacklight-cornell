@@ -9,4 +9,9 @@
 	height:100px;
 	overflow:auto;
 	font-size:0.8rem;
+	background: #edebe7;
+}
+
+.semDisplayCard .card-subtitle {
+	font-weight: bold !important;
 }
