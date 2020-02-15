@@ -161,11 +161,22 @@ var semRecs = {
       $.each(subjectLabels, function(i, v) {
         //Query FAST for URI
         semRecs.getFASTURI(v, semRecs.addFASTURI);
+       
+        
       });
     },
    
     addFASTURI: function(fastLabel, URI) {
-      $("li[role='subject'][ldsource='facet'][label='" + fastLabel + "']").attr("uri", URI);
+      var subjectItem = $("li[role='subject'][ldsource='facet'][label='" + fastLabel + "']");
+      subjectItem.attr("uri", URI);
+      //If this item is "selected" and the URI has just been added, then redisplay the card
+      //This handles the case where the page loads and the first item is selected but the URI has not been added yet
+      /*
+      if(subjectItem.hasClass("active")) {
+        subjectItem.trigger("click");
+      }*/
+      //This leads to some screen jitter that isn't great
+     
     },
     getFASTURI: function(label, callback) {
       var topicFacet = "suggest50";
@@ -338,7 +349,15 @@ var semRecs = {
     
     //Add LCNAF URI for people
     addPersonFacetURI: function(label, uri) {
-      $("li[role='person'][ldsource='author facet'][label='" + label + "']").attr("uri", uri);
+      var personItem = $("li[role='person'][ldsource='author facet'][label='" + label + "']");
+      personItem.attr("uri", uri);
+    //If this item is "selected" and the URI has just been added, then redisplay the card
+      //This handles the case where the page loads and the first item is selected but the URI has not been added yet
+      /*
+      if(personItem.hasClass("active")) {
+        personItem.trigger("click");
+      }*/
+      //The above leads to some screen jitter that isn't very pleasant
 
     },
     // function to process results from LOC lookup
@@ -361,8 +380,9 @@ var semRecs = {
       // Given loc uri, can you get matching wikidata entities
       var wikidataEndpoint = "https://query.wikidata.org/sparql?";
       var localname = semRecs.getLocalLOCName(LOCURI);
-      var sparqlQuery = "SELECT ?entity ?entityLabel ?image WHERE {?entity wdt:P244 \"" + localname + "\" . " 
+      var sparqlQuery = "SELECT ?entity ?entityLabel ?image ?description WHERE {?entity wdt:P244 \"" + localname + "\" . " 
         + " OPTIONAL {?entity wdt:P18 ?image . }"
+        + " OPTIONAL {?entity schema:description ?description . FILTER(lang(?description) = \"en\")}"  
         + " SERVICE wikibase:label { bd:serviceParam wikibase:language \"[AUTO_LANGUAGE],en\". }}";        
         
       $.ajax({
@@ -400,6 +420,10 @@ var semRecs = {
           if ("image" in binding && "value" in binding["image"] 
           && binding["image"]["value"]) {
             output.image = binding["image"]["value"];
+          }
+          if ("description" in binding && "value" in binding["description"] 
+          && binding["description"]["value"]) {
+            output.description = binding["description"]["value"];
           }
         }
       }
@@ -441,13 +465,20 @@ var semRecs = {
       $("#" + elementId).html("<ul class='list-group'>" + htmlResults.join(" ") + "</ul>");
       //Add data
       
+      //No longer pulling context initially but only on selection
+      /*
       $("li[role='subject'][uri]").each(function(i,v) {
         var uri = $(this).attr("uri");
         $(this).data("context", contextData[uri]);
-      });
+      });*/
       
       //Select the first item to be displayed
-      $("li[role='subject'][uri]").first().trigger("click");
+      //If the URI doesn't exist yet, then place loading icon here which should be removed
+      //once the URI has been added
+      var firstSubjectElement =  $("li[role='subject'][uri]").first();
+      if(firstSubjectElement.attr("uri") != null) {
+        $("li[role='subject'][uri]").first().trigger("click");
+      }
     },
     //Display subject card
     //When subject from list is clicked, populate the subject card
@@ -479,7 +510,9 @@ var semRecs = {
         return facetCatalogLink + " " + iconLink;
       }
       if(ldsource == "author facet") {
-        return semRecs.generateFacetLink(label);
+        //Author facets rely still on LCNAF so can show LOC link
+        var locLink = semRecs.generateLOCLink(uri);
+        return semRecs.generateFacetLink(label) + " " + locLink;
       }
       return label;
     },
@@ -490,7 +523,7 @@ var semRecs = {
       return "<a href='" + facetLink + "'>" + label + "</a>";
     },
     generateFASTIconLink: function(uri) {
-      return "<a target='_blank' class='data-src' data-toggle='tooltip' data-placement='top' data-original-title='See OCLC FAST' href='" + uri + ".html'><img src='/assets/oclc.png' /></a>";
+      return "<a target='_blank' class='data-src' data-toggle='tooltip' data-placement='top' data-original-title='See OCLC FAST' href='" + uri + "'><img src='/assets/oclc.png' /></a>";
     },
     generateContextDisplay: function(context) {
       var html = "";
@@ -673,8 +706,12 @@ var semRecs = {
     },
     //copied from browseLd, generate LOC link
     generateLOCLink: function(uri) {
+      if(typeof uri == "undefined" || uri == "") 
+        return "";
+      
       var locHtml = "<a target='_blank' class='data-src' data-toggle='tooltip' data-placement='top' data-original-title='See Library of Congress' href='" + uri + ".html'><img src='/assets/loc.png' /></a>";
       return locHtml;
+    
     },
     generateCatalogLCSHLink: function(label) {
       return "<a href='" + semRecs.baseUrl + "?q=" + label + "&search_field=subject_cts'>" + label + "</a>";
@@ -762,14 +799,18 @@ var semRecs = {
        
       $("#" + elementId).html("<ul class='list-group'>" + htmlResults.join(" ") + "</ul>");
       //Select the first item to be displayed
-      $("li[role='person'][uri]").first().trigger("click");
+      var firstPersonElement =   $("li[role='person'][uri]").first();
+      if(firstPersonElement.attr("uri") != null) {
+        $("li[role='person'][uri]").first().trigger("click");
+      }
+      
       
     },
     
     //Display person card
     displayPersonCard: function(uri, label, context, ldsource) {
       var labelLink = semRecs.generateLabelLink(ldsource, uri, label.replace(/--/g, " > "));
-      var html = "<h5 class='card-subtitle'>" + labelLink + "</h5>";
+      var html = "<h5 class='card-subtitle'>" + labelLink + "<span role='wduri' uri='" + uri + "'></span></h5>";
       html += "<div class='card-text' role='wikidata' uri='" + uri + "'></div>";
       html += "<div class='card-text' role='contemporaries' uri='" + uri + "'></div>";
       html += "<div class='card-text'>Source: " + ldsource + "</div>";
@@ -778,10 +819,21 @@ var semRecs = {
     displayWikidataInfoForAuthor: function(locuri, data) {
       var wikidataURI = data['uriValue'];
       var authorLabel = data['authorLabel'];
-      
+      //Add Wikidata icon
+      if(wikidataURI != null) {
+        var wikidataLink = semRecs.generateWikidataLink(wikidataURI);
+        $("span[role='wduri'][uri='" + locuri + "']").html(wikidataLink);
+      }
+      var appendHtml = "";
       if("image" in data) {
         var imgHtml = "<img class='rounded float-left img-thumbnail w-25' src='" + data["image"] + "'>";
-        $("div[role='wikidata'][uri='" + locuri + "']").append(imgHtml);
+        appendHtml += imgHtml;
+      }
+      if("description" in data) {
+        appendHtml += "<div class='float-left'>" + data["description"] + "</div>";
+      }
+      if(appendHtml != "") {
+        $("div[role='wikidata'][uri='" + locuri + "']").append(appendHtml);
       }
     }
     
