@@ -1,0 +1,1 @@
+SUGGESTIONS = JSON.parse(File.read("#{Rails.root}/config/autosuggest.json")).sort_by { |h| [h["type"], -h["rank"], h["label"]] }

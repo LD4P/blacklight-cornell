@@ -35,6 +35,8 @@ get 'proxy/qafast'
   
 get "/get_previous" => 'browse#previous_callnumber', as: 'get_previous'
 get "/get_next" => 'browse#next_callnumber', as: 'get_next'
+
+get "/search_ac" => 'autosuggest#get_suggestions', as: 'search_ac'
   
 #get 'bookmarks/email_login_required' => 'bookmarks#email_login_required'
 get 'bookmarks/show_email_login_required_bookmarks' => 'bookmarks#show_email_login_required_bookmarks'
