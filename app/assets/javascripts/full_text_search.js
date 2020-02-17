@@ -75,13 +75,78 @@ var fullTextSearch = {
   // Get a URL from a hidden div in the search page
   getSolrAddrs: function() {
     return $( "#solr-server-url-data" ).html();
+  },
+
+  // split query up by words, pass each to be synonymed, write one to document
+  findSynonyms: async function() {
+    const query = $('input#q').val();
+    const words = query.split(" ");
+    const hints = new Array
+    for (const [index, word] of words.entries()) {
+      const synonyms = await fullTextSearch.queryWord(word);
+      for (const synonym of synonyms) {
+        newWords = [...words]
+        newWords[index] = synonym
+        hints.push(newWords.join(' '))
+      }
+    }
+    const topHint = await fullTextSearch.narrowSuggestions(hints);
+    if (topHint !== undefined) {
+      fullTextSearch.addSuggestionsToView(topHint);
+    }
+  },
+
+  queryWord: async function (word) {
+    const sparqlQuery = "SELECT * {" +
+      "VALUES ?lemma1 {'"+ word +"'@en}" +
+      "?lexeme1 wikibase:lemma ?lemma1 ." +
+      "?lexeme1 ontolex:sense ?sense1 ." +
+      "?sense1 wdt:P5973 ?sense2 ." +
+      "?lexeme2 wikibase:lemma ?synonym ." +
+      "?lexeme2 ontolex:sense ?sense2 ." +
+    "}"; // run a SPARQL query that gets synonymous lexemes
+    const wikidataSparqlUrl = "https://query.wikidata.org/sparql?";
+    const wikidataApiResult = await $.ajax({
+      url:     wikidataSparqlUrl,
+      headers: {Accept: 'application/sparql-results+json'},
+      data:    {query: sparqlQuery}
+    });
+    return wikidataApiResult["results"]["bindings"].map(function (binding) {
+      return binding['synonym']['value']
+    }); // return an array of synonym strings
+  },
+
+  // find the first search hint with catalog results
+  narrowSuggestions: async function (hints) {
+    const solrAddress = fullTextSearch.getSolrAddrs();
+    for (const hint of hints) {
+      const solrUrl = solrAddress + "/select?&wt=json&rows=0&q=" + hint
+      const solrResponse = await $.ajax({
+        url: solrUrl,
+        type: 'GET',
+        dataType: 'jsonp',
+        jsonp: 'json.wrf'
+      });
+      const numFound = solrResponse["response"]["numFound"]
+      if (numFound > 0) {
+        return hint;
+        break
+      }
+    }
+  },
+
+  addSuggestionsToView: function (hint) {
+    $("#main-container").prepend(
+      'Did you mean <a href="?q='+hint+'">'+hint+'</a>?'
+    );
   }
 
 };
-  
+
 // Run code when the normal search process returns zero results
 Blacklight.onLoad(function() {
   $('p#zero-results').each(function() {
     fullTextSearch.queryFullText();
+    fullTextSearch.findSynonyms();
   });
 });
