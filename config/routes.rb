@@ -104,6 +104,7 @@ devise_for :users, controllers: {
   get '/browseld' => 'browseld#index'
   get '/browseld/fields' => 'browseld#fields'
   get '/browseld/in_field' => 'browseld#in_field'
+  get '/browseld/osp_coassignments' => 'browseld#osp_coassignments'
 
   match '/catalog/range_limit' => 'catalog', :via => [:get, :post, :put]
   get '/databases' => 'databases#index', :as => 'databases_index'

@@ -37,7 +37,27 @@ class BrowseldController < ApplicationController
   	
   end
   
+  def osp_coassignments
+    (render json: [], status: 200; return) if params[:isbns].blank?
 
+    range = 0..19 # return top 20 most assigned works
+    token = ENV['OSP_API_TOKEN'] # Token in .env file
+    isbns = params[:isbns] # ISBNs joined with commas
+    cnctn = HTTPClient.get(
+      "https://api.opensyllabus.org/coassignments/isbn/" + isbns,
+      nil, # query not used by Open Syllabus Project's API
+      {authorization: "Token #{token}"} 
+    )
+    json_body = JSON.parse(cnctn.content)
+    # return empty results if ISBNs not found
+    (render json: [], status: 200; return) unless json_body.kind_of?(Array)
+    # sort and return top results if found
+    sort_rank = json_body.sort_by{|a| a['count'] }.reverse
+    top_items = sort_rank[range]
+    isbn_nums = top_items.map{|b| b['isbns'].map{|c| c.to_i }}.reject { |d| d.empty? }
+
+    render json: isbn_nums, status: cnctn.status
+  end
   
   def index
   end
