@@ -31,7 +31,10 @@ get 'proxy/subjectbrowse'
 get 'proxy/authorbrowse'
 get 'proxy/mapbrowse'
 get 'proxy/qafast'
+get 'proxy/authorlookup'
 
+#semantic search controller: a place to park some (though not necessarily all) sem search stuff
+get 'sem/qalookup'
   
 get "/get_previous" => 'browse#previous_callnumber', as: 'get_previous'
 get "/get_next" => 'browse#next_callnumber', as: 'get_next'

@@ -1,0 +1,17 @@
+// Semantic suggestion styles
+
+.suggestionSection {
+	overflow:auto;
+	height:100px;
+}
+
+.semDisplayCard {
+	height:100px;
+	overflow:auto;
+	font-size:0.8rem;
+	background: #edebe7;
+}
+
+.semDisplayCard .card-subtitle {
+	font-weight: bold !important;
+}

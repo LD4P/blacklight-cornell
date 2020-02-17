@@ -270,10 +270,12 @@ var browseLd = {
       var narrowerProperty = "http://www.loc.gov/mads/rdf/v1#hasNarrowerAuthority";
       var broaderProperty = "http://www.loc.gov/mads/rdf/v1#hasBroaderAuthority";
       var closeProperty = "http://www.loc.gov/mads/rdf/v1#hasCloseExternalAuthority";
+      var exactMatchProperty = "http://www.loc.gov/mads/rdf/v1#hasExactExternalAuthority";
       var labelProperty = "http://www.w3.org/2004/02/skos/core#prefLabel";
       var narrowerURIs = [];
       var broaderURIs = [];
       var closeURIs = [];
+      var exactMatchURIs = [];
       if(narrowerProperty in entity) {
         narrowerURIs = entity[narrowerProperty];
       }
@@ -283,9 +285,12 @@ var browseLd = {
       if(closeProperty in entity) {
         closeURIs = entity[closeProperty];
       }
+      if(exactMatchProperty in entity) {
+        exactMatchURIs = entity[exactMatchProperty];
+      }
     
       var label = entity[labelProperty][0]["@value"];
-      return {uri:uri, dataHash: dataHash, label: label, narrowerURIs: narrowerURIs, broaderURIs: broaderURIs, closeURIs: closeURIs};
+      return {uri:uri, dataHash: dataHash, label: label, narrowerURIs: narrowerURIs, broaderURIs: broaderURIs, closeURIs: closeURIs, exactMatchURIs: exactMatchURIs};
     }, 
     getCatalogResults: function(fastHeading) {
       //empty out documents
