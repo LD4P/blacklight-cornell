@@ -2,7 +2,7 @@
 (function ($) {
   $(document).ready(function() {
 
-    if ($('#q').length) {
+    if ($('#qq').length) {
       $('#q').autocomplete({
         source: location.protocol + "//bestbets.library.cornell.edu/match/" + $('#q').val(),
         minLength: 2,

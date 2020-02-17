@@ -163,4 +163,23 @@ h2.advanced-search { margin: 0; }
   }
 }
 
-
+/*** For the LD4P2 autocomplete ***/
+.ui-state-focus {
+	margin: 0 !important;
+	background: none !important;
+	border: none !important;
+}
+.ac-li, ac-li:hover {
+	font-weight: 510 !important;
+	cursor: default !important;
+	background: #ededed !important;
+	border: none !important;
+	margin: 0 !important;
+}
+.ac-menu-item:hover {
+	background: #9fccf3 !important;
+}
+.ac-menu-item > span {
+	font-size: 14px !important;
+	color: #767676;
+}
