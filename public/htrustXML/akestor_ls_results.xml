@@ -1,0 +1,1276 @@
+
+
+<MBooksTop xmlns:mdp="http://www.umdl.umich.edu/mdp">
+
+  <!-- LS/list_search_results.xml -->
+
+  <!-- XSL fallback files -->
+  <XslFileList>
+  <Filename>skeleton.xsl</Filename>
+    <Filename>js_utils.xsl</Filename>
+<!--XXX try list_utilsAB.xsl from AB branch-->
+    <Filename>list_utils.xsl</Filename>
+<!--    <Filename>list_utilsAB.xsl</Filename> -->
+    <!-- <Filename>loads.xsl</Filename> -->
+    <!-- <Filename>loads_helper_ls.xsl</Filename> -->
+    <!-- <Filename>coll.xsl</Filename> -->
+    <Filename>skin.xsl</Filename>
+    <Filename>common.xsl</Filename>
+    <Filename>list_search_results.xsl</Filename>
+    <Filename>xsl2htmlutils.xsl</Filename>
+<!-- test comment-->
+   </XslFileList>
+
+  <!-- Custom OPTIONAL XML for top-level file -->
+  <CustomXml></CustomXml>
+
+  
+<!-- mbooks_globals.xml -->
+
+<MBooksGlobals>
+  <CurrentCgi><Param name="field1">ocr</Param>
+<Param name="q1">Akestor, King of Paphos</Param>
+<Param name="a">srchls</Param>
+<Param name="lmt">ft</Param>
+<Param name="debug">xml</Param>
+<Param name="pn">1</Param>
+</CurrentCgi>
+  <LoggedIn>YES</LoggedIn>
+  <LoggedInJs>function isLoggedIn()
+{
+var LoggedInVar = true;
+return LoggedInVar;
+}
+</LoggedInJs>
+  <SessionId>d13e309b40b805673185a6da9481782e</SessionId>
+  <Debug>YES</Debug>
+  <DebugMessages></DebugMessages>
+  <LangMap><LookupTables/>
+</LangMap>
+  <EnvHT_DEV></EnvHT_DEV>
+  <EnvSDRINST>umich</EnvSDRINST>
+  <DebugUncompressed><JS>0</JS>
+<CSS>0</CSS>
+</DebugUncompressed>
+  <EnvUSER_AGENT>Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101 Firefox/68.0</EnvUSER_AGENT>
+  <InLibrary><Status>YES</Status>
+<Institution>umich</Institution>
+</InLibrary>
+  <InstitutionName>University of Michigan</InstitutionName>
+  <InstitutionCode>umich</InstitutionCode>
+  <Surveys></Surveys>
+</MBooksGlobals>
+<Timestamp href="/common/alicorn/css/main.201910.css" modtime="1582055588" />
+<Timestamp href="/common/alicorn/js/utils.201910.js" modtime="1582055588" />
+
+
+  
+  <!-- Minimal header.xml -->
+
+  <!-- header.xml XML include file-->
+
+<Header>
+  <UserName>Aaron Daniel Elkiss</UserName>
+  <UserId>aelkiss</UserId>
+  <UserAffiliation>Member</UserAffiliation>
+  <ProviderName>University of Michigan</ProviderName>
+  <LoginLink></LoginLink>
+  <PubCollLink>/shcgi/mb?a=listcs;colltype=all;debug=xml</PubCollLink>
+  <PrivCollLink>/cgi/mb?a=listcs;colltype=my-collections;debug=xml</PrivCollLink>
+  <HomeLink>/cgi/mb?a=page;page=home</HomeLink>
+  <JumpToCollWidget></JumpToCollWidget>
+</Header>
+
+
+  <CollectionsOwnedJs>function getCollArray()
+{
+var COLL_NAME = new Array(2);
+COLL_NAME[0] = "foo";
+COLL_NAME[1] = "Select Collection";
+return COLL_NAME;
+}
+</CollectionsOwnedJs>
+  <CollectionSizesJs>function getCollSizeArray()
+{
+var COLL_SIZE = new Array();
+COLL_SIZE[822795703] = 1;
+return COLL_SIZE;
+}
+</CollectionSizesJs>  
+
+  <EditCollectionWidget></EditCollectionWidget>
+  
+  <!-- Main -->
+  <HeaderSearchSelect><Selected>all</Selected>
+</HeaderSearchSelect>
+  <OperationResults><CollName>HathiTrust Experimental Search</CollName>
+<CollHref>http://www.hathitrust.org</CollHref>
+</OperationResults>
+
+  <QueryString>Akestor, King of Paphos</QueryString>
+  <SearchResults><LoggerURL>https://babel.hathitrust.org/cgi/ls/logger</LoggerURL>
+<G_CLICK_DATA>{"B_rs":["uva.x030353053","mdp.39015039556637","umn.31951d00016154s","coo.31924065842472","uc1.c3591058","uc1.d0007444136","mdp.39015073696927","nyp.33433081864005","nyp.33433082298252","coo.31924026677660","uc1.c2834775","njp.32101075729424","uc1.c035616654","osu.32435056491376","coo1.ark:/13960/t83j42849","mdp.39015008445382","uiug.30112001610309","coo.31924087722314","hvd.32044041896010","uva.x002031121"],"A_qtime":"0.047","starting_result_no":1,"cgi":"https%3A%2F%2Fbabel.hathitrust.org%2Fcgi%2Fls%3Ffield1%3Docr%3Bq1%3DAkestor%252C%2520King%2520of%2520Paphos%3Ba%3Dsrchls%3Blmt%3Dft%3Bdebug%3Dxml%3Bpn%3D1","query_string":"Akestor%2C%20King%20of%20Paphos","pid":5669,"referer":"","B_qtime":"0.028","A_rs":["uva.x030353053","mdp.39015039556637","coo.31924065842472","umn.31951d00016154s","coo1.ark:/13960/t83j42849","hvd.32044041896010","njp.32101075729424","mdp.39015008445382","uiug.30112001610309","uc1.b3279945","uc1.c3591058","njp.32101073498394","hvd.32044099906729","hvd.32044041867292","mdp.39015059784986","inu.30000092390727","uc1.d0007444136","uc1.b3343504","hvd.hw22gn","uva.x002031121"],"I_rs":["uva.x030353053","mdp.39015039556637","umn.31951d00016154s","coo.31924065842472","uc1.c3591058","coo1.ark:/13960/t83j42849","uc1.d0007444136","hvd.32044041896010","mdp.39015073696927","njp.32101075729424","nyp.33433081864005","mdp.39015008445382","nyp.33433082298252","uiug.30112001610309","coo.31924026677660","uc1.b3279945","uc1.c2834775","njp.32101073498394","uc1.c035616654","hvd.32044099906729"],"session":"d13e309b40b805673185a6da9481782e","accept_encoding":"gzip, deflate, br","B_num_found":100,"timestamp":"2020-02-19 13:05:46","accept_language":"en-US,en%3Bq=0.5","logged_in":"YES","entries_per_page":"20","accept":"text/html,application/xhtml+xml,application/xml%3Bq=0.9,*/*%3Bq=0.8","test_type":"intl","ip":"141.211.86.224","user_agent":"Mozilla%2F5.0%20%28X11%3B%20Linux%20x86_64%3B%20rv%3A68.0%29%20Gecko%2F20100101%20Firefox%2F68.0","num_found":100}</G_CLICK_DATA>
+<A_LABEL>LS::Interleaver::Balanced:BM25 Alg K1=10 OCR/rest lucene no coord/qnorm</A_LABEL>
+<A_RESULTS><Item><bookID>OCLC:1754613,LCCN:09020515,UVA:x030353053</bookID>
+<Title>The journal of Hellenic studies / the Society for the Promotion of Hellenic Studies</Title>
+<VolEnumCron>Index v.9-16</VolEnumCron>
+<UseDate>1880</UseDate>
+<Date>1880</Date>
+<EnumDate></EnumDate>
+<BothDate>1880</BothDate>
+<ItemID>uva.x030353053</ItemID>
+<ABLabel>Same_Rank</ABLabel>
+<ItemClickData>{"id":"uva.x030353053","rank_on_page":1,"AB_label":"Same_Rank"}</ItemClickData>
+<rights>9</rights>
+<relevance>3915798.5</relevance>
+<PtSearchHref>/cgi/pt/search?id=uva.x030353053;debug=xml;q1=Akestor%2C%20King%20of%20Paphos</PtSearchHref>
+<PtHref>/cgi/pt?id=uva.x030353053;debug=xml;q1=Akestor%2C%20King%20of%20Paphos</PtHref>
+<fulltext>1</fulltext>
+<record>000525919</record>
+<result_number>1</result_number>
+</Item>
+<Item><bookID>OCLC:1754613,LCCN:09020515,UOM:39015039556637</bookID>
+<Title>The journal of Hellenic studies / the Society for the Promotion of Hellenic Studies</Title>
+<VolEnumCron>v.16 1896</VolEnumCron>
+<UseDate>1896</UseDate>
+<Date>1880</Date>
+<EnumDate>1896</EnumDate>
+<BothDate>1896</BothDate>
+<ItemID>mdp.39015039556637</ItemID>
+<ABLabel>Same_Rank</ABLabel>
+<ItemClickData>{"rank_on_page":2,"id":"mdp.39015039556637","AB_label":"Same_Rank"}</ItemClickData>
+<rights>9</rights>
+<relevance>3778221</relevance>
+<PtSearchHref>/cgi/pt/search?id=mdp.39015039556637;debug=xml;q1=Akestor%2C%20King%20of%20Paphos</PtSearchHref>
+<PtHref>/cgi/pt?id=mdp.39015039556637;debug=xml;q1=Akestor%2C%20King%20of%20Paphos</PtHref>
+<fulltext>1</fulltext>
+<record>000525919</record>
+<result_number>2</result_number>
+</Item>
+<Item><bookID>OCLC:9639255,LCCN:2008252284,MINN:31951d00016154s</bookID>
+<Title>Abhandlungen der Königlichen Akademie der Wissenschaften in Berlin.</Title>
+<VolEnumCron>1849 (Philos.-hist.)</VolEnumCron>
+<UseDate>1849</UseDate>
+<Date>1811</Date>
+<EnumDate>1849</EnumDate>
+<BothDate>1849</BothDate>
+<ItemID>umn.31951d00016154s</ItemID>
+<ABLabel>B_dupe</ABLabel>
+<ItemClickData>{"AB_label":"B_dupe","rank_on_page":3,"id":"umn.31951d00016154s"}</ItemClickData>
+<rights>1</rights>
+<relevance>3129730.2</relevance>
+<PtSearchHref>/cgi/pt/search?id=umn.31951d00016154s;debug=xml;q1=Akestor%2C%20King%20of%20Paphos</PtSearchHref>
+<PtHref>/cgi/pt?id=umn.31951d00016154s;debug=xml;q1=Akestor%2C%20King%20of%20Paphos</PtHref>
+<fulltext>1</fulltext>
+<record>011920777</record>
+<result_number>3</result_number>
+</Item>
+<Item><bookID>OCLC:1754613,LCCN:09020515,Cornell:31924065842472</bookID>
+<Title>The journal of Hellenic studies / the Society for the Promotion of Hellenic Studies</Title>
+<VolEnumCron>v.42; Index v.9/42 (1888/1922) 1922</VolEnumCron>
+<UseDate>1922</UseDate>
+<Date>1880</Date>
+<EnumDate>1922</EnumDate>
+<BothDate>1922</BothDate>
+<ItemID>coo.31924065842472</ItemID>
+<ABLabel>A_dupe</ABLabel>
+<ItemClickData>{"AB_label":"A_dupe","id":"coo.31924065842472","rank_on_page":4}</ItemClickData>
+<rights>9</rights>
+<relevance>0.06793855</relevance>
+<PtSearchHref>/cgi/pt/search?id=coo.31924065842472;debug=xml;q1=Akestor%2C%20King%20of%20Paphos</PtSearchHref>
+<PtHref>/cgi/pt?id=coo.31924065842472;debug=xml;q1=Akestor%2C%20King%20of%20Paphos</PtHref>
+<fulltext>1</fulltext>
+<record>000525919</record>
+<result_number>3</result_number>
+</Item>
+<Item><bookID>OCLC:176339355,UCAL:c3591058</bookID>
+<Title>Abhandlungen der Königlich Preussischen Akademie der Wissenschaften aus der dem Jahre ...</Title>
+<VolEnumCron>1849</VolEnumCron>
+<UseDate>1849</UseDate>
+<Date>1804</Date>
+<EnumDate>1849</EnumDate>
+<BothDate>1849</BothDate>
+<ItemID>uc1.c3591058</ItemID>
+<ABLabel>B_dupe</ABLabel>
+<ItemClickData>{"AB_label":"B_dupe","id":"uc1.c3591058","rank_on_page":5}</ItemClickData>
+<rights>1</rights>
+<relevance>2776174</relevance>
+<PtSearchHref>/cgi/pt/search?id=uc1.c3591058;debug=xml;q1=Akestor%2C%20King%20of%20Paphos</PtSearchHref>
+<PtHref>/cgi/pt?id=uc1.c3591058;debug=xml;q1=Akestor%2C%20King%20of%20Paphos</PtHref>
+<fulltext>1</fulltext>
+<record>008893714</record>
+<result_number>5</result_number>
+</Item>
+<Item><bookID>OCLC:4769899,ISBN:9780524046388,ISBN:0524046387,ISBN:0524046387 (microfiche),LCCN:31023883</bookID>
+<Title>The mythology of the Aryan nations. By George W. Cox</Title>
+<VolEnumCron>v.2</VolEnumCron>
+<Author>Cox, George W. 1827-1902.</Author>
+<UseDate>1870</UseDate>
+<Date>1870</Date>
+<EnumDate>1870</EnumDate>
+<BothDate>1870</BothDate>
+<ItemID>coo1.ark:/13960/t83j42849</ItemID>
+<ABLabel>A_dupe</ABLabel>
+<ItemClickData>{"id":"coo1.ark:/13960/t83j42849","rank_on_page":6,"AB_label":"A_dupe"}</ItemClickData>
+<rights>1</rights>
+<relevance>0.05847699</relevance>
+<PtSearchHref>/cgi/pt/search?id=coo1.ark%3A%2F13960%2Ft83j42849;debug=xml;q1=Akestor%2C%20King%20of%20Paphos</PtSearchHref>
+<PtHref>/cgi/pt?id=coo1.ark%3A%2F13960%2Ft83j42849;debug=xml;q1=Akestor%2C%20King%20of%20Paphos</PtHref>
+<fulltext>1</fulltext>
+<record>001397214</record>
+<result_number>5</result_number>
+</Item>
+<Item><bookID>OCLC:9639255,LCCN:2008252284,UCAL:d0007444136</bookID>
+<Title>Abhandlungen der Königlichen Akademie der Wissenschaften in Berlin.</Title>
+<VolEnumCron>yr.1849</VolEnumCron>
+<UseDate>1849</UseDate>
+<Date>1811</Date>
+<EnumDate>1849</EnumDate>
+<BothDate>1849</BothDate>
+<ItemID>uc1.d0007444136</ItemID>
+<ABLabel>B_dupe</ABLabel>
+<ItemClickData>{"rank_on_page":7,"id":"uc1.d0007444136","AB_label":"B_dupe"}</ItemClickData>
+<rights>1</rights>
+<relevance>2749810.8</relevance>
+<PtSearchHref>/cgi/pt/search?id=uc1.d0007444136;debug=xml;q1=Akestor%2C%20King%20of%20Paphos</PtSearchHref>
+<PtHref>/cgi/pt?id=uc1.d0007444136;debug=xml;q1=Akestor%2C%20King%20of%20Paphos</PtHref>
+<fulltext>1</fulltext>
+<record>011920777</record>
+<result_number>6</result_number>
+</Item>
+<Item><bookID>OCLC:4769899,ISBN:9780524046388,ISBN:0524046387,ISBN:0524046387 (microfiche),LCCN:31023883,Harvard:32044041896010</bookID>
+<Title>The mythology of the Aryan nations. By George W. Cox</Title>
+<VolEnumCron>v.2 (1870)</VolEnumCron>
+<Author>Cox, George W. 1827-1902.</Author>
+<UseDate>1870</UseDate>
+<Date>1870</Date>
+<EnumDate>1870</EnumDate>
+<BothDate>1870</BothDate>
+<ItemID>hvd.32044041896010</ItemID>
+<ABLabel>A_dupe</ABLabel>
+<ItemClickData>{"AB_label":"A_dupe","rank_on_page":8,"id":"hvd.32044041896010"}</ItemClickData>
+<rights>1</rights>
+<relevance>0.058066282</relevance>
+<PtSearchHref>/cgi/pt/search?id=hvd.32044041896010;debug=xml;q1=Akestor%2C%20King%20of%20Paphos</PtSearchHref>
+<PtHref>/cgi/pt?id=hvd.32044041896010;debug=xml;q1=Akestor%2C%20King%20of%20Paphos</PtHref>
+<fulltext>1</fulltext>
+<record>001397214</record>
+<result_number>6</result_number>
+</Item>
+<Item><bookID>OCLC:173700843,LCCN:49039779,UOM:39015073696927</bookID>
+<Title>Abhandlungen der Königlich Preussischen Akademie der Wissenschaften.</Title>
+<VolEnumCron>1849-1950</VolEnumCron>
+<Author>Deutsche Akademie der Wissenschaften zu Berlin.</Author>
+<UseDate>1950</UseDate>
+<Date>1811</Date>
+<EnumDate>1950</EnumDate>
+<BothDate>1950</BothDate>
+<ItemID>mdp.39015073696927</ItemID>
+<ABLabel>B_dupe</ABLabel>
+<ItemClickData>{"AB_label":"B_dupe","id":"mdp.39015073696927","rank_on_page":9}</ItemClickData>
+<rights>9</rights>
+<relevance>2343061.2</relevance>
+<PtSearchHref>/cgi/pt/search?id=mdp.39015073696927;debug=xml;q1=Akestor%2C%20King%20of%20Paphos</PtSearchHref>
+<PtHref>/cgi/pt?id=mdp.39015073696927;debug=xml;q1=Akestor%2C%20King%20of%20Paphos</PtHref>
+<fulltext>1</fulltext>
+<record>000500578</record>
+<result_number>7</result_number>
+</Item>
+<Item><bookID>OCLC:4769899,ISBN:9780524046388,ISBN:0524046387,ISBN:0524046387 (microfiche),LCCN:31023883,PRNC:32101075729424</bookID>
+<Title>The mythology of the Aryan nations. By George W. Cox</Title>
+<VolEnumCron>v.2</VolEnumCron>
+<Author>Cox, George W. 1827-1902.</Author>
+<UseDate>1870</UseDate>
+<Date>1870</Date>
+<EnumDate>1870</EnumDate>
+<BothDate>1870</BothDate>
+<ItemID>njp.32101075729424</ItemID>
+<ABLabel>A_dupe</ABLabel>
+<ItemClickData>{"AB_label":"A_dupe","rank_on_page":10,"id":"njp.32101075729424"}</ItemClickData>
+<rights>1</rights>
+<relevance>0.057633903</relevance>
+<PtSearchHref>/cgi/pt/search?id=njp.32101075729424;debug=xml;q1=Akestor%2C%20King%20of%20Paphos</PtSearchHref>
+<PtHref>/cgi/pt?id=njp.32101075729424;debug=xml;q1=Akestor%2C%20King%20of%20Paphos</PtHref>
+<fulltext>1</fulltext>
+<record>001397214</record>
+<result_number>7</result_number>
+</Item>
+<Item><bookID>OCLC:40417773,NYPL:33433081864005</bookID>
+<Title>Conversationslexicon für bildende Kunst. [2.-4. Bd. begründet von J.A. Romberg, fortgeführt von F. Faber, 5.-6. Bd. hrsg von F. Faber]</Title>
+<VolEnumCron>v. 1 (A-AZZ)</VolEnumCron>
+<UseDate>1853</UseDate>
+<Date>1843</Date>
+<EnumDate>1853</EnumDate>
+<BothDate>1853</BothDate>
+<ItemID>nyp.33433081864005</ItemID>
+<ABLabel>B_dupe</ABLabel>
+<ItemClickData>{"AB_label":"B_dupe","rank_on_page":11,"id":"nyp.33433081864005"}</ItemClickData>
+<rights>1</rights>
+<relevance>2037624.4</relevance>
+<PtSearchHref>/cgi/pt/search?id=nyp.33433081864005;debug=xml;q1=Akestor%2C%20King%20of%20Paphos</PtSearchHref>
+<PtHref>/cgi/pt?id=nyp.33433081864005;debug=xml;q1=Akestor%2C%20King%20of%20Paphos</PtHref>
+<fulltext>1</fulltext>
+<record>008692647</record>
+<result_number>8</result_number>
+</Item>
+<Item><bookID>OCLC:4769899,ISBN:9780524046388,ISBN:0524046387,ISBN:0524046387 (microfiche),LCCN:31023883,UOM:39015008445382</bookID>
+<Title>The mythology of the Aryan nations. By George W. Cox</Title>
+<VolEnumCron>v.2</VolEnumCron>
+<Author>Cox, George W. 1827-1902.</Author>
+<UseDate>1870</UseDate>
+<Date>1870</Date>
+<EnumDate>1870</EnumDate>
+<BothDate>1870</BothDate>
+<ItemID>mdp.39015008445382</ItemID>
+<ABLabel>A_dupe</ABLabel>
+<ItemClickData>{"AB_label":"A_dupe","rank_on_page":12,"id":"mdp.39015008445382"}</ItemClickData>
+<rights>1</rights>
+<relevance>0.057489794</relevance>
+<PtSearchHref>/cgi/pt/search?id=mdp.39015008445382;debug=xml;q1=Akestor%2C%20King%20of%20Paphos</PtSearchHref>
+<PtHref>/cgi/pt?id=mdp.39015008445382;debug=xml;q1=Akestor%2C%20King%20of%20Paphos</PtHref>
+<fulltext>1</fulltext>
+<record>001397214</record>
+<result_number>8</result_number>
+</Item>
+<Item><bookID>OCLC:13548202,LCCN:09018905,NYPL:33433082298252</bookID>
+<Title>Handbuch der Archäologie der Kunst, von K.O. Müller.</Title>
+<VolEnumCron></VolEnumCron>
+<Author>Müller, Karl Otfried, 1797-1840.</Author>
+<UseDate>1835</UseDate>
+<Date>1835</Date>
+<EnumDate>1835</EnumDate>
+<BothDate>1835</BothDate>
+<ItemID>nyp.33433082298252</ItemID>
+<ABLabel>B_dupe</ABLabel>
+<ItemClickData>{"rank_on_page":13,"id":"nyp.33433082298252","AB_label":"B_dupe"}</ItemClickData>
+<rights>1</rights>
+<relevance>2021215.2</relevance>
+<PtSearchHref>/cgi/pt/search?id=nyp.33433082298252;debug=xml;q1=Akestor%2C%20King%20of%20Paphos</PtSearchHref>
+<PtHref>/cgi/pt?id=nyp.33433082298252;debug=xml;q1=Akestor%2C%20King%20of%20Paphos</PtHref>
+<fulltext>1</fulltext>
+<record>008692502</record>
+<result_number>9</result_number>
+</Item>
+<Item><bookID>OCLC:1633114,UIUC:30112001610309</bookID>
+<Title>The mythology of the Aryan nations / by the Rev. Sir George W. Cox, bart</Title>
+<VolEnumCron>v.2</VolEnumCron>
+<Author>Cox, George W. 1827-1902.</Author>
+<UseDate>1878</UseDate>
+<Date>1878</Date>
+<EnumDate>1878</EnumDate>
+<BothDate>1878</BothDate>
+<ItemID>uiug.30112001610309</ItemID>
+<ABLabel>A_dupe</ABLabel>
+<ItemClickData>{"AB_label":"A_dupe","rank_on_page":14,"id":"uiug.30112001610309"}</ItemClickData>
+<rights>1</rights>
+<relevance>0.057466384</relevance>
+<PtSearchHref>/cgi/pt/search?id=uiug.30112001610309;debug=xml;q1=Akestor%2C%20King%20of%20Paphos</PtSearchHref>
+<PtHref>/cgi/pt?id=uiug.30112001610309;debug=xml;q1=Akestor%2C%20King%20of%20Paphos</PtHref>
+<fulltext>1</fulltext>
+<record>100802287</record>
+<result_number>9</result_number>
+</Item>
+<Item><bookID>OCLC:9964613,Cornell:31924026677660</bookID>
+<Title>Über die Dionysiaka des Nonnus von Panopolis.</Title>
+<VolEnumCron></VolEnumCron>
+<Author>Koehler, Reinhold, Philologist.</Author>
+<UseDate>1853</UseDate>
+<Date>1853</Date>
+<EnumDate>1853</EnumDate>
+<BothDate>1853</BothDate>
+<ItemID>coo.31924026677660</ItemID>
+<ABLabel>B_dupe</ABLabel>
+<ItemClickData>{"id":"coo.31924026677660","rank_on_page":15,"AB_label":"B_dupe"}</ItemClickData>
+<rights>1</rights>
+<relevance>1916603.1</relevance>
+<PtSearchHref>/cgi/pt/search?id=coo.31924026677660;debug=xml;q1=Akestor%2C%20King%20of%20Paphos</PtSearchHref>
+<PtHref>/cgi/pt?id=coo.31924026677660;debug=xml;q1=Akestor%2C%20King%20of%20Paphos</PtHref>
+<fulltext>1</fulltext>
+<record>012468436</record>
+<result_number>10</result_number>
+</Item>
+<Item><bookID>OCLC:7549196,LCCN:99112013,UCAL:b3279945</bookID>
+<Title>The American journal of archaeology and of the history of the fine arts</Title>
+<VolEnumCron>v.11 (1896)</VolEnumCron>
+<UseDate>1896</UseDate>
+<Date>1885</Date>
+<EnumDate>1896</EnumDate>
+<BothDate>1896</BothDate>
+<ItemID>uc1.b3279945</ItemID>
+<ABLabel>A_dupe</ABLabel>
+<ItemClickData>{"AB_label":"A_dupe","rank_on_page":16,"id":"uc1.b3279945"}</ItemClickData>
+<rights>1</rights>
+<relevance>0.057364386</relevance>
+<PtSearchHref>/cgi/pt/search?id=uc1.b3279945;debug=xml;q1=Akestor%2C%20King%20of%20Paphos</PtSearchHref>
+<PtHref>/cgi/pt?id=uc1.b3279945;debug=xml;q1=Akestor%2C%20King%20of%20Paphos</PtHref>
+<fulltext>1</fulltext>
+<record>006016081</record>
+<result_number>10</result_number>
+</Item>
+<Item><bookID>OCLC:4736571,LCCN:06006611,UCAL:c2834775</bookID>
+<Title>Sitzungsberichte.</Title>
+<VolEnumCron>1911 pt.1</VolEnumCron>
+<Author>Deutsche Akademie der Wissenschaften zu Berlin.</Author>
+<UseDate>1911</UseDate>
+<Date>1836</Date>
+<EnumDate>1911</EnumDate>
+<BothDate>1911</BothDate>
+<ItemID>uc1.c2834775</ItemID>
+<ABLabel>B_dupe</ABLabel>
+<ItemClickData>{"AB_label":"B_dupe","rank_on_page":17,"id":"uc1.c2834775"}</ItemClickData>
+<rights>9</rights>
+<relevance>1660855.6</relevance>
+<PtSearchHref>/cgi/pt/search?id=uc1.c2834775;debug=xml;q1=Akestor%2C%20King%20of%20Paphos</PtSearchHref>
+<PtHref>/cgi/pt?id=uc1.c2834775;debug=xml;q1=Akestor%2C%20King%20of%20Paphos</PtHref>
+<fulltext>1</fulltext>
+<record>011920705</record>
+<result_number>11</result_number>
+</Item>
+<Item><bookID>OCLC:7549196,PRNC:32101073498394</bookID>
+<Title>American journal of archaeology and of the history of the fine arts.</Title>
+<VolEnumCron>v.11 (1896)</VolEnumCron>
+<UseDate>1896</UseDate>
+<Date>1885</Date>
+<EnumDate>1896</EnumDate>
+<BothDate>1896</BothDate>
+<ItemID>njp.32101073498394</ItemID>
+<ABLabel>A_dupe</ABLabel>
+<ItemClickData>{"AB_label":"A_dupe","id":"njp.32101073498394","rank_on_page":18}</ItemClickData>
+<rights>1</rights>
+<relevance>0.05698049</relevance>
+<PtSearchHref>/cgi/pt/search?id=njp.32101073498394;debug=xml;q1=Akestor%2C%20King%20of%20Paphos</PtSearchHref>
+<PtHref>/cgi/pt?id=njp.32101073498394;debug=xml;q1=Akestor%2C%20King%20of%20Paphos</PtHref>
+<fulltext>1</fulltext>
+<record>008891169</record>
+<result_number>12</result_number>
+</Item>
+<Item><bookID>OCLC:1478672,LCCN:05040119,UCAL:c035616654</bookID>
+<Title>Sitzungsberichte der Preussischen Akademie der Wissenschaften.</Title>
+<VolEnumCron>1911:1</VolEnumCron>
+<Author>Deutsche Akademie der Wissenschaften zu Berlin.</Author>
+<UseDate>1911</UseDate>
+<Date>1882</Date>
+<EnumDate>1911</EnumDate>
+<BothDate>1911</BothDate>
+<ItemID>uc1.c035616654</ItemID>
+<ABLabel>B_dupe</ABLabel>
+<ItemClickData>{"AB_label":"B_dupe","rank_on_page":19,"id":"uc1.c035616654"}</ItemClickData>
+<rights>9</rights>
+<relevance>1645562.2</relevance>
+<PtSearchHref>/cgi/pt/search?id=uc1.c035616654;debug=xml;q1=Akestor%2C%20King%20of%20Paphos</PtSearchHref>
+<PtHref>/cgi/pt?id=uc1.c035616654;debug=xml;q1=Akestor%2C%20King%20of%20Paphos</PtHref>
+<fulltext>1</fulltext>
+<record>000495942</record>
+<result_number>13</result_number>
+</Item>
+<Item><bookID>OCLC:7549196,LCCN:99112013,Harvard:32044099906729</bookID>
+<Title>The American journal of archaeology and of the history of the fine arts</Title>
+<VolEnumCron>v.11 (1896)</VolEnumCron>
+<UseDate>1896</UseDate>
+<Date>1885</Date>
+<EnumDate>1896</EnumDate>
+<BothDate>1896</BothDate>
+<ItemID>hvd.32044099906729</ItemID>
+<ABLabel>A_dupe</ABLabel>
+<ItemClickData>{"AB_label":"A_dupe","rank_on_page":20,"id":"hvd.32044099906729"}</ItemClickData>
+<rights>1</rights>
+<relevance>0.056768887</relevance>
+<PtSearchHref>/cgi/pt/search?id=hvd.32044099906729;debug=xml;q1=Akestor%2C%20King%20of%20Paphos</PtSearchHref>
+<PtHref>/cgi/pt?id=hvd.32044099906729;debug=xml;q1=Akestor%2C%20King%20of%20Paphos</PtHref>
+<fulltext>1</fulltext>
+<record>006016081</record>
+<result_number>13</result_number>
+</Item>
+</A_RESULTS>
+<A_QueryTime>0.047</A_QueryTime>
+<B_QueryTime>0.028</B_QueryTime>
+<SolrError></SolrError>
+<WellFormed>1</WellFormed>
+<ProcessedQueryString>Akestor, King of Paphos</ProcessedQueryString>
+<UnBalancedQuotes>0</UnBalancedQuotes>
+</SearchResults>
+<AdvancedSearch><OP3></OP3>
+<group><Clause><Qnum>1</Qnum>
+<Query>Akestor, King of Paphos</Query>
+<WellFormed>1</WellFormed>
+<ProcessedQuery>Akestor, King of Paphos</ProcessedQuery>
+<UnBalancedQuotes>0</UnBalancedQuotes>
+<OP></OP>
+<Field>Full-Text + All Fields</Field>
+<AnyAll></AnyAll>
+<unselectURL>https://babel.hathitrust.org/cgi/ls?a=srchls;lmt=ft;debug=xml;pn=1;q1=*</unselectURL>
+</Clause>
+<OP></OP>
+</group>
+<AdvancedSearchURL>ls?a=page&amp;page=advanced&amp;q1=Akestor, King of Paphos&amp;field1=ocr&amp;lmt=ft</AdvancedSearchURL>
+<ModifyAdvancedSearchURL>https://babel.hathitrust.org/cgi/ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=page;lmt=ft;debug=xml;pn=1;page=advanced</ModifyAdvancedSearchURL>
+<isAdvanced>false</isAdvanced>
+</AdvancedSearch>
+   <Facets><facetsSelected>true</facetsSelected>
+
+<SelectedFacets>
+<multiselect></multiselect>
+
+</SelectedFacets>
+<unselectedFacets>
+<facetField name="Subject" normName="Subject"  >
+<facetValue name="Classical dictionaries"  class ="showfacet Subject" > 
+<facetCount>10</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=topicStr:&quot;Classical%20dictionaries&quot;</url>
+<selected>false</selected>
+</facetValue>
+<facetValue name="Mythology, Indo-European"  class ="showfacet Subject" > 
+<facetCount>10</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=topicStr:&quot;Mythology%2C%20Indo-European&quot;</url>
+<selected>false</selected>
+</facetValue>
+<facetValue name="Science"  class ="showfacet Subject" > 
+<facetCount>9</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=topicStr:&quot;Science&quot;</url>
+<selected>false</selected>
+</facetValue>
+<facetValue name="Encyclopedias and dictionaries, German"  class ="showfacet Subject" > 
+<facetCount>8</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=topicStr:&quot;Encyclopedias%20and%20dictionaries%2C%20German&quot;</url>
+<selected>false</selected>
+</facetValue>
+<facetValue name="Indo-Europeans"  class ="showfacet Subject" > 
+<facetCount>8</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=topicStr:&quot;Indo-Europeans&quot;</url>
+<selected>false</selected>
+</facetValue>
+<facetValue name="Mythology, Classical"  class ="hidefacet Subject" > 
+<facetCount>8</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=topicStr:&quot;Mythology%2C%20Classical&quot;</url>
+<selected>false</selected>
+</facetValue>
+<facetValue name="Archaeology"  class ="hidefacet Subject" > 
+<facetCount>7</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=topicStr:&quot;Archaeology&quot;</url>
+<selected>false</selected>
+</facetValue>
+<facetValue name="Archaeology Periodicals"  class ="hidefacet Subject" > 
+<facetCount>7</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=topicStr:&quot;Archaeology%20Periodicals&quot;</url>
+<selected>false</selected>
+</facetValue>
+<facetValue name="Art"  class ="hidefacet Subject" > 
+<facetCount>7</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=topicStr:&quot;Art&quot;</url>
+<selected>false</selected>
+</facetValue>
+<facetValue name="Indo-Aryans"  class ="hidefacet Subject" > 
+<facetCount>7</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=topicStr:&quot;Indo-Aryans&quot;</url>
+<selected>false</selected>
+</facetValue>
+<facetValue name="Pottery, Ancient"  class ="hidefacet Subject" > 
+<facetCount>7</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=topicStr:&quot;Pottery%2C%20Ancient&quot;</url>
+<selected>false</selected>
+</facetValue>
+<facetValue name="Science Periodicals"  class ="hidefacet Subject" > 
+<facetCount>7</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=topicStr:&quot;Science%20Periodicals&quot;</url>
+<selected>false</selected>
+</facetValue>
+<facetValue name="Art Periodicals"  class ="hidefacet Subject" > 
+<facetCount>6</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=topicStr:&quot;Art%20Periodicals&quot;</url>
+<selected>false</selected>
+</facetValue>
+<facetValue name="Greece"  class ="hidefacet Subject" > 
+<facetCount>5</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=topicStr:&quot;Greece&quot;</url>
+<selected>false</selected>
+</facetValue>
+<facetValue name="Greece Antiquities Periodicals"  class ="hidefacet Subject" > 
+<facetCount>5</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=topicStr:&quot;Greece%20Antiquities%20Periodicals&quot;</url>
+<selected>false</selected>
+</facetValue>
+<facetValue name="Greek philology"  class ="hidefacet Subject" > 
+<facetCount>5</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=topicStr:&quot;Greek%20philology&quot;</url>
+<selected>false</selected>
+</facetValue>
+<facetValue name="Greek philology Periodicals"  class ="hidefacet Subject" > 
+<facetCount>5</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=topicStr:&quot;Greek%20philology%20Periodicals&quot;</url>
+<selected>false</selected>
+</facetValue>
+<facetValue name="Inscriptions, Greek"  class ="hidefacet Subject" > 
+<facetCount>5</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=topicStr:&quot;Inscriptions%2C%20Greek&quot;</url>
+<selected>false</selected>
+</facetValue>
+<facetValue name="Inscriptions, Greek Periodicals"  class ="hidefacet Subject" > 
+<facetCount>5</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=topicStr:&quot;Inscriptions%2C%20Greek%20Periodicals&quot;</url>
+<selected>false</selected>
+</facetValue>
+<facetValue name="Art, Greek"  class ="hidefacet Subject" > 
+<facetCount>4</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=topicStr:&quot;Art%2C%20Greek&quot;</url>
+<selected>false</selected>
+</facetValue>
+<facetValue name="Electronic journals"  class ="hidefacet Subject" > 
+<facetCount>4</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=topicStr:&quot;Electronic%20journals&quot;</url>
+<selected>false</selected>
+</facetValue>
+<facetValue name="Mythology"  class ="hidefacet Subject" > 
+<facetCount>4</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=topicStr:&quot;Mythology&quot;</url>
+<selected>false</selected>
+</facetValue>
+<facetValue name="Mythology Dictionaries"  class ="hidefacet Subject" > 
+<facetCount>4</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=topicStr:&quot;Mythology%20Dictionaries&quot;</url>
+<selected>false</selected>
+</facetValue>
+<facetValue name="Mythology, Greek"  class ="hidefacet Subject" > 
+<facetCount>4</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=topicStr:&quot;Mythology%2C%20Greek&quot;</url>
+<selected>false</selected>
+</facetValue>
+<facetValue name="Turkey"  class ="hidefacet Subject" > 
+<facetCount>4</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=topicStr:&quot;Turkey&quot;</url>
+<selected>false</selected>
+</facetValue>
+<facetValue name="Turkey Antiquities"  class ="hidefacet Subject" > 
+<facetCount>4</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=topicStr:&quot;Turkey%20Antiquities&quot;</url>
+<selected>false</selected>
+</facetValue>
+<facetValue name="German language"  class ="hidefacet Subject" > 
+<facetCount>3</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=topicStr:&quot;German%20language&quot;</url>
+<selected>false</selected>
+</facetValue>
+<facetValue name="Greek literature"  class ="hidefacet Subject" > 
+<facetCount>3</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=topicStr:&quot;Greek%20literature&quot;</url>
+<selected>false</selected>
+</facetValue>
+<facetValue name="Greek literature History and criticism"  class ="hidefacet Subject" > 
+<facetCount>3</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=topicStr:&quot;Greek%20literature%20History%20and%20criticism&quot;</url>
+<selected>false</selected>
+</facetValue>
+<facetValue name="Akkadian language"  class ="hidefacet Subject" > 
+<facetCount>2</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=topicStr:&quot;Akkadian%20language&quot;</url>
+<selected>false</selected>
+</facetValue>
+
+<showmoreless>true</showmoreless>
+</facetField>
+<facetField name="Author" normName="Author"  >
+<facetValue name="Deutsche Akademie der Wissenschaften zu Berlin."  class ="showfacet Author" > 
+<facetCount>12</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=authorStr:&quot;Deutsche%20Akademie%20der%20Wissenschaften%20zu%20Berlin.&quot;</url>
+<selected>false</selected>
+</facetValue>
+<facetValue name="Cox, George W. (George William), 1827-1902."  class ="showfacet Author" > 
+<facetCount>9</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=authorStr:&quot;Cox%2C%20George%20W.%20%28George%20William%29%2C%201827-1902.&quot;</url>
+<selected>false</selected>
+</facetValue>
+<facetValue name="Birch, Samuel, 1813-1885."  class ="showfacet Author" > 
+<facetCount>7</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=authorStr:&quot;Birch%2C%20Samuel%2C%201813-1885.&quot;</url>
+<selected>false</selected>
+</facetValue>
+<facetValue name="Pauly, August Friedrich von, 1796-1845."  class ="showfacet Author" > 
+<facetCount>7</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=authorStr:&quot;Pauly%2C%20August%20Friedrich%20von%2C%201796-1845.&quot;</url>
+<selected>false</selected>
+</facetValue>
+<facetValue name="Walters, H. B. (Henry Beauchamp), 1867-1944."  class ="showfacet Author" > 
+<facetCount>7</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=authorStr:&quot;Walters%2C%20H.%20B.%20%28Henry%20Beauchamp%29%2C%201867-1944.&quot;</url>
+<selected>false</selected>
+</facetValue>
+<facetValue name="Roscher, Wilhelm Heinrich, 1845-1923."  class ="hidefacet Author" > 
+<facetCount>6</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=authorStr:&quot;Roscher%2C%20Wilhelm%20Heinrich%2C%201845-1923.&quot;</url>
+<selected>false</selected>
+</facetValue>
+<facetValue name="Wissowa, Georg, 1859-1931."  class ="hidefacet Author" > 
+<facetCount>6</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=authorStr:&quot;Wissowa%2C%20Georg%2C%201859-1931.&quot;</url>
+<selected>false</selected>
+</facetValue>
+<facetValue name="Archaeological Institute of America"  class ="hidefacet Author" > 
+<facetCount>5</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=authorStr:&quot;Archaeological%20Institute%20of%20America&quot;</url>
+<selected>false</selected>
+</facetValue>
+<facetValue name="Society for the Promotion of Hellenic Studies (London, England)"  class ="hidefacet Author" > 
+<facetCount>5</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=authorStr:&quot;Society%20for%20the%20Promotion%20of%20Hellenic%20Studies%20%28London%2C%20England%29&quot;</url>
+<selected>false</selected>
+</facetValue>
+<facetValue name="Reinach, Salomon, 1858-1932."  class ="hidefacet Author" > 
+<facetCount>4</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=authorStr:&quot;Reinach%2C%20Salomon%2C%201858-1932.&quot;</url>
+<selected>false</selected>
+</facetValue>
+<facetValue name="Ersch, Johann Samuel, 1766-1828."  class ="hidefacet Author" > 
+<facetCount>3</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=authorStr:&quot;Ersch%2C%20Johann%20Samuel%2C%201766-1828.&quot;</url>
+<selected>false</selected>
+</facetValue>
+<facetValue name="Gruber, J. G. (Johann Gottfried), 1774-1851."  class ="hidefacet Author" > 
+<facetCount>3</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=authorStr:&quot;Gruber%2C%20J.%20G.%20%28Johann%20Gottfried%29%2C%201774-1851.&quot;</url>
+<selected>false</selected>
+</facetValue>
+<facetValue name="Pierer, Heinrich August, 1794-1850,"  class ="hidefacet Author" > 
+<facetCount>3</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=authorStr:&quot;Pierer%2C%20Heinrich%20August%2C%201794-1850%2C&quot;</url>
+<selected>false</selected>
+</facetValue>
+<facetValue name="Archaeological Institute of America."  class ="hidefacet Author" > 
+<facetCount>2</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=authorStr:&quot;Archaeological%20Institute%20of%20America.&quot;</url>
+<selected>false</selected>
+</facetValue>
+<facetValue name="Birt, Theodor, 1852-1933."  class ="hidefacet Author" > 
+<facetCount>2</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=authorStr:&quot;Birt%2C%20Theodor%2C%201852-1933.&quot;</url>
+<selected>false</selected>
+</facetValue>
+<facetValue name="Deutsche Akademie der Wissenschaften zu Berlin"  class ="hidefacet Author" > 
+<facetCount>2</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=authorStr:&quot;Deutsche%20Akademie%20der%20Wissenschaften%20zu%20Berlin&quot;</url>
+<selected>false</selected>
+</facetValue>
+<facetValue name="Deutsche Akademie der Wissenschaften zu Berlin. Mathematisch-Naturwissenschaftliche Klasse."  class ="hidefacet Author" > 
+<facetCount>2</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=authorStr:&quot;Deutsche%20Akademie%20der%20Wissenschaften%20zu%20Berlin.%20Mathematisch-Naturwissenschaftliche%20Klasse.&quot;</url>
+<selected>false</selected>
+</facetValue>
+<facetValue name="Deutsche Akademie der Wissenschaften zu Berlin. Philosophisch-Historische Klasse."  class ="hidefacet Author" > 
+<facetCount>2</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=authorStr:&quot;Deutsche%20Akademie%20der%20Wissenschaften%20zu%20Berlin.%20Philosophisch-Historische%20Klasse.&quot;</url>
+<selected>false</selected>
+</facetValue>
+<facetValue name="Ersch, Johann Samuel, 1766-1828"  class ="hidefacet Author" > 
+<facetCount>2</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=authorStr:&quot;Ersch%2C%20Johann%20Samuel%2C%201766-1828&quot;</url>
+<selected>false</selected>
+</facetValue>
+<facetValue name="Johns, C. H. W. (Claude Hermann Walter), 1857-1920."  class ="hidefacet Author" > 
+<facetCount>2</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=authorStr:&quot;Johns%2C%20C.%20H.%20W.%20%28Claude%20Hermann%20Walter%29%2C%201857-1920.&quot;</url>
+<selected>false</selected>
+</facetValue>
+<facetValue name="Kroll, Wilhelm, 1869-1939."  class ="hidefacet Author" > 
+<facetCount>2</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=authorStr:&quot;Kroll%2C%20Wilhelm%2C%201869-1939.&quot;</url>
+<selected>false</selected>
+</facetValue>
+<facetValue name="Königlich Preussische Akademie der Wissenschaften zu Berlin."  class ="hidefacet Author" > 
+<facetCount>2</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=authorStr:&quot;K%C3%B6niglich%20Preussische%20Akademie%20der%20Wissenschaften%20zu%20Berlin.&quot;</url>
+<selected>false</selected>
+</facetValue>
+<facetValue name="Sittl, Karl, 1862-1899."  class ="hidefacet Author" > 
+<facetCount>2</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=authorStr:&quot;Sittl%2C%20Karl%2C%201862-1899.&quot;</url>
+<selected>false</selected>
+</facetValue>
+<facetValue name="Smith, William, 1813-1893."  class ="hidefacet Author" > 
+<facetCount>2</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=authorStr:&quot;Smith%2C%20William%2C%201813-1893.&quot;</url>
+<selected>false</selected>
+</facetValue>
+<facetValue name="Tallqvist, Knut Leonard, 1865-1949."  class ="hidefacet Author" > 
+<facetCount>2</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=authorStr:&quot;Tallqvist%2C%20Knut%20Leonard%2C%201865-1949.&quot;</url>
+<selected>false</selected>
+</facetValue>
+<facetValue name="&quot;Sommerstein, Alan H."  class ="hidefacet Author" > 
+<facetCount>1</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=authorStr:&quot;%22Sommerstein%2C%20Alan%20H.&quot;</url>
+<selected>false</selected>
+</facetValue>
+<facetValue name="American School for Oriental Study and Research in Palestine."  class ="hidefacet Author" > 
+<facetCount>1</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=authorStr:&quot;American%20School%20for%20Oriental%20Study%20and%20Research%20in%20Palestine.&quot;</url>
+<selected>false</selected>
+</facetValue>
+<facetValue name="American School of Classical Studies at Athens."  class ="hidefacet Author" > 
+<facetCount>1</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=authorStr:&quot;American%20School%20of%20Classical%20Studies%20at%20Athens.&quot;</url>
+<selected>false</selected>
+</facetValue>
+<facetValue name="American School of Classical Studies in Rome."  class ="hidefacet Author" > 
+<facetCount>1</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=authorStr:&quot;American%20School%20of%20Classical%20Studies%20in%20Rome.&quot;</url>
+<selected>false</selected>
+</facetValue>
+<facetValue name="Aristophanes."  class ="hidefacet Author" > 
+<facetCount>1</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=authorStr:&quot;Aristophanes.&quot;</url>
+<selected>false</selected>
+</facetValue>
+
+<showmoreless>true</showmoreless>
+</facetField>
+<facetField name="Language" normName="Language"  >
+<facetValue name="German"  class ="showfacet Language" > 
+<facetCount>56</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=language008_full:&quot;German&quot;</url>
+<selected>false</selected>
+</facetValue>
+<facetValue name="English"  class ="showfacet Language" > 
+<facetCount>34</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=language008_full:&quot;English&quot;</url>
+<selected>false</selected>
+</facetValue>
+<facetValue name="French"  class ="showfacet Language" > 
+<facetCount>5</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=language008_full:&quot;French&quot;</url>
+<selected>false</selected>
+</facetValue>
+<facetValue name="Hungarian"  class ="showfacet Language" > 
+<facetCount>2</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=language008_full:&quot;Hungarian&quot;</url>
+<selected>false</selected>
+</facetValue>
+<facetValue name="Undetermined"  class ="showfacet Language" > 
+<facetCount>2</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=language008_full:&quot;Undetermined&quot;</url>
+<selected>false</selected>
+</facetValue>
+<facetValue name="Finnish"  class ="hidefacet Language" > 
+<facetCount>1</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=language008_full:&quot;Finnish&quot;</url>
+<selected>false</selected>
+</facetValue>
+
+<showmoreless>true</showmoreless>
+</facetField>
+<facetField name="Place of Publication" normName="Place_of_Publication"  >
+<facetValue name="Germany"  class ="showfacet Place_of_Publication" > 
+<facetCount>47</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=countryOfPubStr:&quot;Germany&quot;</url>
+<selected>false</selected>
+</facetValue>
+<facetValue name="England"  class ="showfacet Place_of_Publication" > 
+<facetCount>17</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=countryOfPubStr:&quot;England&quot;</url>
+<selected>false</selected>
+</facetValue>
+<facetValue name="United Kingdom"  class ="showfacet Place_of_Publication" > 
+<facetCount>17</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=countryOfPubStr:&quot;United%20Kingdom&quot;</url>
+<selected>false</selected>
+</facetValue>
+<facetValue name="No place, unknown, or undetermined"  class ="showfacet Place_of_Publication" > 
+<facetCount>12</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=countryOfPubStr:&quot;No%20place%2C%20unknown%2C%20or%20undetermined&quot;</url>
+<selected>false</selected>
+</facetValue>
+<facetValue name="United States"  class ="showfacet Place_of_Publication" > 
+<facetCount>10</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=countryOfPubStr:&quot;United%20States&quot;</url>
+<selected>false</selected>
+</facetValue>
+<facetValue name="France"  class ="hidefacet Place_of_Publication" > 
+<facetCount>5</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=countryOfPubStr:&quot;France&quot;</url>
+<selected>false</selected>
+</facetValue>
+<facetValue name="Finland"  class ="hidefacet Place_of_Publication" > 
+<facetCount>3</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=countryOfPubStr:&quot;Finland&quot;</url>
+<selected>false</selected>
+</facetValue>
+<facetValue name="Hungary"  class ="hidefacet Place_of_Publication" > 
+<facetCount>2</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=countryOfPubStr:&quot;Hungary&quot;</url>
+<selected>false</selected>
+</facetValue>
+<facetValue name="Germany (East)"  class ="hidefacet Place_of_Publication" > 
+<facetCount>1</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=countryOfPubStr:&quot;Germany%20%28East%29&quot;</url>
+<selected>false</selected>
+</facetValue>
+<facetValue name="Liechtenstein"  class ="hidefacet Place_of_Publication" > 
+<facetCount>1</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=countryOfPubStr:&quot;Liechtenstein&quot;</url>
+<selected>false</selected>
+</facetValue>
+<facetValue name="Poland"  class ="hidefacet Place_of_Publication" > 
+<facetCount>1</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=countryOfPubStr:&quot;Poland&quot;</url>
+<selected>false</selected>
+</facetValue>
+
+<showmoreless>true</showmoreless>
+</facetField>
+<facetField name="Date of Publication" normName="Date_of_Publication"  >
+<facetValue name="1890-1899"  class ="showfacet Date_of_Publication" > 
+<facetCount>17</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=bothPublishDateRange:&quot;1890-1899&quot;</url>
+<selected>false</selected>
+</facetValue>
+<facetValue name="1880-1889"  class ="showfacet Date_of_Publication" > 
+<facetCount>14</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=bothPublishDateRange:&quot;1880-1889&quot;</url>
+<selected>false</selected>
+</facetValue>
+<facetValue name="1896"  class ="showfacet Date_of_Publication" > 
+<facetCount>13</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=bothPublishDateRange:&quot;1896&quot;</url>
+<selected>false</selected>
+</facetValue>
+<facetValue name="1900-1909"  class ="showfacet Date_of_Publication" > 
+<facetCount>10</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=bothPublishDateRange:&quot;1900-1909&quot;</url>
+<selected>false</selected>
+</facetValue>
+<facetValue name="1910-1919"  class ="showfacet Date_of_Publication" > 
+<facetCount>10</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=bothPublishDateRange:&quot;1910-1919&quot;</url>
+<selected>false</selected>
+</facetValue>
+<facetValue name="1870-1879"  class ="hidefacet Date_of_Publication" > 
+<facetCount>9</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=bothPublishDateRange:&quot;1870-1879&quot;</url>
+<selected>false</selected>
+</facetValue>
+<facetValue name="1840-1849"  class ="hidefacet Date_of_Publication" > 
+<facetCount>8</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=bothPublishDateRange:&quot;1840-1849&quot;</url>
+<selected>false</selected>
+</facetValue>
+<facetValue name="1905"  class ="hidefacet Date_of_Publication" > 
+<facetCount>7</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=bothPublishDateRange:&quot;1905&quot;</url>
+<selected>false</selected>
+</facetValue>
+<facetValue name="1911"  class ="hidefacet Date_of_Publication" > 
+<facetCount>7</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=bothPublishDateRange:&quot;1911&quot;</url>
+<selected>false</selected>
+</facetValue>
+<facetValue name="1930-1939"  class ="hidefacet Date_of_Publication" > 
+<facetCount>6</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=bothPublishDateRange:&quot;1930-1939&quot;</url>
+<selected>false</selected>
+</facetValue>
+<facetValue name="1937"  class ="hidefacet Date_of_Publication" > 
+<facetCount>6</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=bothPublishDateRange:&quot;1937&quot;</url>
+<selected>false</selected>
+</facetValue>
+<facetValue name="1850-1859"  class ="hidefacet Date_of_Publication" > 
+<facetCount>5</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=bothPublishDateRange:&quot;1850-1859&quot;</url>
+<selected>false</selected>
+</facetValue>
+<facetValue name="1830-1839"  class ="hidefacet Date_of_Publication" > 
+<facetCount>4</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=bothPublishDateRange:&quot;1830-1839&quot;</url>
+<selected>false</selected>
+</facetValue>
+<facetValue name="1870"  class ="hidefacet Date_of_Publication" > 
+<facetCount>4</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=bothPublishDateRange:&quot;1870&quot;</url>
+<selected>false</selected>
+</facetValue>
+<facetValue name="1889"  class ="hidefacet Date_of_Publication" > 
+<facetCount>4</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=bothPublishDateRange:&quot;1889&quot;</url>
+<selected>false</selected>
+</facetValue>
+<facetValue name="1960-1969"  class ="hidefacet Date_of_Publication" > 
+<facetCount>4</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=bothPublishDateRange:&quot;1960-1969&quot;</url>
+<selected>false</selected>
+</facetValue>
+<facetValue name="1963"  class ="hidefacet Date_of_Publication" > 
+<facetCount>4</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=bothPublishDateRange:&quot;1963&quot;</url>
+<selected>false</selected>
+</facetValue>
+<facetValue name="1839"  class ="hidefacet Date_of_Publication" > 
+<facetCount>3</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=bothPublishDateRange:&quot;1839&quot;</url>
+<selected>false</selected>
+</facetValue>
+<facetValue name="1840"  class ="hidefacet Date_of_Publication" > 
+<facetCount>3</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=bothPublishDateRange:&quot;1840&quot;</url>
+<selected>false</selected>
+</facetValue>
+<facetValue name="1849"  class ="hidefacet Date_of_Publication" > 
+<facetCount>3</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=bothPublishDateRange:&quot;1849&quot;</url>
+<selected>false</selected>
+</facetValue>
+<facetValue name="1860-1869"  class ="hidefacet Date_of_Publication" > 
+<facetCount>3</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=bothPublishDateRange:&quot;1860-1869&quot;</url>
+<selected>false</selected>
+</facetValue>
+<facetValue name="1882"  class ="hidefacet Date_of_Publication" > 
+<facetCount>3</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=bothPublishDateRange:&quot;1882&quot;</url>
+<selected>false</selected>
+</facetValue>
+<facetValue name="1887"  class ="hidefacet Date_of_Publication" > 
+<facetCount>3</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=bothPublishDateRange:&quot;1887&quot;</url>
+<selected>false</selected>
+</facetValue>
+<facetValue name="1914"  class ="hidefacet Date_of_Publication" > 
+<facetCount>3</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=bothPublishDateRange:&quot;1914&quot;</url>
+<selected>false</selected>
+</facetValue>
+<facetValue name="1810-1819"  class ="hidefacet Date_of_Publication" > 
+<facetCount>2</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=bothPublishDateRange:&quot;1810-1819&quot;</url>
+<selected>false</selected>
+</facetValue>
+<facetValue name="1818"  class ="hidefacet Date_of_Publication" > 
+<facetCount>2</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=bothPublishDateRange:&quot;1818&quot;</url>
+<selected>false</selected>
+</facetValue>
+<facetValue name="1853"  class ="hidefacet Date_of_Publication" > 
+<facetCount>2</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=bothPublishDateRange:&quot;1853&quot;</url>
+<selected>false</selected>
+</facetValue>
+<facetValue name="1857"  class ="hidefacet Date_of_Publication" > 
+<facetCount>2</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=bothPublishDateRange:&quot;1857&quot;</url>
+<selected>false</selected>
+</facetValue>
+<facetValue name="1920-1929"  class ="hidefacet Date_of_Publication" > 
+<facetCount>2</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=bothPublishDateRange:&quot;1920-1929&quot;</url>
+<selected>false</selected>
+</facetValue>
+<facetValue name="1820-1829"  class ="hidefacet Date_of_Publication" > 
+<facetCount>1</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=bothPublishDateRange:&quot;1820-1829&quot;</url>
+<selected>false</selected>
+</facetValue>
+
+<showmoreless>true</showmoreless>
+</facetField>
+<facetField name="Original Format" normName="Original_Format"  >
+<facetValue name="Book"  class ="showfacet Original_Format" > 
+<facetCount>68</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=format:&quot;Book&quot;</url>
+<selected>false</selected>
+</facetValue>
+<facetValue name="Journal"  class ="showfacet Original_Format" > 
+<facetCount>32</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=format:&quot;Journal&quot;</url>
+<selected>false</selected>
+</facetValue>
+<facetValue name="Serial"  class ="showfacet Original_Format" > 
+<facetCount>32</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=format:&quot;Serial&quot;</url>
+<selected>false</selected>
+</facetValue>
+<facetValue name="Encyclopedias"  class ="showfacet Original_Format" > 
+<facetCount>9</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=format:&quot;Encyclopedias&quot;</url>
+<selected>false</selected>
+</facetValue>
+<facetValue name="Dictionaries"  class ="showfacet Original_Format" > 
+<facetCount>8</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=format:&quot;Dictionaries&quot;</url>
+<selected>false</selected>
+</facetValue>
+<facetValue name="Biography"  class ="hidefacet Original_Format" > 
+<facetCount>1</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=format:&quot;Biography&quot;</url>
+<selected>false</selected>
+</facetValue>
+
+<showmoreless>true</showmoreless>
+</facetField>
+<facetField name="Original Location" normName="Original_Location"  >
+<facetValue name="University of Michigan"  class ="showfacet Original_Location" > 
+<facetCount>19</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=htsource:&quot;University%20of%20Michigan&quot;</url>
+<selected>false</selected>
+</facetValue>
+<facetValue name="Harvard University"  class ="showfacet Original_Location" > 
+<facetCount>18</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=htsource:&quot;Harvard%20University&quot;</url>
+<selected>false</selected>
+</facetValue>
+<facetValue name="University of California"  class ="showfacet Original_Location" > 
+<facetCount>13</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=htsource:&quot;University%20of%20California&quot;</url>
+<selected>false</selected>
+</facetValue>
+<facetValue name="Cornell University"  class ="showfacet Original_Location" > 
+<facetCount>8</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=htsource:&quot;Cornell%20University&quot;</url>
+<selected>false</selected>
+</facetValue>
+<facetValue name="Princeton University"  class ="showfacet Original_Location" > 
+<facetCount>7</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=htsource:&quot;Princeton%20University&quot;</url>
+<selected>false</selected>
+</facetValue>
+<facetValue name="University of Minnesota"  class ="hidefacet Original_Location" > 
+<facetCount>6</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=htsource:&quot;University%20of%20Minnesota&quot;</url>
+<selected>false</selected>
+</facetValue>
+<facetValue name="University of Chicago"  class ="hidefacet Original_Location" > 
+<facetCount>4</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=htsource:&quot;University%20of%20Chicago&quot;</url>
+<selected>false</selected>
+</facetValue>
+<facetValue name="University of Virginia"  class ="hidefacet Original_Location" > 
+<facetCount>4</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=htsource:&quot;University%20of%20Virginia&quot;</url>
+<selected>false</selected>
+</facetValue>
+<facetValue name="The Ohio State University"  class ="hidefacet Original_Location" > 
+<facetCount>3</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=htsource:&quot;The%20Ohio%20State%20University&quot;</url>
+<selected>false</selected>
+</facetValue>
+<facetValue name="University of Iowa"  class ="hidefacet Original_Location" > 
+<facetCount>3</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=htsource:&quot;University%20of%20Iowa&quot;</url>
+<selected>false</selected>
+</facetValue>
+<facetValue name="University of Wisconsin - Madison"  class ="hidefacet Original_Location" > 
+<facetCount>3</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=htsource:&quot;University%20of%20Wisconsin%20-%20Madison&quot;</url>
+<selected>false</selected>
+</facetValue>
+<facetValue name="Indiana University"  class ="hidefacet Original_Location" > 
+<facetCount>2</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=htsource:&quot;Indiana%20University&quot;</url>
+<selected>false</selected>
+</facetValue>
+<facetValue name="New York Public Library"  class ="hidefacet Original_Location" > 
+<facetCount>2</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=htsource:&quot;New%20York%20Public%20Library&quot;</url>
+<selected>false</selected>
+</facetValue>
+<facetValue name="University of Illinois at Urbana-Champaign"  class ="hidefacet Original_Location" > 
+<facetCount>2</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=htsource:&quot;University%20of%20Illinois%20at%20Urbana-Champaign&quot;</url>
+<selected>false</selected>
+</facetValue>
+<facetValue name="Duke University"  class ="hidefacet Original_Location" > 
+<facetCount>1</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=htsource:&quot;Duke%20University&quot;</url>
+<selected>false</selected>
+</facetValue>
+<facetValue name="Knowledge Unlatched"  class ="hidefacet Original_Location" > 
+<facetCount>1</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=htsource:&quot;Knowledge%20Unlatched&quot;</url>
+<selected>false</selected>
+</facetValue>
+<facetValue name="Michigan State University"  class ="hidefacet Original_Location" > 
+<facetCount>1</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=htsource:&quot;Michigan%20State%20University&quot;</url>
+<selected>false</selected>
+</facetValue>
+<facetValue name="Pennsylvania State University"  class ="hidefacet Original_Location" > 
+<facetCount>1</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=htsource:&quot;Pennsylvania%20State%20University&quot;</url>
+<selected>false</selected>
+</facetValue>
+<facetValue name="The Getty Research Institute"  class ="hidefacet Original_Location" > 
+<facetCount>1</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=htsource:&quot;The%20Getty%20Research%20Institute&quot;</url>
+<selected>false</selected>
+</facetValue>
+<facetValue name="University of North Carolina at Chapel Hill"  class ="hidefacet Original_Location" > 
+<facetCount>1</facetCount>
+<url>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml&amp;facet=htsource:&quot;University%20of%20North%20Carolina%20at%20Chapel%20Hill&quot;</url>
+<selected>false</selected>
+</facetValue>
+
+<showmoreless>true</showmoreless>
+</facetField>
+</unselectedFacets>
+</Facets>
+  <Paging><PageLinks><PageURL><Href>https://babel.hathitrust.org/cgi/ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml;pn=1</Href>
+<Content><CurrentPage>1</CurrentPage></Content>
+</PageURL>
+<PageURL><Href>https://babel.hathitrust.org/cgi/ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml;pn=2</Href>
+<Content>2</Content>
+</PageURL>
+<PageURL><Href>https://babel.hathitrust.org/cgi/ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml;pn=3</Href>
+<Content>3</Content>
+</PageURL>
+<PageURL><Href>https://babel.hathitrust.org/cgi/ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml;pn=4</Href>
+<Content>4</Content>
+</PageURL>
+<PageURL><Href>https://babel.hathitrust.org/cgi/ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml;pn=5</Href>
+<Content>5</Content>
+</PageURL>
+</PageLinks>
+<CurrentPageHref>https://babel.hathitrust.org/cgi/ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml;pn=1</CurrentPageHref>
+<PrevPage>None</PrevPage>
+<NextPage><Href>https://babel.hathitrust.org/cgi/ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml;pn=2</Href>
+</NextPage>
+<StartPageLinks>None</StartPageLinks>
+<MiddlePageLinks>None</MiddlePageLinks>
+<EndPageLinks>None</EndPageLinks>
+<TotalPages>5</TotalPages>
+<NumRecsOnThisPage>20</NumRecsOnThisPage>
+<RecsPerPage>20</RecsPerPage>
+<FirstRecordNumber>1</FirstRecordNumber>
+<LastRecordNumber>20</LastRecordNumber>
+<TotalRecords>100</TotalRecords>
+<SliceSizeWidget href="https://babel.hathitrust.org/cgi/ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml;sz="><Option><Label>20 per page</Label>
+<Value>20</Value>
+<Focus>true</Focus>
+</Option>
+<Option><Label>50 per page</Label>
+<Value>50</Value>
+</Option>
+<Option><Label>100 per page</Label>
+<Value>100</Value>
+</Option>
+<Name>sz</Name>
+<Default>20</Default>
+</SliceSizeWidget>
+</Paging>
+ <SelectCollectionWidget><Coll><collid>822795703</collid>
+<CollName>foo</CollName>
+</Coll>
+</SelectCollectionWidget>
+
+  <LimitToFullText><LimitType>ft</LimitType>
+<AllHref>https://babel.hathitrust.org/cgi/ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=all;debug=xml</AllHref>
+<FullTextHref>https://babel.hathitrust.org/cgi/ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml</FullTextHref>
+<SearchOnlyHref>https://babel.hathitrust.org/cgi/ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=so;debug=xml</SearchOnlyHref>
+<FullTextCount>100</FullTextCount>
+<FullTextCountDisplay>100</FullTextCountDisplay>
+<AllItemsCount>287</AllItemsCount>
+<AllItemsCountDisplay>287</AllItemsCountDisplay>
+<SearchOnlyCount>187</SearchOnlyCount>
+<SearchOnlyCountDisplay>187</SearchOnlyCountDisplay>
+<TotalCount>100</TotalCount>
+</LimitToFullText>
+  <SearchResultsAjaxUrl></SearchResultsAjaxUrl>
+<Heldby><unselectURL>ls?field1=ocr;q1=Akestor%2C%20King%20of%20Paphos;a=srchls;lmt=ft;debug=xml</unselectURL>
+
+</Heldby>
+</MBooksTop>
+
