@@ -40,6 +40,7 @@ class HtrustController < ApplicationController
   end
   
   def retrieveXML(query)
+    return nil if query.blank?
   	if(query.downcase == "akestor, king of paphos")
   		filepath =Rails.public_path.join("htrustXML/akestor_ls_results.xml")
   		xmlfile = File.open(filepath)
