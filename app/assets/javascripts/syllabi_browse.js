@@ -8,26 +8,24 @@ const openSyllabus = {
 
   getCoassignedBooks: async function(suggestions) {
     const isbns = $( "#isbns-json-data" ).html();
-    const isbnParsed = JSON.parse(isbns);
-    const isbnParams = isbnParsed.join(',');
-    const coAssigned = await this.queryOspCoassignmentsApi(isbnParams);
+    const isbnsParam = JSON.parse(isbns).join(',');
+    const coAssigned = await this.queryOspCoassignmentsApi(isbnsParam);
     for (const assignment of coAssigned) {
-      const joinIsbn = assignment.join(' OR ');
-      const queryCat = await this.querySolrCheckSuggestion(joinIsbn);
+      const queryCat = await this.querySolrCheckSuggestion(assignment);
       if (this.areSolrResults(queryCat)) {
         const result = queryCat["response"]["docs"][0]
-        openSyllabus.formatAndListSuggestions(result, joinIsbn); // write HTML
+        openSyllabus.formatAndListSuggestions(result, assignment); // write HTML
       }
     }
     setTimeout(function(){ window.bookcovers.onLoad() }, 300); // fill cover images
   },
 
-  queryOspCoassignmentsApi: function(isbnParams) {
+  queryOspCoassignmentsApi: function(isbnsParam) {
     const localRoute = '/browseld/osp_coassignments?isbns='; // internal API
-    return $.get(localRoute + isbnParams);
+    return $.get(localRoute + isbnsParam);
   },
 
-  formatAndListSuggestions: function(result, joinIsbn) {
+  formatAndListSuggestions: function(result, isbns) {
     // Display the div if something is found
     $(".browse-syllabi").show(500);
     // Format author string
@@ -39,7 +37,7 @@ const openSyllabus = {
     const authorNote = (authorFirst2Elements ? ' by '+authorFirst2Elements : '');
     // Set strings for title, href, and OCLC id
     const recomTitle = result["title_display"];
-    const recomQuery = '/catalog?&q='+joinIsbn;
+    const recomQuery = '/catalog?&q='+isbns.join(' OR ');
     const oclcIdDisp = result["oclc_id_display"][0]
     // Compose the HTML that will be displayed on the page
     const htmlString = `
@@ -74,8 +72,7 @@ const openSyllabus = {
       const row = $(this);
       row.find('.isbns').each(async function() {
         const isbns = JSON.parse($(this).text());
-        const joinedIsbns = isbns.join(' OR ');
-        const queryCat = await openSyllabus.querySolrCheckSuggestion(joinedIsbns);
+        const queryCat = await openSyllabus.querySolrCheckSuggestion(isbns);
         if (openSyllabus.areSolrResults(queryCat)) {
           row.show(); // Show tr if it contains a book found in Solr catalog
         }
@@ -96,7 +93,8 @@ const openSyllabus = {
   // Solr catalog checking functions used by both of above features
   // Used to check that a book is in the catalog before displaying it
 
-  querySolrCheckSuggestion: function(joinedIsbns) {
+  querySolrCheckSuggestion: function(isbns) {
+    const joinedIsbns = isbns.join(' OR ');
     const solrServer = $( "#solr-server-url-data" ).html();
     const solrParams = "/select?&wt=json&rows=1&q=" + joinedIsbns;
     return $.ajax({
