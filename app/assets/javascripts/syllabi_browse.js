@@ -57,42 +57,37 @@ const getOpenSyllabusRecommendations = {
     $("#recommended-list").append(htmlString);
   },
 
-  // This function checks the catalog, in slices or pages, for works listed in an academic field
-  checkFieldBooks: function(sliceSize, sliceNum) {
+  // This function checks a hidden HTML table of books and reveals those found in Solr
+  // It works in slices or pages, finishing with a "More" link to recurse for the next slice
+  showFoundBooksSlice: function(sliceSize, sliceNum) {
     // Prepare "More..." link at bottom of table
-    var footerMoreBox = $('#footerMoreBox');
+    const footerMoreBox = $('#footerMoreBox');
     // Get Solr URL from env var via the DOM
-    var solrServerUrl = $( "#solr-server-url-data" ).html();
+    const solrServerUrl = $( "#solr-server-url-data" ).html();
     $('#appendedMore').hide("slow", function(){ $(this).remove(); })
     // Iterate on current slice of list of books
-    var fieldBookList = $('#fieldBookList tr');
-    var bookListSlice = fieldBookList.slice(sliceNum-sliceSize, sliceNum);
+    const fieldBookList = $('#fieldBookList tr');
+    const bookListSlice = fieldBookList.slice(sliceNum-sliceSize, sliceNum);
     bookListSlice.each(function(){
-      var row = $(this)
-      row.find('.isbns').each(function() {
-        var isbns = JSON.parse($(this).text());
-        var joinedIsbns = isbns.join(' OR ');
-        var solrUrl = solrServerUrl + "/select?&wt=json&rows=0&q=" + joinedIsbns;
-        $.ajax({
-          url: solrUrl,
-          type: 'GET',
-          dataType: 'jsonp',
-          jsonp: 'json.wrf', // avoid CORS and CORB errors
-          complete: function(solrResponse) {
-            var numFound = solrResponse["responseJSON"]["response"]["numFound"]
-            if (numFound > 0) {
-              row.show();
-            }
-            // On last book in this slice, show "More..." link to run next slice
-            if (row[0] === bookListSlice.last()[0]) {
-              var nextSliceNum = sliceNum + sliceSize;
-              footerMoreBox.append(
-                '<a id="appendedMore" href="javascript:getOpenSyllabusRecommendations.checkFieldBooks(20,'
-                +nextSliceNum+
-                ')">More...</a>');
-            }
-          }
-        });
+      const row = $(this);
+      row.find('.isbns').each(async function() {
+        const isbns = JSON.parse($(this).text());
+        const joinedIsbns = isbns.join(' OR ');
+        const solrUrl = solrServerUrl + "/select?&wt=json&rows=0&q=" + joinedIsbns;
+        const queryCat = await getOpenSyllabusRecommendations.querySolrCheckSuggestion(joinedIsbns);
+        const numFound = queryCat["response"]["numFound"];
+        if (numFound > 0) {
+          row.show();
+        }
+        // On last book in this slice, show "More..." link to run next slice
+        if (row[0] === bookListSlice.last()[0]) {
+          const nextSliceNum = sliceNum + sliceSize;
+          footerMoreBox.append(
+            '<a id="appendedMore" href="javascript:getOpenSyllabusRecommendations.checkFieldBooks(20,'
+            +nextSliceNum+
+            ')">More...</a>'
+          );
+        }
       });
     });
   }
@@ -106,6 +101,6 @@ Blacklight.onLoad(function() {
   });
   // Run books in field code in syllabus browse
   $('body.browseld-in_field').each(function() {
-    getOpenSyllabusRecommendations.checkFieldBooks(20,20);
+    getOpenSyllabusRecommendations.showFoundBooksSlice(20,20);
   });
 });
