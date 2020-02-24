@@ -59,7 +59,18 @@ const getOpenSyllabusRecommendations = {
     const recomQuery = '/catalog?&q='+joinIsbn;
     const oclcIdDisp = result["oclc_id_display"][0]
     // Compose the HTML that will be displayed on the page
-    const htmlString = '<figure><div class="imgframe"><a href="'+recomQuery+'"><img class="bookcover" id="OCLC:'+oclcIdDisp+'" data-oclc="'+oclcIdDisp+'" /></a></div><figcaption><a href="'+recomQuery+'">'+recomTitle+'</a> '+authorNote+'</figcaption></figure>'
+    const htmlString = `
+      <figure>
+        <div class="imgframe">
+          <a href="${recomQuery}">
+            <img class="bookcover" id="OCLC:${oclcIdDisp}" data-oclc="${oclcIdDisp}" />
+          </a>
+        </div>
+        <figcaption>
+          <a href="${recomQuery}">${recomTitle}</a>${authorNote}
+        </figcaption>
+      </figure>
+    `
     $("#recommended-list").append(htmlString);
   },
 
@@ -85,11 +96,12 @@ const getOpenSyllabusRecommendations = {
         // On last book in this slice, show "More..." link to run next slice
         if (row[0] === bookListSlice.last()[0]) {
           const nextSliceNum = sliceNum + sliceSize;
-          footerMoreBox.append(
-            '<a id="appendedMore" href="javascript:getOpenSyllabusRecommendations.showFoundBooksSlice(20,'
-            +nextSliceNum+
-            ')">More...</a>'
-          );
+          footerMoreBox.append(`
+            <a
+              id="appendedMore"
+              href="javascript:getOpenSyllabusRecommendations.showFoundBooksSlice(20,${nextSliceNum})"
+            >More...</a>
+          `);
         }
       });
     });
