@@ -3,17 +3,35 @@
 
 var fullTextSearch = {
 
-  // Pass the user's query to Google Books
+  // Pass the user's query to full text search data sources
   queryFullText: function() {
-    var q = $('input#q').val();
-    var googleBooksUrl = "https://www.googleapis.com/books/v1/volumes?q=" + q;
+    const query = $('input#q').val();
+    fullTextSearch.queryGoogleBooks(query);
+    fullTextSearch.queryHathiTrust(query);
+  },
+
+  queryGoogleBooks: function(query) {
+    const googleBooksUrl = "https://www.googleapis.com/books/v1/volumes?q=" + query;
     fetch(googleBooksUrl)
       .then(response => response.json())
-      .then(data => fullTextSearch.parseBooksData(data))
+      .then(data => fullTextSearch.parseGoogleBooksData(data))
     ;
   },
 
-  parseBooksData: function(googleBooksResults) {
+  queryHathiTrust: function(query) {
+    const hathiTrustPath = "./htrust/search?q=" + query;
+    fetch(hathiTrustPath)
+      .then(response => response.json())
+      .then(data => fullTextSearch.parseHathiTrustData(data))
+    ;
+  },
+
+  parseHathiTrustData: function(hathiTrustResults) {
+    const subjects = hathiTrustResults['subjects'].map(x => x['label']);
+    fullTextSearch.addSubjectsToView(subjects);
+  },
+
+  parseGoogleBooksData: function(googleBooksResults) {
     // Iterate over each Goole Books result and see if it's in the catalog
     googleBooksResults['items'].forEach(function (gbResult) {
       // Extract 2 ISBN types, add field name prefixes, put them in array
@@ -69,7 +87,16 @@ var fullTextSearch = {
         '<br><span style="font-size: small;">Excerpt from Google Books</span>' +
       '</p></div>'
       
-    )
+    );
+  },
+
+  addSubjectsToView: function(subjects) {
+    $("#sidebar").append(
+      '<h3>Sujects</h3>' +
+      '<ul style="list-style: none; padding: 0;">' +
+        subjects.map(s => '<li><a href="/?f[fast_topic_facet][]='+s+'">'+s+'</a></li>').join('') +
+      '<ul>'
+    );
   },
 
   // Get a URL from a hidden div in the search page
