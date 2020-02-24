@@ -1,47 +1,30 @@
-// This code displays book suggestions that come from Open Syllabus Project
+// Book recommendation engine using Open Syllabus Project (opensyllabus.org)
+// Created as a part of Linked Data for Production (ld4p.org)
 
-const getOpenSyllabusRecommendations = {
+const openSyllabus = {
 
-  // get co-assigned work suggestions & add to item view for a work
+  // Feature: Display books related to (coassigned with)
+  // the book currently book being viewed in the catalog
+
   getCoassignedBooks: async function(suggestions) {
     const isbns = $( "#isbns-json-data" ).html();
     const isbnParsed = JSON.parse(isbns);
     const isbnParams = isbnParsed.join(',');
-    const coAssigned = await getOpenSyllabusRecommendations.queryOspCoassignmentsApi(isbnParams);
+    const coAssigned = await this.queryOspCoassignmentsApi(isbnParams);
     for (const assignment of coAssigned) {
       const joinIsbn = assignment.join(' OR ');
-      const queryCat = await getOpenSyllabusRecommendations.querySolrCheckSuggestion(joinIsbn);
+      const queryCat = await this.querySolrCheckSuggestion(joinIsbn);
       if (this.areSolrResults(queryCat)) {
         const result = queryCat["response"]["docs"][0]
-        getOpenSyllabusRecommendations.formatAndListSuggestions(result, joinIsbn); // write HTML
+        openSyllabus.formatAndListSuggestions(result, joinIsbn); // write HTML
       }
     }
     setTimeout(function(){ window.bookcovers.onLoad() }, 300); // fill cover images
   },
 
-  // get OSP coassigments via pass-through internal API
   queryOspCoassignmentsApi: function(isbnParams) {
-    const localRoute = '/browseld/osp_coassignments?isbns=';
+    const localRoute = '/browseld/osp_coassignments?isbns='; // internal API
     return $.get(localRoute + isbnParams);
-  },
-
-  // check OSP coassigment suggestions against Solr catalog
-  querySolrCheckSuggestion: function(joinedIsbns) {
-    const solrServer = $( "#solr-server-url-data" ).html();
-    const solrParams = "/select?&wt=json&rows=1&q=" + joinedIsbns;
-    return $.ajax({
-      url: solrServer + solrParams,
-      type: 'GET',
-      dataType: 'jsonp',
-      jsonp: 'json.wrf'
-    });
-  },
-
-  // boolean check to run on result of querySolrCheckSuggestion
-  areSolrResults: function(solrResults) {
-    const threshold = 0;
-    const numFound = solrResults["response"]["numFound"];
-    return (numFound > threshold);
   },
 
   formatAndListSuggestions: function(result, joinIsbn) {
@@ -74,8 +57,11 @@ const getOpenSyllabusRecommendations = {
     $("#recommended-list").append(htmlString);
   },
 
-  // Check a hidden HTML table of books and reveals those found in Solr
-  // Works in slices or pages, finishing with a "More" link to recurse for the next slice
+  // Feature: Display books related to a field of study
+  // Checks books in a hidden table created by browseld/in_field.
+  // Each book found in catalog is shown, until the end of a slice, 
+  // finishing with a "More" link to recurse for the next slice.
+
   showFoundBooksSlice: function(sliceSize, sliceNum) {
     // Prepare "More..." link at bottom of table
     const footerMoreBox = $('#footerMoreBox');
@@ -89,8 +75,8 @@ const getOpenSyllabusRecommendations = {
       row.find('.isbns').each(async function() {
         const isbns = JSON.parse($(this).text());
         const joinedIsbns = isbns.join(' OR ');
-        const queryCat = await getOpenSyllabusRecommendations.querySolrCheckSuggestion(joinedIsbns);
-        if (getOpenSyllabusRecommendations.areSolrResults(queryCat)) {
+        const queryCat = await openSyllabus.querySolrCheckSuggestion(joinedIsbns);
+        if (openSyllabus.areSolrResults(queryCat)) {
           row.show(); // Show tr if it contains a book found in Solr catalog
         }
         // On last book in this slice, show "More..." link to run next slice
@@ -99,12 +85,32 @@ const getOpenSyllabusRecommendations = {
           footerMoreBox.append(`
             <a
               id="appendedMore"
-              href="javascript:getOpenSyllabusRecommendations.showFoundBooksSlice(20,${nextSliceNum})"
+              href="javascript:openSyllabus.showFoundBooksSlice(20,${nextSliceNum})"
             >More...</a>
           `);
         }
       });
     });
+  },
+
+  // Solr catalog checking functions used by both of above features
+  // Used to check that a book is in the catalog before displaying it
+
+  querySolrCheckSuggestion: function(joinedIsbns) {
+    const solrServer = $( "#solr-server-url-data" ).html();
+    const solrParams = "/select?&wt=json&rows=1&q=" + joinedIsbns;
+    return $.ajax({
+      url: solrServer + solrParams,
+      type: 'GET',
+      dataType: 'jsonp',
+      jsonp: 'json.wrf'
+    });
+  },
+
+  areSolrResults: function(solrResults) { // result of querySolrCheckSuggestion
+    const threshold = 0;
+    const numFound = solrResults["response"]["numFound"];
+    return (numFound > threshold);
   }
 
 };
@@ -112,10 +118,10 @@ const getOpenSyllabusRecommendations = {
 Blacklight.onLoad(function() {
   // Run syllabus coassignment code in item view
   $('body.catalog-show, body.blacklight-catalog-show').each(function() {
-    getOpenSyllabusRecommendations.getCoassignedBooks();
+    openSyllabus.getCoassignedBooks();
   });
   // Run books in field code in syllabus browse
   $('body.browseld-in_field').each(function() {
-    getOpenSyllabusRecommendations.showFoundBooksSlice(20,20);
+    openSyllabus.showFoundBooksSlice(20,20);
   });
 });
