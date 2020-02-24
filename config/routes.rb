@@ -35,11 +35,12 @@ get 'proxy/authorlookup'
 
 #semantic search controller: a place to park some (though not necessarily all) sem search stuff
 get 'sem/qalookup'
+
+#controller to retrieve and process info from HathiTrust
+get 'htrust/search'
   
 get "/get_previous" => 'browse#previous_callnumber', as: 'get_previous'
 get "/get_next" => 'browse#next_callnumber', as: 'get_next'
-
-get "/search_ac" => 'autosuggest#get_suggestions', as: 'search_ac'
   
 #get 'bookmarks/email_login_required' => 'bookmarks#email_login_required'
 get 'bookmarks/show_email_login_required_bookmarks' => 'bookmarks#show_email_login_required_bookmarks'
@@ -107,7 +108,6 @@ devise_for :users, controllers: {
   get '/browseld' => 'browseld#index'
   get '/browseld/fields' => 'browseld#fields'
   get '/browseld/in_field' => 'browseld#in_field'
-  get '/browseld/osp_coassignments' => 'browseld#osp_coassignments'
 
   match '/catalog/range_limit' => 'catalog', :via => [:get, :post, :put]
   get '/databases' => 'databases#index', :as => 'databases_index'
