@@ -11,8 +11,7 @@ const getOpenSyllabusRecommendations = {
     for (const assignment of coAssigned) {
       const joinIsbn = assignment.join(' OR ');
       const queryCat = await getOpenSyllabusRecommendations.querySolrCheckSuggestion(joinIsbn);
-      const numFound = queryCat["response"]["numFound"];
-      if (numFound > 0) {
+      if (this.areSolrResults(queryCat)) {
         const result = queryCat["response"]["docs"][0]
         getOpenSyllabusRecommendations.formatAndListSuggestions(result, joinIsbn); // write HTML
       }
@@ -27,15 +26,22 @@ const getOpenSyllabusRecommendations = {
   },
 
   // check OSP coassigment suggestions against Solr catalog
-  querySolrCheckSuggestion: function(joinIsbn) {
+  querySolrCheckSuggestion: function(joinedIsbns) {
     const solrServer = $( "#solr-server-url-data" ).html();
-    const solrParams = "/select?&wt=json&rows=1&q=" + joinIsbn;
+    const solrParams = "/select?&wt=json&rows=1&q=" + joinedIsbns;
     return $.ajax({
       url: solrServer + solrParams,
       type: 'GET',
       dataType: 'jsonp',
       jsonp: 'json.wrf'
     });
+  },
+
+  // boolean check to run on result of querySolrCheckSuggestion
+  areSolrResults: function(solrResults) {
+    const threshold = 0;
+    const numFound = solrResults["response"]["numFound"];
+    return (numFound > threshold);
   },
 
   formatAndListSuggestions: function(result, joinIsbn) {
@@ -57,13 +63,12 @@ const getOpenSyllabusRecommendations = {
     $("#recommended-list").append(htmlString);
   },
 
-  // This function checks a hidden HTML table of books and reveals those found in Solr
-  // It works in slices or pages, finishing with a "More" link to recurse for the next slice
+  // Check a hidden HTML table of books and reveals those found in Solr
+  // Works in slices or pages, finishing with a "More" link to recurse for the next slice
   showFoundBooksSlice: function(sliceSize, sliceNum) {
     // Prepare "More..." link at bottom of table
     const footerMoreBox = $('#footerMoreBox');
     // Get Solr URL from env var via the DOM
-    const solrServerUrl = $( "#solr-server-url-data" ).html();
     $('#appendedMore').hide("slow", function(){ $(this).remove(); })
     // Iterate on current slice of list of books
     const fieldBookList = $('#fieldBookList tr');
@@ -73,17 +78,15 @@ const getOpenSyllabusRecommendations = {
       row.find('.isbns').each(async function() {
         const isbns = JSON.parse($(this).text());
         const joinedIsbns = isbns.join(' OR ');
-        const solrUrl = solrServerUrl + "/select?&wt=json&rows=0&q=" + joinedIsbns;
         const queryCat = await getOpenSyllabusRecommendations.querySolrCheckSuggestion(joinedIsbns);
-        const numFound = queryCat["response"]["numFound"];
-        if (numFound > 0) {
-          row.show();
+        if (getOpenSyllabusRecommendations.areSolrResults(queryCat)) {
+          row.show(); // Show tr if it contains a book found in Solr catalog
         }
         // On last book in this slice, show "More..." link to run next slice
         if (row[0] === bookListSlice.last()[0]) {
           const nextSliceNum = sliceNum + sliceSize;
           footerMoreBox.append(
-            '<a id="appendedMore" href="javascript:getOpenSyllabusRecommendations.checkFieldBooks(20,'
+            '<a id="appendedMore" href="javascript:getOpenSyllabusRecommendations.showFoundBooksSlice(20,'
             +nextSliceNum+
             ')">More...</a>'
           );
