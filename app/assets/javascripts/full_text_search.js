@@ -120,7 +120,7 @@ const fullTextSearch = {
     $("#sidebar").append(
       '<h3>Subjects</h3>' +
       '<ul style="list-style: none; padding: 0;">' +
-        subjects.map(s => '<li><a href="/?f[fast_topic_facet][]='+s+'">'+s+'</a></li>').join('') +
+        subjects.map(s => '<li><a href="/?search_field=subject_cts&q='+s+'">'+s+'</a></li>').join('') +
       '<ul>'
     );
   },
