@@ -5,7 +5,7 @@ const fullTextSearch = {
 
   // Pass the user's query to full text search data sources
   queryFullText: async function() {
-    const query = $('input#q').val();
+    const query = $("input#q").val();
 
     const gbResult = await this.queryGoogleBooks(query);
     const htResult = await this.queryHathiTrust(query);
@@ -37,21 +37,21 @@ const fullTextSearch = {
 
   parseHathiTrustData: async function(hathiTrustResults) {
     // HathiTrust API returns subject strings mostly similar to LCSH
-    if (hathiTrustResults['subjects']) {
-      const subjects = hathiTrustResults['subjects'].map(x => x['label']);
+    if (hathiTrustResults["subjects"]) {
+      const subjects = hathiTrustResults["subjects"].map(x => x["label"]);
       fullTextSearch.addSubjectsToView(subjects);
     }
     // HathiTrust also has catalog results
-    if (hathiTrustResults['results']) {
-      for (const htResult of hathiTrustResults['results']) {
+    if (hathiTrustResults["results"]) {
+      for (const htResult of hathiTrustResults["results"]) {
         // Extract OCLC and ISBN ids, add field name prefixes, put into array
         const bookIdStrings = [];
-        for (const keyVal of htResult['ids']) {
-          if ('OCLC' in keyVal) {
-            bookIdStrings.push('number:'+keyVal['OCLC']);
+        for (const keyVal of htResult["ids"]) {
+          if ("OCLC" in keyVal) {
+            bookIdStrings.push("number:"+keyVal["OCLC"]);
           }
-          if ('ISBN' in keyVal) {
-            bookIdStrings.push('isbnissn:'+keyVal['ISBN']);
+          if ("ISBN" in keyVal) {
+            bookIdStrings.push("isbnissn:"+keyVal["ISBN"]);
           }
         }
         // Only search the catalog if there are one or more identifiers to search with
@@ -59,8 +59,8 @@ const fullTextSearch = {
           // run the Solr query to check catalog for the book
           const solrResponse = await fullTextSearch.checkSolr(bookIdStrings);
           if (fullTextSearch.hasSolrResults(solrResponse)) {
-            const snippet = htResult['title']
-            const from = 'Result from HathiTrust'
+            const snippet = htResult["title"]
+            const from = "Result from HathiTrust"
             fullTextSearch.addBookToView(solrResponse, snippet, from);
           }
         }
@@ -69,17 +69,17 @@ const fullTextSearch = {
   },
 
   parseGoogleBooksData: async function(googleBooksResults) {
-    if (googleBooksResults['items']) {
-      // Iterate over each Goole Books result and see if it's in the catalog
-      googleBooksResults['items'].forEach(async function (gbResult) {
+    if (googleBooksResults["items"]) {
+      // Iterate over each Goole Books result and see if it"s in the catalog
+      googleBooksResults["items"].forEach(async function (gbResult) {
         // Extract 2 ISBN types, add field name prefixes, put them in array
-        const prefixedIsbns = gbResult['volumeInfo']['industryIdentifiers'].filter(function(i){
-          return ['ISBN_10', 'ISBN_13'].includes(i['type'])
-        }).map(x => 'isbnissn:' + x['identifier']);
+        const prefixedIsbns = gbResult["volumeInfo"]["industryIdentifiers"].filter(function(i){
+          return ["ISBN_10", "ISBN_13"].includes(i["type"])
+        }).map(x => "isbnissn:" + x["identifier"]);
         // Extract OCLC ids, add field name prefixes, put into array
-        const prefixedOclcs = gbResult['volumeInfo']['industryIdentifiers'].filter(function(j){
-          return ('OCLC' == j['identifier'].split(':')[0])
-        }).map(y => 'number:' + y['identifier'].split(':')[1]);
+        const prefixedOclcs = gbResult["volumeInfo"]["industryIdentifiers"].filter(function(j){
+          return ("OCLC" == j["identifier"].split(":")[0])
+        }).map(y => "number:" + y["identifier"].split(":")[1]);
         // Merge the arrays of prefixed ISBN and OCLC identifiers
         const bookIdStrings = prefixedIsbns.concat(prefixedOclcs);  
         // Only search the catalog if there are one or more identifiers to search with
@@ -87,8 +87,8 @@ const fullTextSearch = {
           // run the Solr query to check catalog for the book
           const solrResponse = await fullTextSearch.checkSolr(bookIdStrings);
           if (fullTextSearch.hasSolrResults(solrResponse)) {
-            const excerpt = gbResult['searchInfo']['textSnippet']
-            const from = 'Excerpt from Google Books'
+            const excerpt = gbResult["searchInfo"]["textSnippet"]
+            const from = "Excerpt from Google Books"
             fullTextSearch.addBookToView(solrResponse, excerpt, from);
           }
         }
@@ -103,9 +103,9 @@ const fullTextSearch = {
     const solrQuery = solrAddrs + "/select?wt=json&rows=1&q=" + bookQuery;
     return await $.ajax({
       url: solrQuery,
-      type: 'GET',
-      dataType: 'jsonp',
-      jsonp: 'json.wrf', // avoid CORS and CORB errors
+      type: "GET",
+      dataType: "jsonp",
+      jsonp: "json.wrf", // avoid CORS and CORB errors
     });
   },
 
@@ -121,25 +121,24 @@ const fullTextSearch = {
     const idNum = solrResponse["response"]["docs"][0]["id"]
     const cover = solrResponse["response"]["docs"][0]["oclc_id_display"]
     const route = "/catalog/" + idNum
-    $("#full-text-results").append(
-      '<div style="clear: left;">' +
-      '<div style="float: left; padding: 0 15px 10px 0;"><img class="bookcover" id="OCLC:'+ cover +'" data-oclc="'+ cover +'" /></div>' +
-      '<p><a href="' + route + '">' + title + '</a>' +
-        '<br>' + snippet +
-        '<br><span style="font-size: small;">'+ from +'</span>' +
-      '</p></div>'
-      
-    );
+    $("#full-text-results").append(`
+      <div style="clear: left;">
+      <div style="float: left; padding: 0 15px 10px 0;"><img class="bookcover" id="OCLC:${cover}" data-oclc="${cover}" /></div>
+      <p><a href="${route}">${title}</a>
+      <br>${snippet}
+      <br><span style="font-size: small;">${from}</span>
+      </p></div> 
+    `);
   },
 
   // Add subject links to the page from an array of strings
   addSubjectsToView: function(subjects) {
-    $("#sidebar").append(
-      '<h3>Subjects</h3>' +
-      '<ul style="list-style: none; padding: 0;">' +
-        subjects.map(s => '<li><a href="/?search_field=subject_cts&q='+s+'">'+s+'</a></li>').join('') +
-      '<ul>'
-    );
+    $("#sidebar").append(`
+      <h3>Subjects</h3>
+      <ul style="list-style: none; padding: 0;">
+        ${subjects.map(s => '<li><a href="/?search_field=subject_cts&q='+s+'">'+s+'</a></li>').join('')}
+      <ul>
+    `);
   },
 
   // Get a URL from a hidden div in the search page
@@ -167,22 +166,22 @@ const fullTextSearch = {
   },
 
   queryWord: async function (word) {
-    const sparqlQuery = "SELECT * {" +
-      "VALUES ?lemma1 {'"+ word +"'@en}" +
-      "?lexeme1 wikibase:lemma ?lemma1 ." +
-      "?lexeme1 ontolex:sense ?sense1 ." +
-      "?sense1 wdt:P5973 ?sense2 ." +
-      "?lexeme2 wikibase:lemma ?synonym ." +
-      "?lexeme2 ontolex:sense ?sense2 ." +
-    "}"; // run a SPARQL query that gets synonymous lexemes
+    const sparqlQuery = `SELECT * {
+      VALUES ?lemma1 {'${word}'@en}
+      ?lexeme1 wikibase:lemma ?lemma1 .
+      ?lexeme1 ontolex:sense ?sense1 .
+      ?sense1 wdt:P5973 ?sense2 .
+      ?lexeme2 wikibase:lemma ?synonym .
+      ?lexeme2 ontolex:sense ?sense2 .
+    }`; // run a SPARQL query that gets synonymous lexemes
     const wikidataSparqlUrl = "https://query.wikidata.org/sparql?";
     const wikidataApiResult = await $.ajax({
       url:     wikidataSparqlUrl,
-      headers: {Accept: 'application/sparql-results+json'},
+      headers: {Accept: "application/sparql-results+json"},
       data:    {query: sparqlQuery}
     });
     return wikidataApiResult["results"]["bindings"].map(function (binding) {
-      return binding['synonym']['value']
+      return binding["synonym"]["value"]
     }); // return an array of synonym strings
   },
 
@@ -193,9 +192,9 @@ const fullTextSearch = {
       const solrUrl = solrAddress + "/select?&wt=json&rows=0&q=" + hint
       const solrResponse = await $.ajax({
         url: solrUrl,
-        type: 'GET',
-        dataType: 'jsonp',
-        jsonp: 'json.wrf'
+        type: "GET",
+        dataType: "jsonp",
+        jsonp: "json.wrf"
       });
       const numFound = solrResponse["response"]["numFound"]
       if (numFound > 0) {
@@ -207,7 +206,7 @@ const fullTextSearch = {
 
   addSuggestionsToView: function (hint) {
     $("#main-container").prepend(
-      'Did you mean <a href="?q='+hint+'">'+hint+'</a>?'
+      `Did you mean <a href="?q=${hint}">${hint}</a>?'`
     );
   }
 
