@@ -4,33 +4,44 @@
 const fullTextSearch = {
 
   // Pass the user's query to full text search data sources
-  queryFullText: function() {
+  queryFullText: async function() {
     const query = $('input#q').val();
-    fullTextSearch.queryGoogleBooks(query);
-    fullTextSearch.queryHathiTrust(query);
+
+    const gbResult = await this.queryGoogleBooks(query);
+    const htResult = await this.queryHathiTrust(query);
+    
+    const gbParsed = await this.parseGoogleBooksData(gbResult);
+    const htParsed = await this.parseHathiTrustData(htResult);
+
+    // Fill in book cover images
+    setTimeout(function(){ window.bookcovers.onLoad() }, 2000);
   },
 
-  queryGoogleBooks: function(query) {
+  queryGoogleBooks: async function(query) {
     const googleBooksUrl = "https://www.googleapis.com/books/v1/volumes?q=" + query;
-    fetch(googleBooksUrl)
+    let data = await fetch(googleBooksUrl)
       .then(response => response.json())
-      .then(data => fullTextSearch.parseGoogleBooksData(data))
+      .then(data => data)
     ;
+    return data;
   },
 
-  queryHathiTrust: function(query) {
+  queryHathiTrust: async function(query) {
     const hathiTrustPath = "./htrust/search?q=" + query;
-    fetch(hathiTrustPath)
+    let data = await fetch(hathiTrustPath)
       .then(response => response.json())
-      .then(data => fullTextSearch.parseHathiTrustData(data))
+      .then(data => data)
     ;
+    return data;
   },
 
-  parseHathiTrustData: function(hathiTrustResults) {
+  parseHathiTrustData: async function(hathiTrustResults) {
+    // HathiTrust API returns subject strings mostly similar to LCSH
     const subjects = hathiTrustResults['subjects'].map(x => x['label']);
     fullTextSearch.addSubjectsToView(subjects);
-    for (const htResult of hathiTrustResults['results']) {
 
+
+    for (const htResult of hathiTrustResults['results']) {
       // Extract OCLC and ISBN ids, add field name prefixes, put into array
       const bookIdStrings = [];
       for (const keyVal of htResult['ids']) {
@@ -51,7 +62,7 @@ const fullTextSearch = {
     }
   },
 
-  parseGoogleBooksData: function(googleBooksResults) {
+  parseGoogleBooksData: async function(googleBooksResults) {
     // Iterate over each Goole Books result and see if it's in the catalog
     googleBooksResults['items'].forEach(function (gbResult) {
       // Extract 2 ISBN types, add field name prefixes, put them in array
@@ -72,8 +83,6 @@ const fullTextSearch = {
         fullTextSearch.checkSolr(bookQuery, gbResult['searchInfo']['textSnippet'], 'Excerpt from Google Books')
       }
     })
-    // Fill in book cover images
-    setTimeout(function(){ window.bookcovers.onLoad() }, 2000);
   },
 
   checkSolr: function(bookQuery, textSnippet, from) {
