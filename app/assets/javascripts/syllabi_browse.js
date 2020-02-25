@@ -2,6 +2,7 @@
 // Created as a part of Linked Data for Production (ld4p.org)
 
 const openSyllabus = {
+
   // Feature: Display books related to (coassigned with)
   // the book currently book being viewed in the catalog
 
@@ -9,35 +10,38 @@ const openSyllabus = {
     const isbns = $("#isbns-json-data").html();
     const isbnsParam = JSON.parse(isbns).join(",");
     const coAssigned = await this.queryOspCoassignmentsApi(isbnsParam);
+    if (!coAssigned) {
+      return; // stop execution if API call does not work
+    }
     for (const assignment of coAssigned) {
-      const queryCat = await this.querySolrCheckSuggestion(assignment);
-      if (this.hasSolrResults(queryCat)) {
-        const result = queryCat["response"]["docs"][0];
+      const queryCatalog = await this.querySolrCheckSuggestion(assignment);
+      if (this.hasSolrResults(queryCatalog)) {
+        const result = queryCatalog["response"]["docs"][0];
         openSyllabus.formatAndListSuggestions(result, assignment); // write HTML
       }
     }
-    setTimeout(function() {
-      window.bookcovers.onLoad();
-    }, 300); // fill cover images
+    window.bookcovers.onLoad(); // fill cover images
   },
 
-  queryOspCoassignmentsApi: function(isbnsParam) {
-    const localRoute = "/browseld/osp_coassignmentsf?isbns="; // internal API
-    return $.get(localRoute + isbnsParam);
+  queryOspCoassignmentsApi: async function(isbnsParam) {
+    try {
+      const localRoute = "/browseld/osp_coassignments?isbns="; // internal API
+      return await $.get(localRoute + isbnsParam);
+    } catch (err) {
+      return false;
+    }
   },
 
   formatAndListSuggestions: function(result, isbns) {
     // Display the div if something is found
     $(".browse-syllabi").show(500);
-    // Format author string
+    // Format author string if there is an author
+    let authorNote = '';
     if (result["author_display"]) {
-      var authorStringResponse = result["author_display"];
-      var authorDividedByComma = authorStringResponse.split(",");
-      var authorFirst2Elements = authorDividedByComma.slice(0, 2).join();
+      const authorStringResponse = result["author_display"].split(",");
+      const authorFirst2Elements = authorStringResponse.slice(0, 2).join();
+      authorNote = ` by ${authorFirst2Elements}`;
     }
-    const authorNote = authorFirst2Elements
-      ? " by " + authorFirst2Elements
-      : "";
     // Set strings for title, href, and OCLC id
     const recomTitle = result["title_display"];
     const recomQuery = "/catalog?&q=" + isbns.join(" OR ");
@@ -47,7 +51,12 @@ const openSyllabus = {
       <figure>
         <div class="imgframe">
           <a href="${recomQuery}">
-            <img class="bookcover" id="OCLC:${oclcIdDisp}" data-oclc="${oclcIdDisp}" />
+            <img
+              alt="${recomTitle}"
+              class="bookcover"
+              id="OCLC:${oclcIdDisp}"
+              data-oclc="${oclcIdDisp}"
+            />
           </a>
         </div>
         <figcaption>
@@ -76,8 +85,8 @@ const openSyllabus = {
       const row = $(this);
       row.find(".isbns").each(async function() {
         const isbns = JSON.parse($(this).text());
-        const queryCat = await openSyllabus.querySolrCheckSuggestion(isbns);
-        if (openSyllabus.hasSolrResults(queryCat)) {
+        const queryCatalog = await openSyllabus.querySolrCheckSuggestion(isbns);
+        if (openSyllabus.hasSolrResults(queryCatalog)) {
           row.show(); // Show tr if it contains a book found in Solr catalog
         }
         // On last book in this slice, show "More..." link to run next slice
@@ -97,11 +106,14 @@ const openSyllabus = {
   // Solr catalog checking functions used by both of above features
   // Used to check that a book is in the catalog before displaying it
 
-  querySolrCheckSuggestion: function(isbns) {
+  querySolrCheckSuggestion: async function(isbns) {
     const joinedIsbns = isbns.join(" OR ");
     const solrServer = $("#solr-server-url-data").html();
     const solrParams = "/select?&wt=json&rows=1&q=" + joinedIsbns;
-    return $.ajax({
+    // Using JSONP to avoid CORS errors, but it prevents use of try/catch
+    // https://forum.jquery.com/topic/jquery-ajax-with-datatype-jsonp-will-not-use-error-callback-if-request-fails
+    // TODO: handle errors here
+    return await $.ajax({
       url: solrServer + solrParams,
       type: "GET",
       dataType: "jsonp",
@@ -109,12 +121,12 @@ const openSyllabus = {
     });
   },
 
+  // solrResults: result of querySolrCheckSuggestion
   hasSolrResults: function(solrResults) {
-    // result of querySolrCheckSuggestion
-    const threshold = 0;
     const numFound = solrResults["response"]["numFound"];
-    return numFound > threshold;
+    return numFound > 0;
   }
+
 };
 
 Blacklight.onLoad(function() {
