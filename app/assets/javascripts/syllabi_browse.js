@@ -3,9 +3,7 @@
 
 const openSyllabus = {
 
-  // Feature: Display books related to (coassigned with)
-  // the book currently book being viewed in the catalog
-
+  // Display books related to (coassigned with) the current book view
   getCoassignedBooks: async function(suggestions) {
     const isbns = $("#isbns-json-data").html();
     const isbnsParam = JSON.parse(isbns).join(",");
@@ -23,15 +21,17 @@ const openSyllabus = {
     window.bookcovers.onLoad(); // fill cover images
   },
 
+  // Get coassignmenst via internal API that fronts OSP API
   queryOspCoassignmentsApi: async function(isbnsParam) {
     try {
-      const localRoute = "/browseld/osp_coassignments?isbns="; // internal API
+      const localRoute = "/browseld/osp_coassignments?isbns=";
       return await $.get(localRoute + isbnsParam);
     } catch (err) {
       return false;
     }
   },
 
+  // Add a book recommendation to the page
   formatAndListSuggestions: function(result, isbns) {
     // Display the div if something is found
     $(".browse-syllabi").show(500);
@@ -67,11 +67,9 @@ const openSyllabus = {
     $("#recommended-list").append(htmlString);
   },
 
-  // Feature: Display books related to a field of study
-  // Checks books in a hidden table created by browseld/in_field.
+  // Check books in a hidden table created by browseld/in_field.
   // Each book found in catalog is shown, until the end of a slice,
   // finishing with a "More" link to recurse for the next slice.
-
   showFoundBooksSlice: function(sliceSize, sliceNum) {
     // Prepare "More..." link at bottom of table
     const footerMoreBox = $("#footerMoreBox");
@@ -103,9 +101,7 @@ const openSyllabus = {
     });
   },
 
-  // Solr catalog checking functions used by both of above features
-  // Used to check that a book is in the catalog before displaying it
-
+  // isbns: an array of strings designating a book to be looked up in Solr
   querySolrCheckSuggestion: async function(isbns) {
     const joinedIsbns = isbns.join(" OR ");
     const solrServer = $("#solr-server-url-data").html();
