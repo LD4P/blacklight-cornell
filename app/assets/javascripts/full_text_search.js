@@ -165,7 +165,10 @@ const fullTextSearch = {
     }
   },
 
+  // Check Wikidata for synonyms for given word
   queryWord: async function (word) {
+    // SPARQL query that gets synonymous lexemes, explained at
+    // https://johnskinnerportfolio.com/blog/lexemes.html
     const sparqlQuery = `SELECT * {
       VALUES ?lemma1 {'${word}'@en}
       ?lexeme1 wikibase:lemma ?lemma1 .
@@ -173,7 +176,7 @@ const fullTextSearch = {
       ?sense1 wdt:P5973 ?sense2 .
       ?lexeme2 wikibase:lemma ?synonym .
       ?lexeme2 ontolex:sense ?sense2 .
-    }`; // run a SPARQL query that gets synonymous lexemes
+    }`;
     const wikidataSparqlUrl = "https://query.wikidata.org/sparql?";
     const wikidataApiResult = await $.ajax({
       url:     wikidataSparqlUrl,
@@ -204,6 +207,7 @@ const fullTextSearch = {
     }
   },
 
+  // Show synonym to user as search suggestion
   addSuggestionsToView: function (hint) {
     $("#main-container").prepend(
       `Did you mean <a href="?q=${hint}">${hint}</a>?'`
