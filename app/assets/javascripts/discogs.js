@@ -17,6 +17,7 @@ function renderWikidataLegend(wikiURI) {
 var processDiscogs = {
   onLoad: function() {
       
+    console.log("made it");
     var single_author = false;
     if ( $('dd.blacklight-format > i').attr("class").indexOf("fa-music") > 0 ) {
         var title_resp = $('#title_resp').val().replace(/.\s*$/, "");
@@ -105,7 +106,7 @@ var processDiscogs = {
        	var results = $.parseJSON(xhr.responseText);
 		if ( results.length > 0 ) {
 			var discogs_id = results[0]["id"];
-			var imageUrl = results[0]["context"]["Image URL"][0];
+			var imageUrl = results[0]["context"][0]["values"][0];
 			var label = results[0]["label"];
 			processDiscogs.makeShowAjaxCall(discogs_id, title, imageUrl);
         }
