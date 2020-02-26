@@ -64,7 +64,7 @@ var  processOclcData = {
   },
 
   getLocSubjectsData: function(term) {
-      if ( $.inArray(term,termArray) == -1 ) {
+      if ( $.inArray(term,termArray) == -1 && term.length > 0 ) {
           termArray.push(term);
           ajaxCallStatus[term.toLowerCase().replace(/ /g,'')] = "open";
           var authorityUrl = "https://lookup.ld4l.org/authorities/search/linked_data/locsubjects_ld4l_cache?maxRecords=1&context=true&q=" + term.replace(/ /g,'%20');
