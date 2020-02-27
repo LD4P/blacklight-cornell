@@ -434,7 +434,7 @@ var processDiscogs = {
   
 };  
 Blacklight.onLoad(function() {
-    if ( $('body').hasClass("catalog-show") ) {
+    if ( $('body').prop('className').indexOf("catalog-show") >= 0 ) {
         processDiscogs.onLoad();  
     }
 });  
