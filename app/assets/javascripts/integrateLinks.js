@@ -426,7 +426,7 @@ $(document).ready(function () {
             if ("image" in binding && "value" in binding["image"] 
                && binding["image"]["value"]) {
               var image = binding["image"]["value"];
-              var html = "<figure class='kp-entity-image'><img src='" + image + "'></figure>" + 
+              var html = "<figure class='kp-entity-image float-left'><img src='" + image + "'></figure>" + 
               "<span class='kp-source'>Image: Wikidata</span>";
               $("#imageContent").append(html);
 
