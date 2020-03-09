@@ -39,6 +39,28 @@ class HtrustController < ApplicationController
   	
   end
   
+<<<<<<< HEAD
+  #def retrieveXML(query)
+  #  return nil if query.blank?
+ # 	if(query.downcase == "akestor, king of paphos")
+ # 		filepath =Rails.public_path.join("htrustXML/akestor_ls_results.xml")
+ # 		xmlfile = File.open(filepath)
+ # 		return xmlfile
+ # 	end
+ # 	return nil
+  	
+  #end
+  
+  def retrieveXML(query)
+    require "net/http"
+    return nil if query.blank?
+ 	# Call URL with query
+    h_url = ENV["HATHI_TRUST"] + query + ";debug=xml";
+    url = URI.parse(h_url)
+    resp = Net::HTTP.get_response(url)
+    xmlfile = resp.body
+	return xmlfile  
+=======
   def retrieveXML(query)
     return nil if query.blank?
   	if(query.downcase == "akestor, king of paphos")
@@ -48,6 +70,7 @@ class HtrustController < ApplicationController
   	end
   	return nil
   	
+>>>>>>> dev
   end
   
  
