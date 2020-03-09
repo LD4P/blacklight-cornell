@@ -39,6 +39,7 @@ class HtrustController < ApplicationController
   	
   end
   
+<<<<<<< HEAD
   #def retrieveXML(query)
   #  return nil if query.blank?
  # 	if(query.downcase == "akestor, king of paphos")
@@ -59,6 +60,17 @@ class HtrustController < ApplicationController
     resp = Net::HTTP.get_response(url)
     xmlfile = resp.body
 	return xmlfile  
+=======
+  def retrieveXML(query)
+    return nil if query.blank?
+  	if(query.downcase == "akestor, king of paphos")
+  		filepath =Rails.public_path.join("htrustXML/akestor_ls_results.xml")
+  		xmlfile = File.open(filepath)
+  		return xmlfile
+  	end
+  	return nil
+  	
+>>>>>>> dev
   end
   
  

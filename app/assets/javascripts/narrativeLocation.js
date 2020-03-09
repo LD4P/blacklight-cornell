@@ -12,7 +12,7 @@ var processNarrativeLocation = {
       var lat = e.attr("lat");
       var lon = e.attr("lon");
       //if old popover exists, get rid of it
-      e.popover("destroy");
+      e.popover("dispose");
       var contentHtml = "<div id='narrativeLocationPopover' class='kp-content'>" + narrativeLocation + ": " + fastURI +
       "<div id='subjectNarrativeFacet' fastURI='" + fastURI + "'></div>" + 
       "<div id='dbPediaInfo'></div>" + 
@@ -52,6 +52,8 @@ var processNarrativeLocation = {
       mymap.setView([lat,lon], 10);
       addPointOverlay(overlay, lat, lon);
     }
+    //return mymap;
+    mymap.invalidateSize(true);
   },
   //Based on wikidata info returned, parse the coordinate info accordingly
   generateCoordinateInfo: function(binding) {

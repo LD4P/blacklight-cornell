@@ -46,7 +46,7 @@ class ProxyController < ApplicationController
     sort_query = params[:sort] || "wd_birthy_i asc"
     query = params[:q] || "*:*"
     rows = params[:rows] || 4000
-    sep_solr_url = ENV["AUTHOR_SOLR"] + "/select?q=" +query + "&wt=json&sort=" + sort_query + "&rows=" + rows;
+    sep_solr_url = ENV["AUTHOR_SOLR"] + "/select?q=" +query + "&wt=json&sort=" + sort_query + "&rows=" + rows.to_s;
     #sep_solr_url = ENV["AUTHOR_SOLR"] + "/select?q=wd_birthy_i:[1700 TO 1900]&wt=json&sort=wd_birthy_i " + sort_dir + "&rows=1000";
     url = URI.parse(sep_solr_url)
     resp = Net::HTTP.get_response(url)
