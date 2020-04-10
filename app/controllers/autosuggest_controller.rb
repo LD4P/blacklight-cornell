@@ -45,4 +45,32 @@ class AutosuggestController < CatalogController
       format.json { render json: my_hash }
     end
   end
+  
+  # Query solr endpoint 
+  def get_suggestions_solr
+    query = params["json"].gsub(",","")
+    solr_url = ENV["SUGGEST_SOLR"] +  "/select?q=" +query + "&wt=json&rows=10";
+    # Add parameter q.op=AND to force matches on all terms
+   	url = URI.parse(solr_url)
+    resp = Net::HTTP.get_response(url)
+    data = resp.body
+    result = JSON.parse(data)
+    my_hash = {}
+    #Need to parse into what is expected based on original get_suggestions
+    # Start with just authors
+    if(result.key?("response") && result["response"].key?("docs") && result["response"]["docs"].length > 0)  
+    	docs = result["response"]["docs"]
+    	# Extracting only authors to begin with
+    	authors = docs.select{|doc| doc["type_s"] == "author"}
+    	display_authors = []
+    	authors.each do |author|
+    		display_authors << {"label" => author["label_s"], "type" => "author", "rank" => author["rank_i"]} 
+    	end
+    	my_hash["Author"] = display_authors
+    end
+    
+    respond_to do |format|
+      format.json { render json: my_hash }
+    end
+  end
 end 

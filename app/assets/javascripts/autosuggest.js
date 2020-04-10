@@ -1,4 +1,6 @@
 // Add autocomplete for the main site search box — ony for Best Bets results
+//original url used search_ac, using search_as_solr simply to allow switching/comparison
+//final version will use just one endpoint
 (function ($) {
   $(document).ready(function() {
     if ($('#q').length) {
@@ -6,7 +8,7 @@
       $('#q').autocomplete({
         source: function( request, response ) {
             $.ajax({
-              url : "/search_ac?json=" + $('#q').val(),
+              url : "/search_ac_solr?json=" + $('#q').val(),
               type: 'GET',
               dataType: "json",
               complete: function(data) {
