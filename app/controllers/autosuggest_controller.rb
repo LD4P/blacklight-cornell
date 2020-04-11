@@ -49,7 +49,7 @@ class AutosuggestController < CatalogController
   # Query solr endpoint 
   def get_suggestions_solr
     query = params["json"].gsub(",","")
-    solr_url = ENV["SUGGEST_SOLR"] +  "/select?q=" +query + "&wt=json&rows=10";
+    solr_url = ENV["SUGGEST_SOLR"] +  "/select?q=" +query + "&wt=json&rows=10&q.op=AND";
     # Add parameter q.op=AND to force matches on all terms
    	url = URI.parse(solr_url)
     resp = Net::HTTP.get_response(url)
