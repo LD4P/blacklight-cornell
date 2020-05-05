@@ -2,11 +2,10 @@
 (function ($) {
   $(document).ready(function() {
     if ($('#q').length) {
-        console.log("HERE I AM, TOO")
       $('#q').autocomplete({
         source: function( request, response ) {
             $.ajax({
-              url : "/search_ac?json=" + $('#q').val(),
+              url : "/search_ac?term=" + $('#q').val(),
               type: 'GET',
               dataType: "json",
               complete: function(data) {
@@ -16,10 +15,27 @@
                       items.push(i + "s");
                       $.each(v, function() {
                         tmpHash = {}
-                        tmpHash["label"] = this["label"] + " <span>(" + this["rank"] + ")</span>";
-                        tmpHash["type"] = this["type"];
-                        tmpHash["value"] = this["label"];
+                        pseudoHash = {}
+                        tmpHash["label"] = this["label_s"] + " <span>(" + this["rank_i"] + ")</span>";
+                        tmpHash["type"] = this["type_s"];
+                        tmpHash["value"] = this["label_s"];
+                        if ( this["variant"] != undefined ) {
+                            tmpHash["label"] += "<li style='margin-left:15px;'><em>aka:</em> " + this["variant"] + "</li>";
+                        }
                         items.push(tmpHash);
+
+                        // pseudonyms have to go into the hash as separate items, and after the preferred label,
+                        // because they can be searched individually, unlike variants
+                        if ( this["pseudonym"] != undefined && this["pseudonym"].length > 0 ) {
+                            console.log(this["pseudonym"].toSource());
+                            var the_type = this["type_s"];
+                            $.each(this["pseudonym"], function() {
+                                pseudoHash["label"] = "<div style='margin:-6px 0 0 15px;'><em>See also:</em> " + this + "</div>";
+                                pseudoHash["type"] = the_type;
+                                pseudoHash["value"] = this;
+                                items.push(pseudoHash);
+                            });
+                        }
                       });
                   });
                   response( items );
@@ -28,14 +44,19 @@
          },
          minLength: 3,
          select: function(event, ui) {
-             console.log("select " + ui.item.type);
           if ( ui.item.type == "author" ) {
               $('#search_field').val('author/creator');
           }
           else {
               $('#search_field').val('subject');
           }
-          $('#q').val(ui.item.label.substring(0,ui.item.label.indexOf("<span>") -1));
+          if ( ui.item.label.indexOf("<span>") > -1 ) {
+            $('#q').val(ui.item.label.substring(0,ui.item.label.indexOf(" <span>")));
+          }
+          if ( ui.item.label.indexOf("See also") > -1 ) {
+            tmp = ui.item.label.replace("<em>See also:/<em>","");
+            $('#q').val(ui.item.label.substring(ui.item.label.indexOf("</em>")+5,ui.item.label.indexOf(" <span>")));
+          }
           $('form#search-form').submit();
           return false;
         }

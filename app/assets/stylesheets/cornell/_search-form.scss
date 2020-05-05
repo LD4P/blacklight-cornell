@@ -179,7 +179,7 @@ h2.advanced-search { margin: 0; }
 .ac-menu-item:hover {
 	background: #9fccf3 !important;
 }
-.ac-menu-item > span {
+.ac-menu-item > span, .ac-menu-item > div > span {
 	font-size: 14px !important;
 	color: #767676;
 }
