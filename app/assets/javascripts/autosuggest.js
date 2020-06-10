@@ -24,9 +24,9 @@
              if ( ui.item.label.indexOf("<span>") > -1 ) {
                $('#q').val(ui.item.label.substring(0,ui.item.label.indexOf(" <span>")));
              }
-             if ( ui.item.label.indexOf("See also") > -1 ) {
-               tmp = ui.item.label.replace("<em>See also:/<em>","");
-               $('#q').val(ui.item.label.substring(ui.item.label.indexOf("</em>")+5,ui.item.label.indexOf(" <span>")));
+             if ( ui.item.label.indexOf("see also") > -1 ) {
+               tmp = ui.item.label.replace("<em>see also:/<em>","");
+               $('#q').val(ui.item.label.substring(ui.item.label.indexOf("</em>")+6,ui.item.label.indexOf(" <span>")));
              }
              $('form#search-form').submit();
              return false;
