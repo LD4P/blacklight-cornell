@@ -49,12 +49,7 @@ class AutosuggestController < CatalogController
             i["variant"] = tmp_string unless tmp_string == i["label_s"]
           end
         end
-        if i["wd_description_s"].present?
-          punc = " " if i["label_s"][-1] == "."
-          punc = ". " if i["label_s"][-1] != "."
-          i["label_s"] = i["label_s"] + punc + " <span>" + i["wd_description_s"] + "</span>"
-        end
-        autosuggest_terms << i unless add_term == false
+       autosuggest_terms << i unless add_term == false
       end
       my_hash[k.capitalize] = autosuggest_terms
     end
@@ -71,7 +66,13 @@ class AutosuggestController < CatalogController
       v.each do |i|
         tmpHash = {}
         pseudoHash = {}
-        tmpHash["label"] = i["label_s"] + " <span>(" + i["rank_i"].to_s + ")</span>";
+        if i["wd_description_s"].present?
+          punc = " " if i["label_s"][-1] == "."
+          punc = ". " if i["label_s"][-1] != "."
+          tmpHash["label"] = i["label_s"] + punc + " <span>" + i["wd_description_s"] + "</span>"+ " <span>(" + i["rank_i"].to_s + ")</span>";
+        else
+          tmpHash["label"] = i["label_s"] + " <span>(" + i["rank_i"].to_s + ")</span>";
+        end
         tmpHash["type"] = i["type_s"];
         tmpHash["value"] = i["label_s"];
         tmpHash["uri"] = i["uri_s"];
