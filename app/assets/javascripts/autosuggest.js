@@ -28,6 +28,9 @@
                tmp = ui.item.label.replace("<em>see also:/<em>","");
                $('#q').val(ui.item.label.substring(ui.item.label.indexOf("</em>")+6,ui.item.label.indexOf(" <span>")));
              }
+             if ( ui.item.uri.indexOf("http") > -1 ) {
+               $('form#search-form').append("<input name='uri' value='" + ui.item.uri + "' type='hidden'/>"); 
+             }
              $('form#search-form').submit();
              return false;
            }

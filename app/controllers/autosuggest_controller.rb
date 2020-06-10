@@ -49,21 +49,7 @@ class AutosuggestController < CatalogController
             i["variant"] = tmp_string unless tmp_string == i["label_s"]
           end
         end
-        # If this solr doc has any pseudonymns_ss labels, add them here. 
-        # They'll appear as "see also" items in the UI. 
-        if i["pseudonyms_ss"].present?
-          i["pseudonym"] = []
-          i["pseudonyms_ss"].each do |p|
-            p_h = eval(p)
-            i["pseudonym"] << p_h[:label] + " <span>(" + p_h[:rank].to_s + ")</span>"
-          end
-        end
-        if i["wd_description_s"].present?
-          punc = " " if i["label_s"][-1] == "."
-          punc = ". " if i["label_s"][-1] != "."
-          i["label_s"] = i["label_s"] + punc + " <span>" + i["wd_description_s"] + "</span>"
-        end
-        autosuggest_terms << i unless add_term == false
+       autosuggest_terms << i unless add_term == false
       end
       my_hash[k.capitalize] = autosuggest_terms
     end
@@ -80,22 +66,32 @@ class AutosuggestController < CatalogController
       v.each do |i|
         tmpHash = {}
         pseudoHash = {}
-        tmpHash["label"] = i["label_s"] + " <span>(" + i["rank_i"].to_s + ")</span>";
+        if i["wd_description_s"].present?
+          punc = " " if i["label_s"][-1] == "."
+          punc = ". " if i["label_s"][-1] != "."
+          tmpHash["label"] = i["label_s"] + punc + " <span>" + i["wd_description_s"] + "</span>"+ " <span>(" + i["rank_i"].to_s + ")</span>";
+        else
+          tmpHash["label"] = i["label_s"] + " <span>(" + i["rank_i"].to_s + ")</span>";
+        end
         tmpHash["type"] = i["type_s"];
         tmpHash["value"] = i["label_s"];
+        tmpHash["uri"] = i["uri_s"];
         if i["variant"].present? 
           tmpHash["label"] += "<li style='margin-left:15px;'><em>aka:</em> " + i["variant"] + "</li>";
         end
         items << (tmpHash);
 
-        # pseudonyms have to go into the hash as separate items, and after the preferred label,
-        # because they can be searched individually, unlike variants
-        if i["pseudonym"].present? && i["pseudonym"].length > 0
+        # If there are any pseudonymns_ss labels, add them here. They'll appear as "see also" 
+        # items in the UI. The pseudonyms have to go into the hash as separate items, and 
+        # after the preferred label, because they can be searched individually, unlike variants.
+        if i["pseudonyms_ss"].present?
           the_type = i["type_s"];
-          i["pseudonym"].each do |l|
-            pseudoHash["label"] = "<div style='margin:-6px 0 0 15px;'><em>see also:</em> " + l + "</div>";
+          i["pseudonyms_ss"].each do |p|
+            p_h = eval(p)
+            pseudoHash["label"] = "<div style='margin:-6px 0 0 15px;'><em>see also:</em> " + p_h[:label] + " <span>(" + p_h[:rank].to_s + ")</span></div>";
             pseudoHash["type"] = the_type;
-            pseudoHash["value"] = l;
+            pseudoHash["value"] = p_h[:label];
+            pseudoHash["uri"] = p_h[:uri];
             items << pseudoHash
             pseudoHash = {}
           end
