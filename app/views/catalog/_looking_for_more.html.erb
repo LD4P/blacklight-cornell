@@ -1,4 +1,8 @@
 <%# consider wrapping this with some parameter checking -%>
+<% if params[:uri].present? %>
+<%= render :partial => 'embedded_panel', :locals => {uri:params[:uri], q:params[:q]} %>
+<% end %>
+
 <% if params[:q].present? %>
 <%= render :partial => 'semantic_recs' %>
 <% end %>
