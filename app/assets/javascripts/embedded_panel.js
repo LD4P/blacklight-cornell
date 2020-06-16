@@ -10,7 +10,7 @@ var embeddedPanel = {
     },
     bindEventHandlers: function() {
       
-   
+       
     },
     retrieveAndDisplay: function() {
       embeddedPanel.displayPersonCard(embeddedPanel.uri, embeddedPanel.label);
@@ -28,10 +28,15 @@ var embeddedPanel = {
       // Given loc uri, can you get matching wikidata entities
       var wikidataEndpoint = "https://query.wikidata.org/sparql?";
       var localname = embeddedPanel.getLocalLOCName(LOCURI);
-      var sparqlQuery = "SELECT ?entity ?entityLabel ?image ?description  WHERE {?entity wdt:P244 \"" + localname + "\" . " 
+      var sparqlQuery = "SELECT ?entity ?entityLabel ?image ?description (GROUP_CONCAT(?work;separator=\"||\") AS ?works)" 
+      	+	" WHERE {?entity wdt:P244 \"" + localname + "\" . " 
         + " OPTIONAL {?entity wdt:P18 ?image . }"
         + " OPTIONAL {?entity schema:description ?description . FILTER(lang(?description) = \"en\")}"  
-        + " SERVICE wikibase:label { bd:serviceParam wikibase:language \"[AUTO_LANGUAGE],en\". }}";        
+        + " OPTIONAL {?entity wdt:P800 ?notable_work. ?notable_work wdt:P1476 ?title. ?notable_work wikibase:sitelinks ?linkcount . }"
+        + " BIND(  CONCAT(str(?notable_work), \"|;|\", str (?title)) AS ?work) "
+        + " SERVICE wikibase:label { bd:serviceParam wikibase:language \"[AUTO_LANGUAGE],en\". }}"
+        + " GROUP BY ?entity ?entityLabel ?image ?description"
+        + " ORDER BY DESC(?linkcount)";        
         
       $.ajax({
         url : wikidataEndpoint,
@@ -72,6 +77,23 @@ var embeddedPanel = {
           if ("description" in binding && "value" in binding["description"] 
           && binding["description"]["value"]) {
             output.description = binding["description"]["value"];
+          }
+          
+          if ("works" in binding && "value" in binding["works"] 
+          && binding["works"]["value"]) {
+            works = binding["works"]["value"];
+            //Convert to array of objects with uris and titles
+            ws = works.split("||");
+            wobjs = [];
+            $.each(ws, function(i, v) {
+              vArray = v.split("|;|");
+              if(vArray.length == 2) {
+                wobjs.push({"uri": vArray[0], "label": vArray[1]});
+              }
+            });
+            if(wobjs.length > 0) {
+              output.works = wobjs;
+            }
           }
         }
       }
@@ -372,6 +394,12 @@ var embeddedPanel = {
         var wdDescription = data["description"];
         $("#embedded-panel #wd-description").html(wdDescription);
       }
+      
+      if("works" in data) {
+        var works = data["works"];
+        //This should be an array with each object specifying wikidata URI and label
+        embeddedPanel.displayNotableWorks(works);
+      }
      
       
     //Need to do this in a better way but this also calls query for notable work and appends
@@ -380,48 +408,14 @@ var embeddedPanel = {
       
     },
     
-   getNotableWorks: function(locuri, wikidataURI) {
-      var wikidataEndpoint = "https://query.wikidata.org/sparql?";
-      var sparqlQuery = "SELECT ?notable_work ?title WHERE {<"
-        + wikidataURI
-        + "> wdt:P800 ?notable_work. ?notable_work wdt:P1476 ?title. ?notable_work wikibase:sitelinks ?linkcount . }  ORDER BY DESC(?linkcount)";
-
-      $.ajax({
-        url : wikidataEndpoint,
-        headers : {
-          Accept : 'application/sparql-results+json'
-        },
-        data : {
-          query : sparqlQuery
-        },
-        success : function (data) {
-          if (data && "results" in data
-              && "bindings" in data["results"]) {
-            var bindings = data["results"]["bindings"];
-            var bLength = bindings.length;
-            var b;
-            if (bindings.length) {
-              var notableWorksHtml = "<div>Notable works include:<ul><li>";
-              var notableHtmlArray = [];
-              for (b = 0; b < bLength; b++) {
-                var binding = bindings[b];
-                if ("notable_work" in binding
-                    && "value" in binding["notable_work"]
-                && "title" in binding
-                && "value" in binding["title"]) {
-                  var notableWorkURI = binding["notable_work"]["value"];
-                  var notableWorkLabel = binding["title"]["value"];
-                  notableHtmlArray.push(notableWorkLabel);
-                }
-              }
-              notableWorksHtml += notableHtmlArray.join("</li><li>")
-              + "</li></ul></div>";
-              $("div[role='emwikidata'][uri='" + locuri + "']").append(notableWorksHtml);
-            }
-          }
-        }
-
-      });
+   displayNotableWorks: function(works) {
+     var notableHtmlArray = [];
+     $.each(works, function(i,v) {
+       notableHtmlArray.push(embeddedPanel.generateExternalLinks(v.uri, v.label, "Wikidata", ""));
+     });
+      var notableWorksHtml = (works.length > 0) ? "<div>Notable works include: <ul><li>" + notableHtmlArray.join("</li><li>") + "</li></ul></div>" : "";
+      $("#embedded-panel #notable-works").html(notableWorksHtml);
+          
     },
     generateExternalLinks: function(URI, label, sourceLabel, locUri) {
       var baseUrl = $("#itemDetails").attr("base-url");
@@ -476,6 +470,8 @@ var embeddedPanel = {
               var digitalURL = "http://digital.library.cornell.edu/catalog/"
                 + id;
               resultsHtml += "<li>" + embeddedPanel.generateExternalLinks(digitalURL, title, "Digital Library Collections", "") + "</li>";
+             
+              //For contributors
               var creator = [], creator_facet = [];
               if ("creator_tesim" in result)
                 creator = result["creator_tesim"];
