@@ -3,7 +3,7 @@
 <%= render :partial => 'embedded_panel', :locals => {uri:params[:uri], q:params[:q]} %>
 <% end %>
 
-<% if params[:q].present? %>
+<% if params[:q].present? && !params[:uri].present? %>
 <%= render :partial => 'semantic_recs' %>
 <% end %>
 

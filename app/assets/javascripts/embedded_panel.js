@@ -15,7 +15,9 @@ var embeddedPanel = {
     retrieveAndDisplay: function() {
       embeddedPanel.displayPersonCard(embeddedPanel.uri, embeddedPanel.label);
       embeddedPanel.getWikidataInfoForAuthor(embeddedPanel.uri, embeddedPanel.displayWikidataInfoForAuthor);
-      
+      embeddedPanel.getAuthData(embeddedPanel.label);
+      embeddedPanel.searchDigitalCollections(embeddedPanel.baseUrl, embeddedPanel.getDigitalCollectionsQuery(embeddedPanel.label, "author"));
+
       
     },
  
@@ -348,11 +350,12 @@ var embeddedPanel = {
     displayPersonCard: function(uri, label) {
       var labelLink = embeddedPanel.generateLabelLink("lcnaf", uri, label.replace(/--/g, " > "));
       var titleHtml = labelLink + "<span role='emwduri' uri='" + uri + "'></span>";
-      var html = "<div class='card-text' role='emwikidata' uri='" + uri + "'></div>";
+      //var html = "<div class='card-text' role='emwikidata' uri='" + uri + "'></div>";
       $("#embedded-header").html(titleHtml);
-      $("#embedded-card").html(html);
+      //$("#embedded-card").html(html);
     },
     displayWikidataInfoForAuthor: function(locuri, data) {
+      
       var wikidataURI = data['uriValue'];
       var authorLabel = data['authorLabel'];
       //Add Wikidata icon
@@ -360,23 +363,20 @@ var embeddedPanel = {
         var wikidataLink = embeddedPanel.generateWikidataLink(wikidataURI);
         $("span[role='emwduri'][uri='" + locuri + "']").html(wikidataLink);
       }
-      var appendHtml = "";
       if("image" in data) {
-        var imgHtml = "<img class='rounded float-left img-thumbnail w-25' src='" + data["image"] + "'>";
-        appendHtml += imgHtml;
-      }
+        //var imgHtml = "<img class='rounded float-left img-thumbnail w-25' src='" + data["image"] + "'>";
+        var imgHtml = "<img class='rounded img-thumbnail w-100 m-0' src='" + data["image"] + "'>";
+        $("#embedded-panel #image-container").html(imgHtml);
+      } 
       if("description" in data) {
-        appendHtml += "<div class='float-left w-75'>" + data["description"] + "</div>";
+        var wdDescription = data["description"];
+        $("#embedded-panel #wd-description").html(wdDescription);
       }
-      if(appendHtml != "") {
-        $("div[role='emwikidata'][uri='" + locuri + "']").html(appendHtml);
-        
-
-      }
+     
       
     //Need to do this in a better way but this also calls query for notable work and appends
-     embeddedPanel.getNotableWorks(locuri, wikidataURI);
-      
+     //embeddedPanel.getNotableWorks(locuri, wikidataURI);
+     
       
     },
     
@@ -422,7 +422,111 @@ var embeddedPanel = {
         }
 
       });
+    },
+    generateExternalLinks: function(URI, label, sourceLabel, locUri) {
+      var baseUrl = $("#itemDetails").attr("base-url");
+      var keywordSearch = baseUrl + "catalog?q=" + label + "&search_field=all_fields";
+      var title = "See " + sourceLabel;
+      var image = "wikidata";
+      var locHtml = "";
+      if ( locUri.length > 0 ) {
+          locHtml += "<a target='_blank' class='data-src' data-toggle='tooltip' data-placement='top' data-original-title='See Library of Congress' href='http://id.loc.gov/authorities/names/"
+                      + locUri + ".html'><img src='/assets/loc.png' /></a>"
+      }
+      if ( sourceLabel.indexOf("Digital") > -1 ) {
+          image = "dc";
+      }
+      return "<a data-toggle='tooltip' data-placement='top' data-original-title='Search Library Catalog' href='" 
+              + keywordSearch + "'>" + label + "</a> " + "<a target='_blank' class='data-src' data-toggle='tooltip' data-placement='top' data-original-title='" 
+              + title + "' href='" + URI + "'><img src='/assets/" + image +".png' /></a>" + locHtml
+    },
+    
+    getAuthData: function(query) {
+      var url = embeddedPanel.baseUrl + "/browse/info?authq=" + query + "&browse_type=Author&headingtype=Personal Name";
+      $.get(url, function (d) {
+        var authorWorksHtml = "";
+        var authorWorks = $(d).filter("div.author-works");
+        $(d).filter("div.author-works").each(function(i){authorWorksHtml += $(this).html()});
+        $("#embedded-panel #authdata").html(authorWorks);
+      });
+    },
+    searchDigitalCollections: function(baseUrl, authString) {
+      var lookupURL = baseUrl + "proxy/search?q=" + authString;
+      $.ajax({
+        url : lookupURL,
+        dataType : 'json',
+        success : function (data) {
+          // Digital collection results, append
+          var results = [];
+          if ("response" in data && "docs" in data.response) {
+            results = data["response"]["docs"];
+            // iterate through array
+            var resultsHtml = "<div><ul class=\"explist-digitalresults\">";
+            var authorsHtml = "<div><ul class=\"explist-digitalcontributers\">";
+            var maxLen = 3;
+            var numberResults = results.length;
+            var len = results.length;
+            if (len > maxLen)
+              len = maxLen;
+            var l;
+            for (l = 0; l < len; l++) {
+              var result = results[l];
+              var id = result["id"];
+              var title = result["title_tesim"];
+              var digitalURL = "http://digital.library.cornell.edu/catalog/"
+                + id;
+              resultsHtml += "<li>" + embeddedPanel.generateExternalLinks(digitalURL, title, "Digital Library Collections", "") + "</li>";
+              var creator = [], creator_facet = [];
+              if ("creator_tesim" in result)
+                creator = result["creator_tesim"];
+              if ("creator_facet_tesim" in result)
+                creator_facet = result["creator_facet_tesim"];
+              if (creator.length) {
+                var c = creator.length;
+                var i;
+                for (i = 0; i < creator.length; i++) {
+                  authorsHtml += "<li> <a href='" + baseUrl
+                  + "catalog?q=" + creator[i]
+                  + "&search_field=all_fields'>" + creator[i]
+                  + "</a></li>";
+                }
+                if(creator.length > 0) {
+                  authorsHtml = "Related Digital Collections Contributors:" + authorsHtml;
+                }
+              }
+            }
+
+            resultsHtml += "</ul>";
+            //<button id=\"expnext-digitalresults\">&#x25BD; more</button><button id=\"expless-digitalresults\">&#x25B3; less</button></div>";
+            var displayHtml = "";
+            //Only display this section if there are any digital collection results
+            if(numberResults > 0) {
+              var digColSearchURL = "https://digital.library.cornell.edu/?q=" + authString + "&search_field=all_fields";
+              displayHtml += "<div>Digital Collections Results: " + 
+              "<a class='data-src' href='" + digColSearchURL + "' target='_blank'><img src='/assets/dc.png' /></a>"          
+              + resultsHtml
+              + authorsHtml
+              + "</ul>";
+              //<button id=\"expnext-digitalcontributers\">&#x25BD; more</button><button id=\"expless-digitalcontributers\">&#x25B3; less</button></div>";
+            }  
+
+            $("#embedded-panel #dig-cols").append(displayHtml);
+            //listExpander('digitalresults');
+            //listExpander('digitalcontributers');
+          }
+
+        }
+      });
+    },
+    getDigitalCollectionsQuery: function(auth, authType) {
+      var digitalQuery = auth;
+      if(authType == "subject") {    
+          digitalQuery = digitalQuery.replace(/>/g, " ");
+      }
+      return digitalQuery;
+
     }
+
     
 }
 
