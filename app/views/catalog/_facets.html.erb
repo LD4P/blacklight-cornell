@@ -1,7 +1,9 @@
 <% # main container for facets/limits menu -%>
 <% if has_facet_values? %>
 <div id="facets" class="facets sidenav facets-toggleable-sm">
-
+<% if params[:uri].present? %>
+<%= render :partial => 'embedded_panel', :locals => {uri:params[:uri], q:params[:q]} %>
+<% end %>
   <div class="navbar">
     <h2 class="facets-heading">
       <%= t('blacklight.search.facets.title') %>

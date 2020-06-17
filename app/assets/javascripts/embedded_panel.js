@@ -13,13 +13,48 @@ var embeddedPanel = {
        
     },
     retrieveAndDisplay: function() {
-      embeddedPanel.displayPersonCard(embeddedPanel.uri, embeddedPanel.label);
-      embeddedPanel.getWikidataInfoForAuthor(embeddedPanel.uri, embeddedPanel.displayWikidataInfoForAuthor);
-      embeddedPanel.getAuthData(embeddedPanel.label);
-      embeddedPanel.searchDigitalCollections(embeddedPanel.baseUrl, embeddedPanel.getDigitalCollectionsQuery(embeddedPanel.label, "author"));
+      var uri = embeddedPanel.uri;
+      var label = embeddedPanel.label;
+      var entityType = embeddedPanel.getEntityType(uri);
+      if(entityType == "lcnaf" || entityType == "fast") {
+        embeddedPanel.displayCard(uri, label, entityType);
+        if(entityType == "lcnaf") {
+          embeddedPanel.getWikidataInfoForAuthor(uri, embeddedPanel.displayWikidataInfoForAuthor);
+        }
+        if(entityType == "fast") {
+          embeddedPanel.retrieveInfoForFAST(uri,embeddedPanel.addFASTSubjectInfoToCard);
+        }
+        embeddedPanel.getAuthData(label, entityType);
 
+        embeddedPanel.searchDigitalCollections(embeddedPanel.baseUrl, embeddedPanel.getDigitalCollectionsQuery(label, "author"));
+      }
       
     },
+    
+    //Using the URI namespace, determine person or subject
+    //LCNAF -> Person, FAST -> Subject.  Not handling LCGFT currently
+    displayCard: function(uri, label, entityType) {
+      if(entityType == "lcnaf") {
+        embeddedPanel.displayPersonCard(uri, label);
+      }
+      if(entityType == "fast") {
+        embeddedPanel.displaySubjectCard(uri, label);
+      }
+    },
+    
+    getEntityType:function(uri) {
+      var lcnafPrefix = "id.loc.gov/authorities/names";
+      var fastPrefix = "id.worldcat.org/fast";
+      var postProtocol = uri.split("://");
+      if(postProtocol[1].startsWith(lcnafPrefix)) {
+        return "lcnaf";
+      }
+      if(postProtocol[1].startsWith(fastPrefix)) {
+        return "fast";
+      }
+    },
+    
+    
  
     //Could also get info from loc but for now let's just use this
    // Query wikidata
@@ -48,7 +83,61 @@ var embeddedPanel = {
         },
         success : function (data) {
           var wikidataParsedData = embeddedPanel.parseWikidataSparqlResults(data);
-          callback(LOCURI, wikidataParsedData);
+          callback(wikidataParsedData);
+        }
+
+      });
+
+    },
+    
+    //Subject
+    getWikidataInfoForLOCSubject: function(LOCURI, callback) {
+      // Given loc uri, can you get matching wikidata entities
+      var wikidataEndpoint = "https://query.wikidata.org/sparql?";
+      var localname = embeddedPanel.getLocalLOCName(LOCURI);
+      var sparqlQuery = "SELECT ?entity ?entityLabel ?image ?description" 
+        + " WHERE {?entity wdt:P244 \"" + localname + "\" . " 
+        + " OPTIONAL {?entity wdt:P18 ?image . }"
+        + " OPTIONAL {?entity schema:description ?description . FILTER(lang(?description) = \"en\")}"  
+        + " SERVICE wikibase:label { bd:serviceParam wikibase:language \"[AUTO_LANGUAGE],en\". }}";        
+        
+      $.ajax({
+        url : wikidataEndpoint,
+        headers : {
+          Accept : 'application/sparql-results+json'
+        },
+        data : {
+          query : sparqlQuery
+        },
+        success : function (data) {
+          var wikidataParsedData = embeddedPanel.parseWikidataSparqlResults(data);
+          callback(wikidataParsedData);
+        }
+
+      });
+
+    },
+    getWikidataInfoForWikidataURI: function(wikidataURI, callback) {
+      // Given loc uri, can you get matching wikidata entities
+      var wikidataEndpoint = "https://query.wikidata.org/sparql?";
+      var localname = embeddedPanel.getLocalLOCName(wikidataURI);
+      var sparqlQuery = "SELECT  ?entityLabel ?image ?description" 
+        + " WHERE {" 
+        + " OPTIONAL {wd:" + localname + " wdt:P18 ?image . }"
+        + " OPTIONAL {wd:" + localname + " schema:description ?description . FILTER(lang(?description) = \"en\")}"  
+        + " SERVICE wikibase:label { bd:serviceParam wikibase:language \"[AUTO_LANGUAGE],en\". }}";        
+        
+      $.ajax({
+        url : wikidataEndpoint,
+        headers : {
+          Accept : 'application/sparql-results+json'
+        },
+        data : {
+          query : sparqlQuery
+        },
+        success : function (data) {
+          var wikidataParsedData = embeddedPanel.parseWikidataSparqlResults(data);
+          callback(wikidataParsedData);
         }
 
       });
@@ -112,148 +201,101 @@ var embeddedPanel = {
  
     //Display subject card
     //When subject from list is clicked, populate the subject card
-    displaySubjectCard: function(uri, label, context, ldsource) {
-      var labelLink = embeddedPanel.generateLabelLink(ldsource, uri, label.replace(/--/g, " > "));
-      var html = "<h5 class='card-subtitle'>" + labelLink + "</h5>";
+    displaySubjectCard: function(uri, label) {
+      
+      var labelLink = embeddedPanel.generateLabelLink("lcnaf", uri, label.replace(/--/g, " > "));
+      var titleHtml = labelLink;
+      var iconLink = "Source: " + embeddedPanel.generateIconLink(uri, "fast");
+      $("#embedded-header").html(titleHtml);
+      $("#embedded-panel #embedded-source").html(iconLink);
+    },
     
-      html += "<div class='card-text' role='context' uri='" + uri + "'>" + embeddedPanel.generateContextDisplay(context) + "</div>";
-      html += "<div class='card-text'>Source: " + ldsource + "</div>";
-      $("#subject-card").html(html);
-
-    },
-    generateLabelLink: function(ldsource, uri, label) {
-      if(ldsource == "lcnaf") {
-        var locLink = embeddedPanel.generateLOCLink(uri);
-        //Assuming LCNAF author facet will work the same as what is used in the facet field
-        var authorFacet =  embeddedPanel.generateFacetLink(label);
-        return authorFacet + " " + locLink;
-
-      }
-      if(ldsource == "facet") {   
-        var facetCatalogLink = embeddedPanel.generateTopicFacetLink(label);
-        var iconLink = embeddedPanel.generateFASTIconLink(uri);
-        return facetCatalogLink + " " + iconLink;
-      }
-      
-      return label;
-    },
-    generateTopicFacetLink: function(label) {
-
-      var facetLink = embeddedPanel.baseUrl + "?f[fast_topic_facet][]=" + label + "&q=&search_field=all_fields";
-
-      return "<a href='" + facetLink + "'>" + label + "</a>";
-    },
-    generateFASTIconLink: function(uri) {
-      return "<a target='_blank' class='data-src' data-toggle='tooltip' data-placement='top' data-original-title='See OCLC FAST' href='" + uri + "'><img src='/assets/oclc.png' /></a>";
-    },
-    generateContextDisplay: function(context) {
-      var html = "";
-      var htmlArray = [];
-      if(context && ("narrower" in context || "broader" in context)) {
-        if("narrower" in context) {
-          var narrower = context["narrower"];
-          $.each(narrower, function(i, v) {
-            htmlArray.push(v["label"]);
-          });
-          html += "Narrower: " + htmlArray.join(", ");
-        }
-        if("broader" in context) {
-          htmlArray = [];
-          var broader = context["broader"];
-          $.each(broader, function(i, v) {
-            htmlArray.push(v["label"]);
-          });
-          if(html != "") html += "<br/>";
-          html += "Broader: " + htmlArray.join(", ");
-        }
-      }
-      return html;
-    },
-    generateListItem: function(properties) {
-      var html = "<li ";
-      var label = properties["label"];
-      var displayLabel = label.replace(/--/g, " > ");
-        var propsArray = [];
-        $.each(properties, function(k,v) {
-          //Find better way to handle "data" attributes
-       
-          propsArray.push(k + "=\"" + v + "\"");
-          
-        });
-        html += propsArray.join(" ");
-      
-      html += ">" + displayLabel + "</li>";
-      return html;
-    },
-    //return narrower and broader specifically from QA context
-    retrieveContextRelationships: function(item) {
-      var relationships = {};
-      if("context" in item) {
-        var mappedContext = embeddedPanel.processContext(item["context"]);
-        if("Broader" in mappedContext && "values" in mappedContext["Broader"]) {
-          relationships["broader"] = mappedContext["Broader"]["values"];            
-        }
-        if("Narrower" in mappedContext && "values" in mappedContext["Narrower"]) {
-          relationships["narrower"] = mappedContext["Narrower"]["values"];            
-        }
-      }
-      return relationships;
-    },
-  
-    //Take array of context and return hash by property name
-    processContext: function(context) {
-      var mappedContext = {};
-      $.each(context, function(i, v) {
-        if("property" in v) {
-          mappedContext[v["property"]] = v;
+    
+    retrieveInfoForFAST: function(uri, callback) {
+      //The problem with using auth lookup is it returns json (which is great) but it doesn't return labels for broader and narrower
+      var url = "https://lookup.ld4l.org/authorities/fetch/linked_data/oclcfast_ld4l_cache?format=jsonld&uri=" + uri;
+      //var url = "https://lookup.ld4l.org/authorities/show/linked_data/oclcfast_direct/" + id;
+      //var url = uri + ".rdf.xml";
+      $.ajax({
+        "url": url,
+        "type": "GET",
+        "success" : function(data) {              
+          var relationships = embeddedPanel.extractFASTRelationships(uri, data);
+          callback(relationships);
         }
       });
-      return mappedContext;
     },
-    //Add LCSH URI info
-    addSubjectInfoToCard: function(relationships) {
-      var requestingURI = relationships.uri;
-      var narrowerURIs = relationships.narrowerURIs;
-      var broaderURIs = relationships.broaderURIs;
-      var exactMatchURIs = relationships.exactMatchURIs;
-      var closeURIs = relationships.closeURIs;
-      var narrowerDisplay = embeddedPanel.processRelatedURIs(narrowerURIs, relationships.dataHash);
-      var broaderDisplay = embeddedPanel.processRelatedURIs(broaderURIs, relationships.dataHash);
-      var exactDisplay = embeddedPanel.displayWikidataLink(exactMatchURIs, relationships.dataHash);
-      var closeDisplay = embeddedPanel.displayWikidataLink(closeURIs, relationships.dataHash);
-     //Get card part that corresponds and add info
-      var display = "";
-      
-      
-      
-      if(exactDisplay != "") {
-        display += exactDisplay + "<br>";
-      }
-      if(closeDisplay != "") {
-        display += "Close: " + closeDisplay + "<br>";        
-      }
-      if(broaderDisplay != "") {
-        display += "Broader: " + broaderDisplay + "<br>";        
-      }
-      if(narrowerDisplay != "") {
-        display += "Narrower: " + narrowerDisplay + "<br>";        
-      }
-      $("div[role='context'][uri='" + requestingURI + "']").append(display);
-
+    
+    extractFASTRelationships:function(uri, data) {
+      var broaderURIs = [];
+      var narrowerURIs = [];
+      var closeURIs = [];
+      var focusURIs = [];
+      var narrowerProperty = "skos:narrower";
+      var broaderProperty = "skos:broader";
+      var closeProperty = "skos:related";
+      var labelProperty = "skos:prefLabel";
+      var foafFocusProperty = "foaf:focus";
+      //Data = @context, @graph = [ {@id: id..., etc.]
+      var dataHash = embeddedPanel.processLCSHJSON(data["@graph"]);
+      narrowerURIs = embeddedPanel.processFASTEntityJSON(dataHash, narrowerProperty, uri);
+      broaderURIs = embeddedPanel.processFASTEntityJSON(dataHash, broaderProperty, uri);
+      closeURIs = embeddedPanel.processFASTEntityJSON(dataHash, closeProperty, uri);
+      focusURIs = embeddedPanel.processFASTEntityJSON(dataHash, foafFocusProperty, uri);
+      var entity = dataHash[uri];
+      var label = entity[labelProperty];
+      return {uri:uri, dataHash: dataHash, label: label, narrowerURIs: narrowerURIs, broaderURIs: broaderURIs, closeURIs: closeURIs, exactMatchURIs:[], focusURIs: focusURIs};      
     },
-    //FAST is processed differently, this should be refactored further
-    //or all the data, regardless of whether it's from the JSON-LD representation
-    //OR context should have the same structure
+    //generate hash based on uris of ids to provide cleaner access given URI
+    processLCSHJSON: function(jsonArray) {
+      var len = jsonArray.length;
+      var l;
+      var jsonObj;
+      var jsonHash = {};
+      for(l = 0; l < len; l++) {
+        jsonObj = jsonArray[l];
+        var id = jsonObj["@id"];
+        jsonHash[id] = jsonObj;
+      }
+      return jsonHash;
+    },
+    processFASTEntityJSON: function(dataHash, property, uri) {
+      var returnURIs = [];
+      var entity = dataHash[uri];
+      if(property in entity) {
+        var relationship = entity[property];
+        if(!Array.isArray(relationship)) {
+          relationship = [entity[property]];
+        }      
+        $.each(relationship, function (i,v) {
+          var uri = v["@id"];
+          var uentity = dataHash[uri];
+          var label = "";
+          if("skos:prefLabel" in uentity) {
+           label = uentity["skos:prefLabel"];
+          } else if ("rdfs:label" in uentity){
+            label = uentity["rdfs:label"];
+          }
+          if(label != "") {
+            returnURIs.push({uri:uri, label:label});
+          }
+        });
+      }
+      return returnURIs;
+    },
+    
     addFASTSubjectInfoToCard: function(relationships) {
       var requestingURI = relationships.uri;
       var narrowerURIs = relationships.narrowerURIs;
       var broaderURIs = relationships.broaderURIs;
       var exactMatchURIs = relationships.exactMatchURIs;
       var closeURIs = relationships.closeURIs;
+      var focusURIs = relationships.focusURIs;
       var narrowerDisplay = embeddedPanel.processFASTRelatedURIs(narrowerURIs, relationships.dataHash);
       var broaderDisplay = embeddedPanel.processFASTRelatedURIs(broaderURIs, relationships.dataHash);
-      //var exactDisplay = embeddedPanel.processFASTRelatedURIs(exactMatchURIs, relationships.dataHash);
+      //var exactDisplay = semRecs.processFASTRelatedURIs(exactMatchURIs, relationships.dataHash);
       var closeDisplay = embeddedPanel.processFASTRelatedURIs(closeURIs, relationships.dataHash);
+      //var focusDisplay = embeddedPanel.processFASTRelatedURIs(focusURIs, relationships.dataHash);
      //Get card part that corresponds and add info
       var display = "";
       
@@ -263,48 +305,67 @@ var embeddedPanel = {
         display += exactDisplay + "<br>";
       }*/
       if(closeDisplay != "") {
-        display += "Close: " + closeDisplay + "<br>";        
+        display += "Related: " + closeDisplay.join(", ") + "<br>"; 
       }
+      
       if(broaderDisplay != "") {
-        display += "Broader: " + broaderDisplay + "<br>";        
+        display += "Broader: " + broaderDisplay.join(", ") + "<br>";        
       }
       if(narrowerDisplay != "") {
-        display += "Narrower: " + narrowerDisplay + "<br>";        
+        display += "Narrower: " + narrowerDisplay.join(", ") + "<br>";        
       }
-      $("div[role='context'][uri='" + requestingURI + "']").append(display);
-
-    },
-    displayWikidataLink: function(rArray, dataHash) {
-      //check for any URLs that start with Wikidata 
-      var wikidataURIs = [];
-      var wikidataPrefix = "http://www.wikidata.org/";
-      $.each(rArray, function(i,v){
-        var uri = v["@id"];
-        if(uri.startsWith(wikidataPrefix)) {
-          wikidataURIs.push(v);
+      $("#embedded-panel #subject-info").append(display);
+      
+      //if exact match or foaf focus includes a wikidata link, then use that to display info
+      var wikidataURI = "";
+      var locURI = "";
+      var wuris = exactMatchURIs.concat(focusURIs);
+      $.each(wuris, function(i,v) {
+        var uri = v.uri;
+        if(uri.startsWith("http://id.loc.gov") || uri.startsWith("https://id.loc.gov")) {
+          locURI = uri;
+        }
+        if(uri.startsWith("https://www.wikidata.org")) {
+          wikidataURI = uri;
         }
       });
-      return embeddedPanel.processRelatedURIs(wikidataURIs, dataHash);
-    },
-    processRelatedURIs : function(rArray, dataHash) {
-      var display = [];
-      var prefLabel = "http://www.w3.org/2004/02/skos/core#prefLabel";
       
-      //Sort array by label
-      //First generate array of objects with just uri and label
-      var rHashes = rArray.map(function(v) {
-        var uri = v["@id"];
-        return {"uri": uri, "label": dataHash[uri][prefLabel][0]["@value"]};
-      });
-      rHashes.sort(function (a, b) {
-        return (a.label > b.label) ? 1: ((a.label < b.label) ? -1: 0)
-      });
-      $.each(rHashes, function(i,v) {
-        display.push(embeddedPanel.generateRelatedSubject(v.uri,v.label));
-      });
-     
-      return display;
+      if(wikidataURI != "") {
+        embeddedPanel.getWikidataInfoForWikidataURI(wikidataURI, embeddedPanel.displayWikidataForSubject);
+      }
+      else if(locURI != "") {
+        //Call methods to retrieve LOC info
+        embeddedPanel.getWikidataInfoForLOCSubject(locURI, embeddedPanel.displayWikidataForSubject);
+      }
+
     },
+    
+    displayWikidataForSubject: function(data) {
+      
+      var wikidataURI = data['uriValue'];
+      //this should be changed back to entity label as variable and data, but here it just stands for label
+      var authorLabel = data['authorLabel'];
+      //Add Wikidata icon
+      if(wikidataURI != null) {
+        var wikidataLink = embeddedPanel.generateWikidataLink(wikidataURI);
+        $("#embedded-panel span[role='emwduri']").html(wikidataLink);
+      }
+      if("image" in data) {
+        //var imgHtml = "<img class='rounded float-left img-thumbnail w-25' src='" + data["image"] + "'>";
+        var imageUrl = data["image"];
+        if(! imageUrl.toLowerCase().endsWith(".tif") &&  !imageUrl.toLowerCase().endsWith(".tiff")) {
+          //Not handling tiff right now
+          var imgHtml = "<img class='rounded img-thumbnail w-100 m-0' src='" + imageUrl + "'>";
+          $("#embedded-panel #image-container").addClass("float-left w-25 m-1");
+          $("#embedded-panel #image-container").html(imgHtml);
+        }
+      } 
+      if("description" in data) {
+        var wdDescription = data["description"];
+        $("#embedded-panel #wd-description").html(wdDescription);
+      } 
+    },
+    
     processFASTRelatedURIs: function(rArray) {
       var display = [];
       $.each(rArray, function(i,v) {
@@ -325,6 +386,51 @@ var embeddedPanel = {
         return embeddedPanel.generateCatalogLCSHLink(label);
       }
     },
+    
+    ///Links
+    
+    
+    generateLabelLink: function(ldsource, uri, label) {
+      if(ldsource == "lcnaf") {
+        //var locLink = embeddedPanel.generateLOCLink(uri);
+        //Assuming LCNAF author facet will work the same as what is used in the facet field
+        var authorFacet =  embeddedPanel.generateFacetLink(label);
+        return authorFacet;
+        //return authorFacet + " " + locLink;
+
+      }
+      if(ldsource == "fast") {   
+        var facetCatalogLink = embeddedPanel.generateTopicFacetLink(label);
+        //var iconLink = embeddedPanel.generateFASTIconLink(uri);
+        //return facetCatalogLink + " " + iconLink;
+        return facetCatalogLink;
+      }
+      
+      return label;
+    },
+    generateIconLink: function(uri, ldsource) {
+      var link = "";
+      if(ldsource == "lcnaf") {
+         link = embeddedPanel.generateLOCLink(uri);
+
+      }
+      if(ldsource == "fast") {   
+        link = embeddedPanel.generateFASTIconLink(uri);
+      
+      }
+      return link;
+      
+    },
+    generateTopicFacetLink: function(label) {
+
+      var facetLink = embeddedPanel.baseUrl + "?f[fast_topic_facet][]=" + label + "&q=&search_field=all_fields";
+
+      return "<a href='" + facetLink + "'>" + label + "</a>";
+    },
+    generateFASTIconLink: function(uri) {
+      return "<a target='_blank' class='data-src' data-toggle='tooltip' data-placement='top' data-original-title='See OCLC FAST' href='" + uri + "'><img src='/assets/oclc.png' /></a>";
+    },
+  
     //copied from browseLd, generate LOC link
     generateLOCLink: function(uri) {
       if(typeof uri == "undefined" || uri == "") 
@@ -341,54 +447,47 @@ var embeddedPanel = {
       return "<a href='" + wikidataURI + "' target='_blank' class='data-src' data-toggle='tooltip' data-placement='top' data-original-title='See Wikidata'><img src='/assets/wikidata.png' /></a>";
     },
   
-    processPersonResult: function(item) {
-      var htmlArray = [];
-      if("uri" in item && "label" in item) {
-        var label = item["label"];
-        var uri = item["uri"];
-        //May need to pass along uri as well to get FAST facet link
-        var generateFacetLink = "<a href='" + embeddedPanel.generateFacetLink(label) + "'>" + label + "</a>";
-        htmlArray.push(generateFacetLink + "<span role='heading' uri='" + uri + "' label='" + label + "'>&nbsp;Related</span><div role='contemporaries' uri='" + uri + "'></div>");      
-      }
-      return htmlArray.join(", ");
-    },
   
     generateFacetLink: function(label) {
-      var baseUrl = $("#semantic-recs").attr("base-url"); 
-      //this isn't preserving the entire query and search parameters but a particular person can be explored
-      var authorFacet = baseUrl + "?f[author_facet][]=" + label;
+      var authorFacet = embeddedPanel.baseUrl + "?f[author_facet][]=" + label;
       return "<a href='" + authorFacet + "'>" + label + "</a>";
     },
    generateFASTFacetLink: function(label) {
-     var baseUrl = $("#semantic-recs").attr("base-url"); 
-     //this isn't preserving the entire query and search parameters but a particular person can be explored
-     var facet = baseUrl + "?f[fast_topic_facet][]=" + label;
+     var facet = embeddedPanel.baseUrl + "?f[fast_topic_facet][]=" + label;
      return "<a href='" + facet + "'>" + label + "</a>";
    },
    
    
    
+   
+   ///People related functions
     //Display person card
     displayPersonCard: function(uri, label) {
       var labelLink = embeddedPanel.generateLabelLink("lcnaf", uri, label.replace(/--/g, " > "));
-      var titleHtml = labelLink + "<span role='emwduri' uri='" + uri + "'></span>";
-      //var html = "<div class='card-text' role='emwikidata' uri='" + uri + "'></div>";
+      var titleHtml = labelLink;
+      var iconLink = "Source: " + embeddedPanel.generateIconLink(uri, "lcnaf");
+      var wdURISpan = "<span class='ml-1' role='emwduri'></span>";
       $("#embedded-header").html(titleHtml);
-      //$("#embedded-card").html(html);
+      $("#embedded-panel #embedded-source").html(iconLink + wdURISpan);
     },
-    displayWikidataInfoForAuthor: function(locuri, data) {
+    displayWikidataInfoForAuthor: function(data) {
       
       var wikidataURI = data['uriValue'];
       var authorLabel = data['authorLabel'];
       //Add Wikidata icon
       if(wikidataURI != null) {
         var wikidataLink = embeddedPanel.generateWikidataLink(wikidataURI);
-        $("span[role='emwduri'][uri='" + locuri + "']").html(wikidataLink);
+        $("#embedded-panel span[role='emwduri']").html(wikidataLink);
       }
       if("image" in data) {
         //var imgHtml = "<img class='rounded float-left img-thumbnail w-25' src='" + data["image"] + "'>";
-        var imgHtml = "<img class='rounded img-thumbnail w-100 m-0' src='" + data["image"] + "'>";
-        $("#embedded-panel #image-container").html(imgHtml);
+        var imageUrl = data["image"];
+        if(! imageUrl.toLowerCase().endsWith(".tif") &&  !imageUrl.toLowerCase().endsWith(".tiff")) {
+          //Not handling tiff right now
+          var imgHtml = "<img class='rounded img-thumbnail w-100 m-0' src='" + imageUrl + "'>";
+          $("#embedded-panel #image-container").addClass("float-left w-25 m-1");
+          $("#embedded-panel #image-container").html(imgHtml);
+        }
       } 
       if("description" in data) {
         var wdDescription = data["description"];
@@ -430,22 +529,28 @@ var embeddedPanel = {
       if ( sourceLabel.indexOf("Digital") > -1 ) {
           image = "dc";
       }
+      var displayLabel = (label.length > 45) ? label.substring(0, 45) + "...": label;
       return "<a data-toggle='tooltip' data-placement='top' data-original-title='Search Library Catalog' href='" 
-              + keywordSearch + "'>" + label + "</a> " + "<a target='_blank' class='data-src' data-toggle='tooltip' data-placement='top' data-original-title='" 
+              + keywordSearch + "'>" + displayLabel + "</a> " + "<a target='_blank' class='data-src' data-toggle='tooltip' data-placement='top' data-original-title='" 
               + title + "' href='" + URI + "'><img src='/assets/" + image +".png' /></a>" + locHtml
     },
     
-    getAuthData: function(query) {
-      var url = embeddedPanel.baseUrl + "/browse/info?authq=" + query + "&browse_type=Author&headingtype=Personal Name";
-      $.get(url, function (d) {
-        var authorWorksHtml = "";
-        var authorWorks = $(d).filter("div.author-works");
-        $(d).filter("div.author-works").each(function(i){authorWorksHtml += $(this).html()});
-        $("#embedded-panel #authdata").html(authorWorks);
-      });
+    getAuthData: function(query, entityType) {
+      
+      if(entityType == "lcnaf" || entityType == "fast") {
+        var url = embeddedPanel.baseUrl + "/browse/info?authq=" + query;
+        url += (entityType == "lcnaf")? "&browse_type=Author&headingtype=Personal Name": "&browse_type=Subject&headingtype=Topical Term";
+         $.get(url, function (d) {
+          var authorWorksHtml = "";
+          var authorWorks = $(d).filter("div.author-works");
+          $(d).filter("div.author-works").each(function(i){authorWorksHtml += $(this).html()});
+          $("#embedded-panel #authdata").html(authorWorks);
+        });
+      }
+   
     },
     searchDigitalCollections: function(baseUrl, authString) {
-      var lookupURL = baseUrl + "proxy/search?q=" + authString;
+      var lookupURL = embeddedPanel.baseUrl + "proxy/search?q=" + authString;
       $.ajax({
         url : lookupURL,
         dataType : 'json',
@@ -456,8 +561,7 @@ var embeddedPanel = {
             results = data["response"]["docs"];
             // iterate through array
             var resultsHtml = "<div><ul class=\"explist-digitalresults\">";
-            var authorsHtml = "<div><ul class=\"explist-digitalcontributers\">";
-            var maxLen = 3;
+            var maxLen = 2;
             var numberResults = results.length;
             var len = results.length;
             if (len > maxLen)
@@ -469,31 +573,12 @@ var embeddedPanel = {
               var title = result["title_tesim"];
               var digitalURL = "http://digital.library.cornell.edu/catalog/"
                 + id;
-              resultsHtml += "<li>" + embeddedPanel.generateExternalLinks(digitalURL, title, "Digital Library Collections", "") + "</li>";
-             
-              //For contributors
-              var creator = [], creator_facet = [];
-              if ("creator_tesim" in result)
-                creator = result["creator_tesim"];
-              if ("creator_facet_tesim" in result)
-                creator_facet = result["creator_facet_tesim"];
-              if (creator.length) {
-                var c = creator.length;
-                var i;
-                for (i = 0; i < creator.length; i++) {
-                  authorsHtml += "<li> <a href='" + baseUrl
-                  + "catalog?q=" + creator[i]
-                  + "&search_field=all_fields'>" + creator[i]
-                  + "</a></li>";
-                }
-                if(creator.length > 0) {
-                  authorsHtml = "Related Digital Collections Contributors:" + authorsHtml;
-                }
-              }
+              resultsHtml += "<li>" + embeddedPanel.generateExternalLinks(digitalURL, title[0], "Digital Library Collections", "") + "</li>";
+       
             }
 
             resultsHtml += "</ul>";
-            //<button id=\"expnext-digitalresults\">&#x25BD; more</button><button id=\"expless-digitalresults\">&#x25B3; less</button></div>";
+            //Not showing contributors separately
             var displayHtml = "";
             //Only display this section if there are any digital collection results
             if(numberResults > 0) {
@@ -501,9 +586,7 @@ var embeddedPanel = {
               displayHtml += "<div>Digital Collections Results: " + 
               "<a class='data-src' href='" + digColSearchURL + "' target='_blank'><img src='/assets/dc.png' /></a>"          
               + resultsHtml
-              + authorsHtml
               + "</ul>";
-              //<button id=\"expnext-digitalcontributers\">&#x25BD; more</button><button id=\"expless-digitalcontributers\">&#x25B3; less</button></div>";
             }  
 
             $("#embedded-panel #dig-cols").append(displayHtml);
