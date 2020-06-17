@@ -1,10 +1,11 @@
 require 'rubygems'
+require 'json'
 
 #  require 'simplecov'
 #  SimpleCov.start
 #require 'spork'
+#require 'rspec/rails'
 require 'webmock/rspec'
-
 require 'capybara/rspec'
 #end
 #
@@ -95,7 +96,8 @@ Capybara.server = :webrick
     # the seed, which is printed after each run.
     #     --seed 1234
     config.order = "random"
-  
+    
+    config.include Devise::Test::ControllerHelpers, type: :controller
   end
 
 #end
