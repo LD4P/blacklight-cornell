@@ -1,8 +1,11 @@
 var semRecs = {
     onLoad: function() {
-      semRecs.init();
-      semRecs.bindEventHandlers();
-      semRecs.retrieveAndDisplay();
+      //Only run these queries/code if the corresponding partial is available
+      if($("#semantic-recs").length > 0) {
+        semRecs.init();
+        semRecs.bindEventHandlers();
+        semRecs.retrieveAndDisplay();
+      }
     },
     init:function() {
       this.baseUrl =  $("#semantic-recs").attr("base-url");      

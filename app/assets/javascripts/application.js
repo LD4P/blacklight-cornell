@@ -73,3 +73,6 @@
 
 //Added for semantic search experiments
 //= require  semsearch/sem_recs.js
+
+// For autosuggest embedded panel on search results page
+//= require embedded_panel.js

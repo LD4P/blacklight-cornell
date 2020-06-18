@@ -1,5 +1,7 @@
 <%# consider wrapping this with some parameter checking -%>
-<% if params[:q].present? %>
+
+
+<% if params[:q].present? && !params[:uri].present? %>
 <%= render :partial => 'semantic_recs' %>
 <% end %>
 
