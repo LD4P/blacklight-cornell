@@ -17,6 +17,7 @@ var embeddedPanel = {
       var label = embeddedPanel.label;
       var entityType = embeddedPanel.getEntityType(uri);
       if(entityType == "lcnaf" || entityType == "fast") {
+        $("#embedded-panel").removeClass("d-none");
         embeddedPanel.displayCard(uri, label, entityType);
         if(entityType == "lcnaf") {
           embeddedPanel.getWikidataInfoForAuthor(uri, embeddedPanel.displayWikidataInfoForAuthor);
@@ -111,7 +112,7 @@ var embeddedPanel = {
         },
         success : function (data) {
           var wikidataParsedData = embeddedPanel.parseWikidataSparqlResults(data);
-          callback(wikidataParsedData);
+          callback(wikidataParsedData, null);
         }
 
       });
@@ -137,7 +138,7 @@ var embeddedPanel = {
         },
         success : function (data) {
           var wikidataParsedData = embeddedPanel.parseWikidataSparqlResults(data);
-          callback(wikidataParsedData);
+          callback(wikidataParsedData, wikidataURI);
         }
 
       });
@@ -203,11 +204,12 @@ var embeddedPanel = {
     //When subject from list is clicked, populate the subject card
     displaySubjectCard: function(uri, label) {
       
-      var labelLink = embeddedPanel.generateLabelLink("lcnaf", uri, label.replace(/--/g, " > "));
+      var labelLink = embeddedPanel.generateLabelLink("fast", uri, label.replace(/--/g, " > "));
       var titleHtml = labelLink;
-      var iconLink = "Source: " + embeddedPanel.generateIconLink(uri, "fast");
+      var iconLink = "Source: OCLC FAST" + embeddedPanel.generateIconLink(uri, "fast");
+      var wdURISpan = "<span class='ml-1' role='emwduri'></span>";
       $("#embedded-header").html(titleHtml);
-      $("#embedded-panel #embedded-source").html(iconLink);
+      $("#embedded-panel #embedded-source").html(iconLink + wdURISpan);
     },
     
     
@@ -320,14 +322,20 @@ var embeddedPanel = {
       var wikidataURI = "";
       var locURI = "";
       var wuris = exactMatchURIs.concat(focusURIs);
+      //return either Wikidata URI or LOC URI (and the very "first" one) found
+      // Focus URIs may be related and not at the same conceptual level as the entity
+      //Exact matches, if they exist, come first in the concatenated array so will be favored
       $.each(wuris, function(i,v) {
         var uri = v.uri;
-        if(uri.startsWith("http://id.loc.gov") || uri.startsWith("https://id.loc.gov")) {
-          locURI = uri;
-        }
         if(uri.startsWith("https://www.wikidata.org")) {
           wikidataURI = uri;
+          return false;
         }
+        if(uri.startsWith("http://id.loc.gov") || uri.startsWith("https://id.loc.gov")) {
+          locURI = uri;
+          return false;
+        }
+        
       });
       
       if(wikidataURI != "") {
@@ -340,15 +348,14 @@ var embeddedPanel = {
 
     },
     
-    displayWikidataForSubject: function(data) {
-      
-      var wikidataURI = data['uriValue'];
+    displayWikidataForSubject: function(data, uri) {      
+      var wikidataURI = (uri != null) ? uri: data['uriValue'];
       //this should be changed back to entity label as variable and data, but here it just stands for label
       var authorLabel = data['authorLabel'];
       //Add Wikidata icon
       if(wikidataURI != null) {
         var wikidataLink = embeddedPanel.generateWikidataLink(wikidataURI);
-        $("#embedded-panel span[role='emwduri']").html(wikidataLink);
+        $("#embedded-panel span[role='emwduri']").html("Wikidata " + wikidataLink);
       }
       if("image" in data) {
         //var imgHtml = "<img class='rounded float-left img-thumbnail w-25' src='" + data["image"] + "'>";
@@ -465,7 +472,7 @@ var embeddedPanel = {
     displayPersonCard: function(uri, label) {
       var labelLink = embeddedPanel.generateLabelLink("lcnaf", uri, label.replace(/--/g, " > "));
       var titleHtml = labelLink;
-      var iconLink = "Source: " + embeddedPanel.generateIconLink(uri, "lcnaf");
+      var iconLink = "Source: Library of Congress " + embeddedPanel.generateIconLink(uri, "lcnaf");
       var wdURISpan = "<span class='ml-1' role='emwduri'></span>";
       $("#embedded-header").html(titleHtml);
       $("#embedded-panel #embedded-source").html(iconLink + wdURISpan);
