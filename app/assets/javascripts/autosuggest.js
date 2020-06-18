@@ -1,5 +1,11 @@
 (function ($) {
   $(document).ready(function() {
+    if ( $('input[name="uri"]').length && $('input[name="uri"]').val().length > 0 ) {
+        $('input#q').on('input', function() {
+            $('input[name="uri"]').remove();
+        });
+    }
+
     if ($('#q').length) {
       $('#q').autocomplete({
         source: function( request, response ) {
