@@ -19,10 +19,11 @@ describe AutosuggestController do
         let :results do
           controller.get_solr_response uri
         end
-        before do
-          stub_request(:get, uri)
-            .to_return(status: 200, body: File.open(Rails.root.to_s + '/spec/fixtures/autosuggest_solr_resp_rosamond_smith.json').read)
-        end
+        # Comment this out for now and do actual solr queries. Leaving it in for now in case we need to restore it.
+        # before do
+        #  stub_request(:get, uri)
+        #    .to_return(status: 200, body: File.open(Rails.root.to_s + '/spec/fixtures/autosuggest_solr_resp_rosamond_smith.json').read)
+        # end
         
         it "returns a solr response for the term 'rosamond smith'" do
           expect(results['response']["numFound"]).to eq 1
@@ -37,10 +38,11 @@ describe AutosuggestController do
         let :results do
           controller.get_solr_response uri
         end
-        before do
-          stub_request(:get, uri)
-            .to_return(status: 200, body: File.open(Rails.root.to_s + '/spec/fixtures/autosuggest_solr_resp_roderick_jaynes.json').read)
-        end
+        # Comment this out for now and do actual solr queries. Leaving it in for now in case we need to restore it.
+        # before do
+        #  stub_request(:get, uri)
+        #    .to_return(status: 200, body: File.open(Rails.root.to_s + '/spec/fixtures/autosuggest_solr_resp_roderick_jaynes.json').read)
+        # end
         
         it "returns a solr response for the term 'roderick jaynes'" do
           expect(results['response']["numFound"]).to eq 1
@@ -57,10 +59,11 @@ describe AutosuggestController do
         let :results do
           controller.get_solr_response uri
         end
-        before do
-          stub_request(:get, uri)
-            .to_return(status: 200, body: File.open(Rails.root.to_s + '/spec/fixtures/autosuggest_solr_resp_free_jazz.json').read)
-        end
+        # Comment this out for now and do actual solr queries. Leaving it in for now in case we need to restore it.
+        # before do
+        #  stub_request(:get, uri)
+        #    .to_return(status: 200, body: File.open(Rails.root.to_s + '/spec/fixtures/autosuggest_solr_resp_free_jazz.json').read)
+        # end
         
         it "returns a solr response for the term 'free jazz'" do
           expect(results['response']["numFound"]).to eq 2
@@ -76,10 +79,11 @@ describe AutosuggestController do
         let :results do
           controller.get_solr_response uri
         end
-        before do
-          stub_request(:get, uri)
-            .to_return(status: 200, body: File.open(Rails.root.to_s + '/spec/fixtures/autosuggest_solr_resp_pearl_harbor.json').read)
-        end
+        # Comment this out for now and do actual solr queries. Leaving it in for now in case we need to restore it.
+        # before do
+        #   stub_request(:get, uri)
+        #    .to_return(status: 200, body: File.open(Rails.root.to_s + '/spec/fixtures/autosuggest_solr_resp_pearl_harbor.json').read)
+        # end
         
         it "returns a solr response for the term 'pearl harbor'" do
           expect(results['response']["numFound"]).to eq 3
@@ -99,10 +103,11 @@ describe AutosuggestController do
         let :results do
           controller.get_solr_response uri
         end
-        before do
-          stub_request(:get, uri)
-            .to_return(status: 200, body: File.open(Rails.root.to_s + '/spec/fixtures/autosuggest_solr_resp_samuel_langhorne.json').read)
-        end
+        # Comment this out for now and do actual solr queries. Leaving it in for now in case we need to restore it.
+        #before do
+        #  stub_request(:get, uri)
+        #    .to_return(status: 200, body: File.open(Rails.root.to_s + '/spec/fixtures/autosuggest_solr_resp_samuel_langhorne.json').read)
+        #end
         
         it "returns a solr response for the term 'samuel langhorne'" do
           expect(results['response']["numFound"]).to eq 1
