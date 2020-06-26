@@ -4,6 +4,7 @@ var processNarrativeLocation = {
   },
   bindEventHandlers: function() {
     $('a[data-map]').click(function(event) {
+      
       var e = $(this);
       event.preventDefault();
       var narrativeLocation = e.attr("label");
@@ -16,7 +17,7 @@ var processNarrativeLocation = {
       var contentHtml = "<div id='narrativeLocationPopover' class='kp-content'>" + narrativeLocation + ": " + fastURI +
       "<div id='subjectNarrativeFacet' fastURI='" + fastURI + "'></div>" + 
       "<div id='dbPediaInfo'></div>" + 
-      "<div id='narrativeLocationMap' style='height:200px;width:200px'></div>";
+      "<div id='narrativeLocationMap' class='kp-map'></div>";
       //,trigger : 'focus'
       e.popover({
         content : contentHtml,
@@ -24,7 +25,9 @@ var processNarrativeLocation = {
         trigger: 'click'
       }).popover('show');
       if(bbox || (lat && lon)) {
-        processNarrativeLocation.generateMap(bbox, lat, lon);
+        e.on('shown.bs.popover', function () {
+          processNarrativeLocation.generateMap(bbox, lat, lon);
+        });       
       }
       processNarrativeLocation.getFASTInfo(fastURI);
     });
@@ -113,4 +116,34 @@ addPointOverlay = function(overlay, lat, lon) {
   if(lat && lon) {
     overlay.addLayer(L.marker([lat, lon]));
   }
+}
+
+testMapFunction = function() {
+  var lat="51.507222222";
+  var lon="-0.1275";
+  var overlay = L.layerGroup();
+  var bbox = null;
+  var mymap = L.map("testMap");
+  L.tileLayer(
+      'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{retina}.png', {
+        attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, &copy; <a href="http://carto.com/attributions">Carto</a>',
+        maxZoom: 18,
+        worldCopyJump: true,
+        retina: '@2x',
+        detectRetina: false
+      }
+    ).addTo(mymap);
+  mymap.addLayer(overlay);
+
+  if(bbox) {
+    var bboxBounds = L.bboxToBounds(bbox);
+    mymap.fitBounds(bboxBounds);
+    addBoundsOverlay(overlay, bboxBounds);
+  } else {
+    mymap.setView([lat,lon], 10);
+    addPointOverlay(overlay, lat, lon);
+  }
+  //return mymap;
+  mymap.invalidateSize(true);
+  
 }
