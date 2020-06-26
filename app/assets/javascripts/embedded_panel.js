@@ -27,7 +27,7 @@ var embeddedPanel = {
         }
         embeddedPanel.getAuthData(label, entityType);
 
-        embeddedPanel.searchDigitalCollections(embeddedPanel.baseUrl, embeddedPanel.getDigitalCollectionsQuery(label, "author"));
+        embeddedPanel.searchDigitalCollections(embeddedPanel.getDigitalCollectionsQuery(label, "author"));
       }
       
     },
@@ -484,7 +484,7 @@ var embeddedPanel = {
       //Add Wikidata icon
       if(wikidataURI != null) {
         var wikidataLink = embeddedPanel.generateWikidataLink(wikidataURI);
-        $("#embedded-panel span[role='emwduri']").html(wikidataLink);
+        $("#embedded-panel span[role='emwduri']").html(" Wikidata " + wikidataLink);
       }
       if("image" in data) {
         //var imgHtml = "<img class='rounded float-left img-thumbnail w-25' src='" + data["image"] + "'>";
@@ -524,8 +524,7 @@ var embeddedPanel = {
           
     },
     generateExternalLinks: function(URI, label, sourceLabel, locUri) {
-      var baseUrl = $("#itemDetails").attr("base-url");
-      var keywordSearch = baseUrl + "catalog?q=" + label + "&search_field=all_fields";
+      var keywordSearch = embeddedPanel.baseUrl + "catalog?q=" + label + "&search_field=all_fields";
       var title = "See " + sourceLabel;
       var image = "wikidata";
       var locHtml = "";
@@ -556,7 +555,7 @@ var embeddedPanel = {
       }
    
     },
-    searchDigitalCollections: function(baseUrl, authString) {
+    searchDigitalCollections: function(authString) {
       var lookupURL = embeddedPanel.baseUrl + "proxy/search?q=" + authString;
       $.ajax({
         url : lookupURL,
