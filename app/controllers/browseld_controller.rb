@@ -44,7 +44,7 @@ class BrowseldController < ApplicationController
     token = ENV['OSP_API_TOKEN'] # Token in .env file
     isbns = params[:isbns] # ISBNs joined with commas
     cnctn = HTTPClient.get(
-      "https://api.opensyllabus.org/coassignments/isbn/" + isbns,
+      "https://api.opensyllabus.org/v1/coassignments/isbn/" + isbns,
       nil, # query not used by Open Syllabus Project's API
       {authorization: "Token #{token}"} 
     )
