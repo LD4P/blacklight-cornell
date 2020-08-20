@@ -24,7 +24,7 @@ server 'aws-108-199.internal.library.cornell.edu',  :app, :web, :db, user: 'jenk
 set :deploy_to, "/cul/web/ld4p3-web.library.cornell.edu/rails-app"
 #this avoids an error message from git, but i don't think it's really necessary.
 #as i don't think the message actually affects what gets installed.
-set :rails_env, 'integration'
+set :rails_env, 'development'
 #set :branch, ENV['GIT_BRANCH'].gsub("origin/","")
 task :install_env, :roles => [ :app, :db, :web ] do
   run "cp #{deploy_to}/../conf/latest-integration.env  #{shared_path}/.env"
