@@ -12,7 +12,8 @@ function renderWikidataLegend(wikiURI) {
               + '<dd class="blacklight-donor_display col-sm-9" style="margin-top:' + margin_top + ';">'
               + '<a href="' + wikiURI + '" target="_blank">From the Wikidata entry <i class="fa fa-external-link"></i></a></dd>';
   
-  $('dl#itemDetails').append(the_html);
+  //$('dl#itemDetails').append(the_html);
+  $('#document dl.row').append(the_html);
 }
 var processDiscogs = {
   onLoad: function() {
@@ -259,7 +260,8 @@ var processDiscogs = {
           $('dt.blacklight-notes').before(the_html);
 	  }
 	  else {
-	      $('dl#itemDetails').append(the_html);  
+	      //$('dl#itemDetails').append(the_html);  
+       $('#document dl.row').append(the_html);  
 	  }
       addDiscogsLegend = true;
   },
@@ -280,7 +282,8 @@ var processDiscogs = {
       $('dt.blacklight-notes').before(the_html);
 	}
 	else {
-	    $('dl#itemDetails').append(the_html);  
+	    //$('dl#itemDetails').append(the_html); 
+      $('#document dl.row').append(the_html);  
 	}
   	addDiscogsLegend = true;
   },
@@ -299,7 +302,8 @@ var processDiscogs = {
 
       var the_html = '<dt class="blacklight-notes col-sm-3"><span class="discogs-bgc" style="padding:0 2px;">Notes:</span></dt>';
       the_html += '<dd class="blacklight-notes col-sm-9">' + notes + companiesStr + "</dd>";
-      $('dl#itemDetails').append(the_html); 
+      //$('dl#itemDetails').append(the_html); 
+      $('#document dl.row').append(the_html); 
       addDiscogsLegend = true;
   },
   
@@ -340,7 +344,8 @@ var processDiscogs = {
       else {
           the_html += the_text + '</dd>';
       }
-      $('dl#itemDetails').append(the_html);
+      //$('dl#itemDetails').append(the_html);
+      $('#document dl.row').append(the_html);
   },
 
   getWikidata: function(master_id) {
@@ -397,7 +402,8 @@ var processDiscogs = {
             $('dt#discogs-legend').before(the_html);
           }
           else {
-            $('dl#itemDetails').append(the_html);     
+            //$('dl#itemDetails').append(the_html); 
+            $('#document dl.row').append(the_html);     
           }
       }
       // check the catalog to see if we have this work
