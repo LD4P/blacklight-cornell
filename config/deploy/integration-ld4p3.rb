@@ -15,7 +15,6 @@ server 'aws-108-199.internal.library.cornell.edu',  :app, :web, :db, :primary =>
 #role :web, "newcatalog9.library.cornell.edu"
 #role :db, "newcatalog9.library.cornell.edu", :primary => true
 
-
 set :deploy_to, "/cul/web/ld4p3-web.library.cornell.edu/rails-app"
 set :rails_env, 'development'
 set :repository,  "git@github.com:LD4P/blacklight-cornell"
