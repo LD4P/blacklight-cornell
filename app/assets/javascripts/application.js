@@ -44,7 +44,3 @@
 //= require zz_inview.js
 //= require tooltip.js
 
-// Discogs
-//= require discogs.js
-//= require oclc.js
-
