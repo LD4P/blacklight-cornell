@@ -118,6 +118,11 @@ devise_for :users, controllers: {
   get "/get_previous" => 'catalog#previous_callnumber', as: 'get_previous'
   get "/get_next" => 'catalog#next_callnumber', as: 'get_next'
   get "/get_carousel" => 'catalog#build_carousel', as: 'get_carousel'
+  
+  get 'proxy/search'  
+  get 'proxy/facet'
+  get 'entity_display/display'
+  get 'entity_display/index'  
 
   # The priority is based upon order of creation:
   # first created -> highest priority.

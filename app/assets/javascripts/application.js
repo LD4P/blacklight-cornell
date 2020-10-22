@@ -43,4 +43,4 @@
 //= require jquery.waypointz.js
 //= require zz_inview.js
 //= require tooltip.js
-
+//= require 'entity_display/entity_display.js'
