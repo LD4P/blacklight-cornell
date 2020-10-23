@@ -28,6 +28,15 @@
           </a>
           <% end %>
           <% end %>
+          
+          <%# Adding some subject %>
+           <% elsif  solr_fname == 'subject_json'-%> 
+            <% authname = field_value solr_fname %>
+            <% document['subject_json'].each do |subjectArray| %>
+              <% subjects = JSON.parse(subjectArray) %>
+              <%= render_clickable_document_show_field_value :value => subjectArray, :document => document, :field => solr_fname, :root_url => root_url %> 
+            <% end %>     
+          <%# Adding some subject %>
        
           <% elsif display_link? solr_fname -%>   
            <%= render_display_link :document => document, :field => solr_fname %>

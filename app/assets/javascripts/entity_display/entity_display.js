@@ -147,13 +147,13 @@ function  getLocalLOCName(uri) {
 
       return uri.split("/").pop();
 }
-function getLCSHRelationships(uri, callback) {
+function getLCSHRelationships(uri, periododata, callback) {
       $.ajax({
         "url": uri + ".jsonld",
         "type": "GET",
         "success" : function(data) {
           var relationships = extractLCSHRelationships(uri, data);
-          callback(relationships);
+          callback(relationships, periododata);
         }
       });
     }
@@ -250,9 +250,29 @@ function retrieveInfoForFAST(uri, callback) {
     }
 
 
-
-function execRelationships(relationships) {
+//These separate functions should be more cleanly broken out
+function execRelationships(relationships, periododata) {
+  //Display label
+  var label = relationships.label;
+  $("#entityLabel").append("<br>" + label);
+  $("#displayContainer").attr("label", label);
       generateTree(relationships);
+  //Label required for digital collections query (since doesn't use URI but string)
+  var baseUrl = $("#displayContainer").attr("base-url");
+  var uri = $("#displayContainer").attr("uri");
+  var digLabel = label;
+  //Test case
+  if(uri == "x") {
+   digLabel = "Sagan, Carl, 1934-1996";
+  } 
+  //Timeline
+  loadTimeline(periododata, relationships);
+  
+  
+  //Digital collection results
+  searchDigitalCollectionFacet("fast_topic_facet", digLabel, baseUrl);
+  
+  
 
 }
 
@@ -260,29 +280,168 @@ function displayWikidataInfo(uri, data) {
  console.log(uri);
  console.log(data);
  $("#description").html("");
+ if("image" in data) {
+   $("#description").append("<img class='img-thumbnail rounded float-left' style='width:200px;height:200px' src='" + data.image + "'>");
+ }
  if("uriValue" in data) {
-   $("#description").html("<h4>URI</h4>" + data["uriValue"]);
+   $("#description").append("URI:" + data["uriValue"] + "<br/>");
  }
+
  if("description" in data) {
-   $("#description").append("<h4>Description</h4>" + data["description"]);
+   $("#description").append("<br/>Description:" + data["description"]);
  }
+
 }
 
-function loadLCSHResource(uri) {
-  getLCSHRelationships(uri, execRelationships);
+function loadLCSHResource(uri, periododata) {
+  getLCSHRelationships(uri, periododata, execRelationships);
  //get equivalent peri.do
  //get Wikidata URI
  getWikidataInfo(uri, displayWikidataInfo);
+
 }
 
-function load() {
+function load(uri, periododata) {
  //Afghanistan
  //var lcshURI = "https://id.loc.gov/authorities/names/n79063030";
   var lcshURI = "https://id.loc.gov/authorities/subjects/sh85001514";
   var fastURI = "http://id.worldcat.org/fast/798940";
-  loadLCSHResource(lcshURI);
+  if(uri == "x") {
+    loadLCSHResource(lcshURI, periododata);
+  } else {
+    loadLCSHResource(uri, periododata);
+  }
 }
 
+function searchDigitalCollectionFacet(facetName, facetValue, baseUrl) {
+  //Facet value is a json array so need to get first value out
+ 
+  var dcFacetName = (facetName === "fast_topic_facet") ?  "subject_tesim": facetName;
+  //var thumbnailImageProp = "media_URL_size_0_tesim";
+  var thumbnailImageProp = "awsthumbnail_tesim";
+    var lookupURL = baseUrl + "proxy/facet?facet_field=" + dcFacetName + "&facet_value=" + facetValue;
+    $.ajax({
+      url : lookupURL,
+      dataType : 'json',
+      success : function (data) {
+        // Digital collection results, append
+        var results = [];
+        var resultsHtml = "";
+        if ("response" in data && "docs" in data.response) {
+          results = data["response"]["docs"];
+          var len = results.length;
+          var l;
+          for (l = 0; l < len; l++) {
+            var result = results[l];
+            var id = result["id"];
+            var title = result["title_tesim"][0];
+            var digitalURL = "http://digital.library.cornell.edu/catalog/" + id;
+            var imageContent = "";
+            if(thumbnailImageProp in result && result[thumbnailImageProp].length) {
+              var imageURL = result[thumbnailImageProp][0];
+              imageContent = "<a  target='_blank' title='" + title + "' href='" + digitalURL + "'><img style='max-width:90%;'  src='" + imageURL + "'></a>";
+            }
+            resultsHtml += "<li>";
+            if(imageContent != "") {
+              resultsHtml += "<div style='float:none;clear:both;'><div style='float:left;margin-bottom:5px;width:15%'>" + imageContent + "</div>";
+            }
+            resultsHtml += generateLink(digitalURL, title);
+            if(imageContent != "") {
+              resultsHtml += "</div>";
+            }
+            resultsHtml += "</li>";
+            
+          }
+          //$("#dig-search-anchor").attr("href","http://digital.library.cornell.edu/?f[" + dcFacetName + "][]=" + dcFacetValue);
+          $("#digcol").append(resultsHtml);
+          
+        }
+      }
+    });
+    
+  
+  
+}
+
+function generateLink(URI, label) {
+  return label  + " <a class='data-src' target='_blank' title='" + label + "' href='" + URI + "'><img src='/assets/dc.png' /></a>";
+}
+
+//Histropedia function
+function loadTimeline(periododata, relationships) {
+  //Relationships for close/same matches should show periodo where it exists
+  var periodoURI = "";
+  var uri = relationships.uri;
+  var lcsh = uri + ".html";
+  //Don't really need below b/c have the mappings loaded from the data itself
+  if("closeURIs" in relationships && relationships["closeURIs"].length > 0) {
+    var closeURIs = relationships["closeURIs"];
+    var periodoPrefix = "http://n2t.net/ark";
+    $.each(closeURIs, function(i, v) {
+      if(v["@id"].startsWith(periodoPrefix)) {
+        periodoURI = v;
+      }
+    });
+  }
+  
+  console.log("period o uri " + periodoURI);
+  
+  //map data to fit histropedia display requirements
+  var mappedData = mapData(periododata);
+  //Will this work with Jquery?
+  var container = document.getElementById("timeline");
+  var timeline1 = new Histropedia.Timeline( container, {
+   initialDate: {
+       year: 1590,
+       month: 1,
+       day: 1
+   },
+   article: {
+     density: Histropedia.DENSITY_LOW,
+     distanceToMainLine: 300
+   }
+  } );
+  timeline1.load(mappedData);
+  
+  //Go to article
+  var article = timeline1.getArticleById(lcsh);
+  //console.log(article.data);
+  if(article && "data" in article && "from" in article.data && "year" in article["data"]["from"]) {
+    var year = article.data["from"]["year"];
+    var date = new Histropedia.Dmy(year,1,1)
+    // pan to date, with date located on left edge of canvas
+    timeline1.goToDateAnim(date, { offsetX: timeline.width/2 });
+    article.setOption({
+      starred: true
+    })
+    //timeline1.setStartDate(date);
+  }
+}
+
+//map periodo
+function mapData(periododata) {
+  var periods = periododata["periods"];
+  var p;
+  var mapArray = [];
+  for(p in periods) {
+    var period = periods[p];
+    var periodoid = period["id"];
+    var lcsh = period["url"];
+    var label = period["label"];
+    var mapped = {"id": lcsh, "periodoid": periodoid, "title": label};
+    if("start" in period && "in" in period["start"] && "year" in period["start"]["in"]) {
+      mapped["from"] = {"year":period["start"]["in"]["year"]};
+    }
+    if("stop" in period && "in" in period["stop"] && "year" in period["stop"]["in"]) {
+          mapped["to"] = {"year":period["stop"]["in"]["year"]};
+    }
+    mapArray.push(mapped);
+  }
+  //console.log(mapArray);
+  return mapArray;
+ }
+
+
 Blacklight.onLoad(function() {
-  load();
+  load(uri, periododata);
 });  

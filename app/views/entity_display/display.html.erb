@@ -1,17 +1,28 @@
-<h1>URI:<%= @uri %></h1>
-
-<div id="description"></div>
-<div id="hierarchy"></div>
-<div id="wdhierarchy"></div>
-<div id="timeline"><h4>Timeline</h4></div>
-<div id="map"><h4>Location</h4></div>
-
-<div id="digcol"><h4>Digital Collection Results</h4></div>
-<div id="ecommons"><h4>eCommons results</h4></div>
-
+<div id="displayContainer" class="container" base-url="<%= root_url %>" uri="<%= @uri %>"
+label="">
+	<div class="row">
+		<div class="column">
+			<h1 id="entityLabel">URI:<%= @uri %></h1>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-sm" id="description"></div>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-sm" id="hierarchy"></div>
+		<div class-"col-sm" id="wdhierarchy"></div>
+	</div>
+	<div class="row">
+		<div class="col-lg border" id="timeline"><h4>Timeline</h4></div>
+		<div class="col-lg border" id="map"><h4>Location</h4></div>
+	</div>
+	<div class="row">
+	    <div class="col-lg border" id="searchresults"><h4>Catalog Results</h4></div>
+		<div class="col-lg border" id="digcol"><h4>Digital Collection Results</h4></div>
+		<div class="col-lg border" id="ecommons"><h4>eCommons results</h4></div>
+	</div>
+</div>
 <script type="text/javascript">
-Blacklight.onLoad(function() {
-   load();
-});  
-
+	var uri = "<%= @uri %>";
 </script>

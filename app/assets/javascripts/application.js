@@ -43,4 +43,9 @@
 //= require jquery.waypointz.js
 //= require zz_inview.js
 //= require tooltip.js
+
+//Entity display
 //= require 'entity_display/entity_display.js'
+//= require jquery.mousewheel
+//= require histropedia-1.1.1.min.js
+//= require 'entity_display/periodotest.js'

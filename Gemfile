@@ -129,3 +129,7 @@ gem 'citeproc-ruby'
 gem 'unicode_utils'
 gem 'google-analytics-rails', '1.1.1'
 gem 'ebsco-eds'
+
+# Adding for entity tests
+gem 'leaflet-rails'
+gem 'jquery-mousewheel-rails'
