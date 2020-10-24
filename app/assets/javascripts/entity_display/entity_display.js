@@ -384,49 +384,68 @@ function loadTimeline(periododata, relationships) {
     });
   }
   
-  console.log("period o uri " + periodoURI);
-  
   //map data to fit histropedia display requirements
-  var mappedData = mapData(periododata);
+  var data = mapData(periododata, uri + ".html");
+  var mappedData = data["mapArray"];
+  var selectedPeriod = data["lcshPeriod"];
+  console.log("period o uri " + periodoURI);
+  //Go to article
+  //var article = timeline1.getArticleById(lcsh);
+  var initialDateYear = 1590;
+  //console.log(article.data);
+  //if(article && "data" in article && "from" in article.data && "year" in article["data"]["from"]) {
+  if(selectedPeriod && "start" in selectedPeriod && "in" in selectedPeriod["start"] && "year" in selectedPeriod["start"]["in"]) {
+    var year = selectedPeriod["start"]["in"]["year"];
+    //Set initial date to this year
+    initialDateYear = parseInt(year);
+    //var date = new Histropedia.Dmy(year,1,1)
+    // pan to date, with date located on left edge of canvas
+    //timeline1.goToDateAnim(date, { offsetX: timeline.width/2 });
+    /*
+    article.setOption({
+      starred: true
+    })*/
+    //timeline1.setStartDate(date);
+  }
+  
+ 
   //Will this work with Jquery?
-  var container = document.getElementById("timeline");
+  //var container = document.getElementById("timeline");
+  var container = $("#timeline");
+
   var timeline1 = new Histropedia.Timeline( container, {
-   initialDate: {
-       year: 1590,
-       month: 1,
-       day: 1
+   initialDate:{
+     year: initialDateYear, //1830,
+     month: 1,
+     day: 1
    },
    article: {
-     density: Histropedia.DENSITY_LOW,
-     distanceToMainLine: 300
+     density: Histropedia.DENSITY_HIGH,
+     distanceToMainLine: 200
    }
   } );
   timeline1.load(mappedData);
   
-  //Go to article
-  var article = timeline1.getArticleById(lcsh);
-  //console.log(article.data);
-  if(article && "data" in article && "from" in article.data && "year" in article["data"]["from"]) {
-    var year = article.data["from"]["year"];
-    var date = new Histropedia.Dmy(year,1,1)
-    // pan to date, with date located on left edge of canvas
-    timeline1.goToDateAnim(date, { offsetX: timeline.width/2 });
-    article.setOption({
-      starred: true
-    })
-    //timeline1.setStartDate(date);
-  }
+ 
 }
 
 //map periodo
-function mapData(periododata) {
+//Also return the periodo info for just this LCSH URL
+function mapData(periododata, lcshURL) {
   var periods = periododata["periods"];
   var p;
   var mapArray = [];
+  var lcshPeriod = null;
   for(p in periods) {
     var period = periods[p];
+   
     var periodoid = period["id"];
     var lcsh = period["url"];
+    
+    if(lcshURL == lcsh) {
+      lcshPeriod = period;
+    }
+    
     var label = period["label"];
     var mapped = {"id": lcsh, "periodoid": periodoid, "title": label};
     if("start" in period && "in" in period["start"] && "year" in period["start"]["in"]) {
@@ -438,7 +457,7 @@ function mapData(periododata) {
     mapArray.push(mapped);
   }
   //console.log(mapArray);
-  return mapArray;
+  return {"mapArray": mapArray, "lcshPeriod":lcshPeriod};
  }
 
 
