@@ -385,7 +385,7 @@ function loadTimeline(periododata, relationships) {
   }
   
   //map data to fit histropedia display requirements
-  var data = mapData(periododata, uri + ".html");
+  var data = mapData(periododata, lcsh);
   var mappedData = data["mapArray"];
   var selectedPeriod = data["lcshPeriod"];
   console.log("period o uri " + periodoURI);
@@ -424,9 +424,35 @@ function loadTimeline(periododata, relationships) {
      distanceToMainLine: 200
    }
   } );
-  timeline1.load(mappedData);
-  
- 
+  timeline1.load(mappedData); 
+  //Get article to trigger mouse down event
+  //That said we COULD just set the style of the article to highlight it
+  var article = timeline1.getArticleById(lcsh);
+ //None of these approaches appear to work
+  /*
+  var article = timeline1.getArticleById(lcsh);
+  var screenPos = timeline1.canvas.offset();
+  var registeredPosition = article.registeredPosition;
+  var testPos = { left: registeredPosition.left - screenPos.left, top: registeredPosition.top - screenPos.top };
+
+  article.clicked(testPos);
+  */
+  /*
+  var registeredPosition = {"left": 139, "top": 910};
+  console.log(registeredPosition);
+  var e = jQuery.Event( "mousedown", { pageX: registeredPosition.left+ 10, pageY: registeredPosition.top - 10,
+    originalEvent: {
+      touches: [{
+        pageX: registeredPosition.left + 10,
+        pageY: registeredPosition.top - 10
+      }]
+    }
+  } );
+  console.log(e);
+  var canvas = timeline1.canvas;
+  canvas.trigger(e);
+  //requires "original event"
+ */
 }
 
 //map periodo
