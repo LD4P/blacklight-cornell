@@ -2691,7 +2691,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        return !(Math.abs(mousedownPos.left - mouseupPos.left) > mouseMoveClickTolerance || Math.abs(mousedownPos.top - mouseupPos.top) > mouseMoveClickTolerance);
 	    }
 	
-	    function mousedownHandler(event) {
+	    function mousedownHandler(event) { 
 	        (0, _utils.clearSelection)(); //clear any selected text on the page
 	        event.preventDefault();
 	

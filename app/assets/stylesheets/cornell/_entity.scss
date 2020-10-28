@@ -1,0 +1,48 @@
+//Browse LD styles
+
+.selectedCard {
+	background-color:#222 !important;
+	color: white !important;
+}
+
+.visitedCard {
+	background-color: #f3f3f3;
+}
+
+ul.relatedTree {
+	  list-style-type: none;
+}
+
+ul.relatedTree li {
+	cursor:pointer;
+}
+
+.cardLink {
+	cursor: pointer;
+}
+
+.inlineLCCN {
+	font-size: x-small;
+	margin-bottom: 2px;
+}
+
+.mapBrowse {
+	/*float:left;*/
+	height:700px;
+	width:600px;
+	border:1 px solid #000000;
+}
+
+.mapResults {
+	float:right;
+	width:500px;
+	overflow:auto;
+	border: 1 px solid #000000;
+}
+
+.mapResults {
+	height:700px;
+	width:500px;
+	overflow:auto;
+	border: 1 px solid #000000;
+}

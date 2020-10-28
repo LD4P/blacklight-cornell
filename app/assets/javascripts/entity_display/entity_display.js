@@ -15,7 +15,7 @@ function generateTree(relationships) {
     $("#hierarchy").append(
     "<h4>Broader</h4><ul><li>" + broaderDisplay.join("</li><li>") + "</li></ul>"
     );
-  }
+  }  
 if(narrowerURIs.length > 0) {
     var narrowerDisplay = $.map(narrowerURIs, function(v, i) {
        var blabel = dataHash[v["@id"]]["http://www.w3.org/2004/02/skos/core#prefLabel"][0]["@value"];
@@ -266,9 +266,12 @@ function execRelationships(relationships, periododata) {
    digLabel = "Sagan, Carl, 1934-1996";
   } 
   //Timeline
-  loadTimeline(periododata, relationships);
-  
-  
+  var lcsh = relationships.uri + ".html";
+  var mappedData = mapData(periododata, lcsh);
+  loadTimeline(periododata, relationships, mappedData);
+  //Map
+  var selectedPeriod = mappedData["lcshPeriod"];
+  generateMapForPeriodo(selectedPeriod);
   //Digital collection results
   searchDigitalCollectionFacet("fast_topic_facet", digLabel, baseUrl);
   
@@ -368,7 +371,7 @@ function generateLink(URI, label) {
 }
 
 //Histropedia function
-function loadTimeline(periododata, relationships) {
+function loadTimeline(periododata, relationships, data) {
   //Relationships for close/same matches should show periodo where it exists
   var periodoURI = "";
   var uri = relationships.uri;
@@ -385,10 +388,9 @@ function loadTimeline(periododata, relationships) {
   }
   
   //map data to fit histropedia display requirements
-  var data = mapData(periododata, lcsh);
   var mappedData = data["mapArray"];
   var selectedPeriod = data["lcshPeriod"];
-  console.log("period o uri " + periodoURI);
+  //console.log("period o uri " + periodoURI);
   //Go to article
   //var article = timeline1.getArticleById(lcsh);
   var initialDateYear = 1590;
@@ -419,15 +421,21 @@ function loadTimeline(periododata, relationships) {
      month: 1,
      day: 1
    },
+   zoom: {
+     initial:30
+   },
    article: {
      density: Histropedia.DENSITY_HIGH,
-     distanceToMainLine: 200
+     distanceToMainLine: 250
    }
   } );
   timeline1.load(mappedData); 
   //Get article to trigger mouse down event
   //That said we COULD just set the style of the article to highlight it
   var article = timeline1.getArticleById(lcsh);
+  article.setStyle({"color": "#003333", "header":{"text":{"color":"#fff"}}});
+  
+  //timeline1.activated(article);
  //None of these approaches appear to work
   /*
   var article = timeline1.getArticleById(lcsh);
@@ -446,7 +454,7 @@ function loadTimeline(periododata, relationships) {
         pageX: registeredPosition.left + 10,
         pageY: registeredPosition.top - 10
       }]
-    }
+    };
   } );
   console.log(e);
   var canvas = timeline1.canvas;
@@ -486,7 +494,119 @@ function mapData(periododata, lcshURL) {
   return {"mapArray": mapArray, "lcshPeriod":lcshPeriod};
  }
 
+//Given periodo, get coordinates display map
+function generateMapForPeriodo(selectedPeriod) {
+  console.log("selected period");
+  console.log(selectedPeriod);
+  if("spatialCoverage" in selectedPeriod) {
+    var spArray = selectedPeriod["spatialCoverage"];
+    $.each(spArray, function(i, v) {
+      var id = v["id"];
+      if(id.startsWith("http://www.wikidata.org")) {
+        //console.log("wikidata URI is " + id);
+        //getMapInfoForURI(uri);
+      }
+    });
+  }
+}
+
+//Generate actual map using provided coordinates
+//Given an identifier, retrieve map coordinates 
+function getMapInfoForURI(uri) {
+  var wikidataEndpoint = "https://query.wikidata.org/sparql?";
+  var sparqlQuery = "SELECT ?wlon ?slat ?elon ?nlat ?clon ?clat WHERE {"
+    + "OPTIONAL {wd:" + uri + " wdt:P625 ?coords . BIND(geof:longitude(?coords) AS ?clon) BIND(geof:latitude(?coords) AS ?clat) }"
+    + "OPTIONAL {wd:" + uri + " wdt:P1335 ?w ; wdt:P1333 ?s; wdt:P1334 ?e; wdt:P1332 ?n . BIND( geof:longitude(?w) AS ?wlon) BIND(geof:latitude(?s) AS ?slat) BIND(geof:longitude(?e) AS ?elon) BIND(geof:latitude(?n) AS ?nlat)}"
+    + "} ";
+
+  $.ajax({
+    url : wikidataEndpoint,
+    headers : {
+      Accept : 'application/sparql-results+json'
+    },
+    data : {
+      query : sparqlQuery
+    },
+    success : function (data) {
+      if (data && "results" in data
+          && "bindings" in data["results"]) {
+        var bindings = data["results"]["bindings"];
+        var bLength = bindings.length;
+        var b;
+         for (b = 0; b < bLength; b++) {
+          var binding = bindings[b];
+          var geoInfo = generateCoordinateInfo(binding);
+         
+          if("Point" in geoInfo) {
+            var lat = geoInfo["Point"]["lat"];
+            var lon = geoInfo["Point"]["lon"];
+              // mymap.setView([lat,lon], 10);
+            var link = "<a href='#' auth='" + catalogLabel + "'>" + catalogLabel + ":" + facetValue + "</a>";
+            addPointOverlay(overlay, lat, lon, link);
+          }
+
+         }
+      }
+
+    }
+
+  });
+
+}
+
+function generateCoordinateInfo(binding) {
+  var geoInfo = {};
+  if("clon" in binding && "clat" in binding && "value" in binding["clon"] && "value" in binding["clat"]) {
+    geoInfo["Point"] = {"lon": binding["clon"]["value"], "lat": binding["clat"]["value"]};
+  }
+  if("wlon" in binding && "slat" in binding && "elon" in binding && "nlat" in binding &&
+      "value" in binding["wlon"] && "value" in binding["slat"] && "value" in binding["elon"] && "value" in binding["nlat"]) {
+    geoInfo["bbox"] = binding["wlon"]["value"] + " " + binding["slat"]["value"] + " " + binding["elon"]["value"] + " " + binding["nlat"]["value"];
+  }
+  return geoInfo;
+}
+
+function addPointOverlay(overlay, lat, lon, link) {
+  if(lat && lon) {
+    var marker = L.marker([lat, lon]);
+    marker.bindPopup(label);
+    overlay.addLayer(marker);
+  }
+}
+
+function initMap () {
+  var overlay = L.layerGroup();
+
+  var mymap= L.map('map', {minZoom: 2,
+      maxZoom: 18});
+  mymap.setView([0, 0], 0);
+  mymap.addLayer(overlay);
+
+  L.tileLayer(
+      'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{retina}.png', {
+        attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, &copy; <a href="http://carto.com/attributions">Carto</a>',
+        maxZoom: 18,
+        worldCopyJump: true,
+        retina: '@2x',
+        detectRetina: false
+      }
+    ).addTo(mymap);   
+  return overlay;
+} 
+
 
 Blacklight.onLoad(function() {
+  //Define method
+  L.bboxToBounds = function(bbox) {
+    bbox = bbox.split(' ');
+    if (bbox.length === 4) {
+      return L.latLngBounds([[bbox[1], bbox[0]], [bbox[3], bbox[2]]]);
+    } else {
+      throw "Invalid bounding box string";
+    }
+  };
+  //var overlay = initMap();
+  //Load uri and periodo data
   load(uri, periododata);
+  
 });  

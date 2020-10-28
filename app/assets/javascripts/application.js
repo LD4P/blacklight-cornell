@@ -45,6 +45,7 @@
 //= require tooltip.js
 
 //Entity display
+//= require leaflet
 //= require 'entity_display/entity_display.js'
 //= require jquery.mousewheel
 //= require histropedia-1.1.1.min.js
