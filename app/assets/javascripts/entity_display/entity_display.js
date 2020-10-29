@@ -147,13 +147,13 @@ function  getLocalLOCName(uri) {
 
       return uri.split("/").pop();
 }
-function getLCSHRelationships(uri, periododata, callback) {
+function getLCSHRelationships(uri, periododata, overlay, callback) {
       $.ajax({
         "url": uri + ".jsonld",
         "type": "GET",
         "success" : function(data) {
           var relationships = extractLCSHRelationships(uri, data);
-          callback(relationships, periododata);
+          callback(relationships, periododata, overlay);
         }
       });
     }
@@ -251,7 +251,7 @@ function retrieveInfoForFAST(uri, callback) {
 
 
 //These separate functions should be more cleanly broken out
-function execRelationships(relationships, periododata) {
+function execRelationships(relationships, periododata, overlay) {
   //Display label
   var label = relationships.label;
   $("#entityLabel").append("<br>" + label);
@@ -271,7 +271,7 @@ function execRelationships(relationships, periododata) {
   loadTimeline(periododata, relationships, mappedData);
   //Map
   var selectedPeriod = mappedData["lcshPeriod"];
-  generateMapForPeriodo(selectedPeriod);
+  generateMapForPeriodo(selectedPeriod, overlay);
   //Digital collection results
   searchDigitalCollectionFacet("fast_topic_facet", digLabel, baseUrl);
   
@@ -296,23 +296,23 @@ function displayWikidataInfo(uri, data) {
 
 }
 
-function loadLCSHResource(uri, periododata) {
-  getLCSHRelationships(uri, periododata, execRelationships);
+function loadLCSHResource(uri, periododata, overlay) {
+  getLCSHRelationships(uri, periododata, overlay, execRelationships);
  //get equivalent peri.do
  //get Wikidata URI
  getWikidataInfo(uri, displayWikidataInfo);
 
 }
 
-function load(uri, periododata) {
+function load(uri, periododata, overlay) {
  //Afghanistan
  //var lcshURI = "https://id.loc.gov/authorities/names/n79063030";
   var lcshURI = "https://id.loc.gov/authorities/subjects/sh85001514";
   var fastURI = "http://id.worldcat.org/fast/798940";
   if(uri == "x") {
-    loadLCSHResource(lcshURI, periododata);
+    loadLCSHResource(lcshURI, periododata, overlay);
   } else {
-    loadLCSHResource(uri, periododata);
+    loadLCSHResource(uri, periododata, overlay);
   }
 }
 
@@ -495,16 +495,17 @@ function mapData(periododata, lcshURL) {
  }
 
 //Given periodo, get coordinates display map
-function generateMapForPeriodo(selectedPeriod) {
+function generateMapForPeriodo(selectedPeriod, overlay) {
   console.log("selected period");
   console.log(selectedPeriod);
   if("spatialCoverage" in selectedPeriod) {
     var spArray = selectedPeriod["spatialCoverage"];
     $.each(spArray, function(i, v) {
       var id = v["id"];
+      var label = v["label"];
       if(id.startsWith("http://www.wikidata.org")) {
         //console.log("wikidata URI is " + id);
-        //getMapInfoForURI(uri);
+        getMapInfoForURI(id, label, overlay);
       }
     });
   }
@@ -512,13 +513,13 @@ function generateMapForPeriodo(selectedPeriod) {
 
 //Generate actual map using provided coordinates
 //Given an identifier, retrieve map coordinates 
-function getMapInfoForURI(uri) {
+function getMapInfoForURI(uri, label, overlay) { 
   var wikidataEndpoint = "https://query.wikidata.org/sparql?";
   var sparqlQuery = "SELECT ?wlon ?slat ?elon ?nlat ?clon ?clat WHERE {"
-    + "OPTIONAL {wd:" + uri + " wdt:P625 ?coords . BIND(geof:longitude(?coords) AS ?clon) BIND(geof:latitude(?coords) AS ?clat) }"
-    + "OPTIONAL {wd:" + uri + " wdt:P1335 ?w ; wdt:P1333 ?s; wdt:P1334 ?e; wdt:P1332 ?n . BIND( geof:longitude(?w) AS ?wlon) BIND(geof:latitude(?s) AS ?slat) BIND(geof:longitude(?e) AS ?elon) BIND(geof:latitude(?n) AS ?nlat)}"
+    + "OPTIONAL {<" + uri + "> wdt:P625 ?coords . BIND(geof:longitude(?coords) AS ?clon) BIND(geof:latitude(?coords) AS ?clat) }"
+    + "OPTIONAL {<" + uri + "> wdt:P1335 ?w ; wdt:P1333 ?s; wdt:P1334 ?e; wdt:P1332 ?n . BIND( geof:longitude(?w) AS ?wlon) BIND(geof:latitude(?s) AS ?slat) BIND(geof:longitude(?e) AS ?elon) BIND(geof:latitude(?n) AS ?nlat)}"
     + "} ";
-
+console.log(sparqlQuery);
   $.ajax({
     url : wikidataEndpoint,
     headers : {
@@ -541,7 +542,8 @@ function getMapInfoForURI(uri) {
             var lat = geoInfo["Point"]["lat"];
             var lon = geoInfo["Point"]["lon"];
               // mymap.setView([lat,lon], 10);
-            var link = "<a href='#' auth='" + catalogLabel + "'>" + catalogLabel + ":" + facetValue + "</a>";
+            //var link = "<a href='#' auth='" + label + "'>" + label + ":" + facetValue + "</a>";
+            var link = label;
             addPointOverlay(overlay, lat, lon, link);
           }
 
@@ -569,7 +571,7 @@ function generateCoordinateInfo(binding) {
 function addPointOverlay(overlay, lat, lon, link) {
   if(lat && lon) {
     var marker = L.marker([lat, lon]);
-    marker.bindPopup(label);
+    marker.bindPopup(link);
     overlay.addLayer(marker);
   }
 }
@@ -605,8 +607,8 @@ Blacklight.onLoad(function() {
       throw "Invalid bounding box string";
     }
   };
-  //var overlay = initMap();
+  var overlay = initMap();
   //Load uri and periodo data
-  load(uri, periododata);
+  load(uri, periododata, overlay);
   
 });  
