@@ -545,6 +545,7 @@ console.log(sparqlQuery);
             //var link = "<a href='#' auth='" + label + "'>" + label + ":" + facetValue + "</a>";
             var link = label;
             addPointOverlay(overlay, lat, lon, link, true);
+            //map.setView
           }
 
          }
@@ -605,20 +606,26 @@ function initMap () {
         detectRetina: false
       }
     ).addTo(mymap);   
-  return overlay;
+  return {"overlay":overlay, "map": mymap};
 } 
 
 //Process spatial info and put all the points on
 function processSpatialInfo(overlay) {
   //var spatialInfo -> array of all information with coordinates, mapping back to periodo
-  $.each(spatialInfo, function(i, v) {
-    console.log(v);
+  var wdURIsVisited = {};
+  $.each(spatialInfo, function(i, v) {   
     var uri = v["uri"];//LCSH
     var wduri = v["wduri"];
-    var label = v["label"];
-    if("Point" in v) {
-      var geoInfo = v["Point"];
-      addPointOverlay(overlay, geoInfo["lat"], geoInfo["lon"], label, false);
+    if(!wduri in wdURIsVisited) {
+      wdURIsVisited[wduri] = [];
+      wdURIsVisited[wduri].push(v);
+      var label = v["label"];
+      if("Point" in v) {
+        var geoInfo = v["Point"];
+        addPointOverlay(overlay, geoInfo["lat"], geoInfo["lon"], label, false);
+      }
+    } else {
+      wdURIsVisited[wduri].push(v);
     }
   });
    
@@ -634,7 +641,9 @@ Blacklight.onLoad(function() {
       throw "Invalid bounding box string";
     }
   };
-  var overlay = initMap();
+  var mapInfo = initMap();
+  var overlay = mapInfo["overlay"];
+  var map = mapInfo["map"];
   processSpatialInfo(overlay);
   //Load uri and periodo data
   load(uri, periododata, overlay);
