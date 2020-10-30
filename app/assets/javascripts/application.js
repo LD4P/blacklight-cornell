@@ -50,3 +50,4 @@
 //= require jquery.mousewheel
 //= require histropedia-1.1.1.min.js
 //= require 'entity_display/periodotest.js'
+//= require 'entity_display/spatialinfo.js'

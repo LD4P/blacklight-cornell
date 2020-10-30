@@ -544,7 +544,7 @@ console.log(sparqlQuery);
               // mymap.setView([lat,lon], 10);
             //var link = "<a href='#' auth='" + label + "'>" + label + ":" + facetValue + "</a>";
             var link = label;
-            addPointOverlay(overlay, lat, lon, link);
+            addPointOverlay(overlay, lat, lon, link, true);
           }
 
          }
@@ -568,10 +568,22 @@ function generateCoordinateInfo(binding) {
   return geoInfo;
 }
 
-function addPointOverlay(overlay, lat, lon, link) {
+function addPointOverlay(overlay, lat, lon, link, highlight) {
   if(lat && lon) {
     var marker = L.marker([lat, lon]);
     marker.bindPopup(link);
+    if(highlight) {
+      var greenIcon = new L.Icon({
+        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
+        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+        popupAnchor: [1, -34],
+        shadowSize: [41, 41]
+      });
+      marker = L.marker([lat, lon], {icon: greenIcon});
+      marker.bindPopup(link);
+    } 
     overlay.addLayer(marker);
   }
 }
@@ -596,6 +608,21 @@ function initMap () {
   return overlay;
 } 
 
+//Process spatial info and put all the points on
+function processSpatialInfo(overlay) {
+  //var spatialInfo -> array of all information with coordinates, mapping back to periodo
+  $.each(spatialInfo, function(i, v) {
+    console.log(v);
+    var uri = v["uri"];//LCSH
+    var wduri = v["wduri"];
+    var label = v["label"];
+    if("Point" in v) {
+      var geoInfo = v["Point"];
+      addPointOverlay(overlay, geoInfo["lat"], geoInfo["lon"], label, false);
+    }
+  });
+   
+}
 
 Blacklight.onLoad(function() {
   //Define method
@@ -608,6 +635,7 @@ Blacklight.onLoad(function() {
     }
   };
   var overlay = initMap();
+  processSpatialInfo(overlay);
   //Load uri and periodo data
   load(uri, periododata, overlay);
   
