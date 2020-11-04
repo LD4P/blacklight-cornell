@@ -274,6 +274,8 @@ function execRelationships(relationships, periododata, overlay) {
   generateMapForPeriodo(selectedPeriod, overlay);
   //Digital collection results
   searchDigitalCollectionFacet("fast_topic_facet", digLabel, baseUrl);
+  //Catalog results
+  getCatalogResults(digLabel, baseUrl);
   
   
 
@@ -616,7 +618,7 @@ function processSpatialInfo(overlay) {
   $.each(spatialInfo, function(i, v) {   
     var uri = v["uri"];//LCSH
     var wduri = v["wduri"];
-    if(!wduri in wdURIsVisited) {
+    if(! (wduri in wdURIsVisited)) {
       wdURIsVisited[wduri] = [];
       wdURIsVisited[wduri].push(v);
       var label = v["label"];
@@ -629,6 +631,29 @@ function processSpatialInfo(overlay) {
     }
   });
    
+}
+function getCatalogResults(fastHeading, baseUrl) {
+  //empty out 
+  clearSearchResults();
+  //Multiple possibilities for subject search, with person etc. also possible in which case search field changes
+  var searchLink = baseUrl + "?q=" + fastHeading + "&search_field=subject_topic_browse";
+  var searchFAST = "<a href='" + searchLink + "'>Search Catalog</a>";
+  $.ajax({
+    "url": searchLink,
+    "type": "GET",
+    "success" : function(data) {     
+      var documents = $(data).find("#documents");
+      var pageEntries = $(data).find("span.page-entries");  
+      if(documents.length) {
+        $("#page-entries").html("<a href='" + searchLink + "'>Search Results for " + fastHeading + ": " + pageEntries.html() + "</a>");
+        $("#documents").html(documents.html());
+      }
+    }
+  });
+}
+function clearSearchResults() {
+  $("#page-entries").html("");
+  $("#documents").html("");
 }
 
 Blacklight.onLoad(function() {
