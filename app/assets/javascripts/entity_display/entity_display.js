@@ -1,3 +1,115 @@
+/*** Reordering functions, and will need to redo to use objects, etc.**/
+
+
+//Given a URI, load the LCSH resource
+
+function load(uri, periododata, overlay) {
+ //Afghanistan
+ //var lcshURI = "https://id.loc.gov/authorities/names/n79063030";
+  var lcshURI = "https://id.loc.gov/authorities/subjects/sh85001514";
+  var fastURI = "http://id.worldcat.org/fast/798940";
+  if(uri == "x") {
+    loadLCSHResource(lcshURI, periododata, overlay);
+  } else {
+    loadLCSHResource(uri, periododata, overlay);
+  }
+}
+
+function loadLCSHResource(uri, periododata, overlay) {
+  //Retrieve LCSH JSON, broader and narrower relationships
+  getLCSHRelationships(uri, periododata, overlay, execRelationships);
+ //get equivalent peri.do
+ //get Wikidata URI
+ getWikidataInfo(uri, displayWikidataInfo);
+
+}
+
+//retrieve LCSH Relationships
+function getLCSHRelationships(uri, periododata, overlay, callback) {
+  $.ajax({
+    "url": uri + ".jsonld",
+    "type": "GET",
+    "success" : function(data) {
+      var relationships = extractLCSHRelationships(uri, data);
+      callback(relationships, periododata, overlay);
+    }
+  });
+}
+function extractLCSHRelationships(inputURI, data) {
+  var uri = inputURI.replace("https://","http://");
+  var dataHash = processLCSHJSON(data);
+  var entity = dataHash[uri];
+  var narrowerProperty = "http://www.loc.gov/mads/rdf/v1#hasNarrowerAuthority";
+  var broaderProperty = "http://www.loc.gov/mads/rdf/v1#hasBroaderAuthority";
+  var closeProperty = "http://www.loc.gov/mads/rdf/v1#hasCloseExternalAuthority";
+  var exactMatchProperty = "http://www.loc.gov/mads/rdf/v1#hasExactExternalAuthority";
+  var labelProperty = "http://www.w3.org/2004/02/skos/core#prefLabel";
+  var narrowerURIs = [];
+  var broaderURIs = [];
+  var closeURIs = [];
+  var exactMatchURIs = [];
+
+  if(narrowerProperty in entity) {
+    narrowerURIs = entity[narrowerProperty];
+  }
+  if(broaderProperty in entity) {
+    broaderURIs = entity[broaderProperty];
+  }
+  if(closeProperty in entity) {
+    closeURIs = entity[closeProperty];
+  }
+  if(exactMatchProperty in entity) {
+    exactMatchURIs = entity[exactMatchProperty];
+  }
+
+  var label = entity[labelProperty][0]["@value"];
+  return {uri:uri, dataHash: dataHash, label: label, narrowerURIs: narrowerURIs, broaderURIs: broaderURIs, closeURIs: closeURIs, exactMatchURIs: exactMatchURIs};
+}
+//generate hash based on uris of ids to provide cleaner access given URI
+function processLCSHJSON(jsonArray) {
+  var len = jsonArray.length;
+  var l;
+  var jsonObj;
+  var jsonHash = {};
+  for(l = 0; l < len; l++) {
+    jsonObj = jsonArray[l];
+    var id = jsonObj["@id"];
+    jsonHash[id] = jsonObj;
+  }
+  return jsonHash;
+}
+
+//These separate functions should be more cleanly broken out
+function execRelationships(relationships, periododata, overlay) {
+  //Display label
+  var label = relationships.label;
+  $("#entityLabel").append("<br>" + label);
+  $("#displayContainer").attr("label", label);
+      generateTree(relationships);
+  //Label required for digital collections query (since doesn't use URI but string)
+  var baseUrl = $("#displayContainer").attr("base-url");
+  var uri = $("#displayContainer").attr("uri");
+  var digLabel = label;
+  //Test case
+  if(uri == "x") {
+   digLabel = "Sagan, Carl, 1934-1996";
+  }  
+  //Timeline
+  var lcsh = relationships.uri + ".html";
+  var mappedData = mapData(periododata, lcsh);
+  loadTimeline(periododata, relationships, mappedData);
+  //Map
+  var selectedPeriod = mappedData["lcshPeriod"];
+  generateMapForPeriodo(selectedPeriod, overlay);
+  //Digital collection results
+  searchDigitalCollectionFacet("fast_topic_facet", digLabel, baseUrl);
+  //Catalog results
+  getCatalogResults(digLabel, baseUrl);
+
+}
+
+//
+
 function generateTree(relationships) {
   var dataHash = relationships.dataHash;
     var uri = relationships.uri;
@@ -147,59 +259,7 @@ function  getLocalLOCName(uri) {
 
       return uri.split("/").pop();
 }
-function getLCSHRelationships(uri, periododata, overlay, callback) {
-      $.ajax({
-        "url": uri + ".jsonld",
-        "type": "GET",
-        "success" : function(data) {
-          var relationships = extractLCSHRelationships(uri, data);
-          callback(relationships, periododata, overlay);
-        }
-      });
-    }
-    function extractLCSHRelationships(inputURI, data) {
-      var uri = inputURI.replace("https://","http://");
-      var dataHash = processLCSHJSON(data);
-      var entity = dataHash[uri];
-      var narrowerProperty = "http://www.loc.gov/mads/rdf/v1#hasNarrowerAuthority";
-      var broaderProperty = "http://www.loc.gov/mads/rdf/v1#hasBroaderAuthority";
-      var closeProperty = "http://www.loc.gov/mads/rdf/v1#hasCloseExternalAuthority";
-      var exactMatchProperty = "http://www.loc.gov/mads/rdf/v1#hasExactExternalAuthority";
-      var labelProperty = "http://www.w3.org/2004/02/skos/core#prefLabel";
-      var narrowerURIs = [];
-      var broaderURIs = [];
-      var closeURIs = [];
-      var exactMatchURIs = [];
 
-      if(narrowerProperty in entity) {
-        narrowerURIs = entity[narrowerProperty];
-      }
-      if(broaderProperty in entity) {
-        broaderURIs = entity[broaderProperty];
-      }
-      if(closeProperty in entity) {
-        closeURIs = entity[closeProperty];
-      }
-      if(exactMatchProperty in entity) {
-        exactMatchURIs = entity[exactMatchProperty];
-      }
-
-      var label = entity[labelProperty][0]["@value"];
-      return {uri:uri, dataHash: dataHash, label: label, narrowerURIs: narrowerURIs, broaderURIs: broaderURIs, closeURIs: closeURIs, exactMatchURIs: exactMatchURIs};
-    }
-    //generate hash based on uris of ids to provide cleaner access given URI
-    function processLCSHJSON(jsonArray) {
-      var len = jsonArray.length;
-      var l;
-      var jsonObj;
-      var jsonHash = {};
-      for(l = 0; l < len; l++) {
-        jsonObj = jsonArray[l];
-        var id = jsonObj["@id"];
-        jsonHash[id] = jsonObj;
-      }
-      return jsonHash;
-    }
 function retrieveInfoForFAST(uri, callback) {
       var url = "https://lookup.ld4l.org/authorities/fetch/linked_data/oclcfast_ld4l_cache?format=jsonld&uri=" + uri;
 
@@ -250,36 +310,7 @@ function retrieveInfoForFAST(uri, callback) {
     }
 
 
-//These separate functions should be more cleanly broken out
-function execRelationships(relationships, periododata, overlay) {
-  //Display label
-  var label = relationships.label;
-  $("#entityLabel").append("<br>" + label);
-  $("#displayContainer").attr("label", label);
-      generateTree(relationships);
-  //Label required for digital collections query (since doesn't use URI but string)
-  var baseUrl = $("#displayContainer").attr("base-url");
-  var uri = $("#displayContainer").attr("uri");
-  var digLabel = label;
-  //Test case
-  if(uri == "x") {
-   digLabel = "Sagan, Carl, 1934-1996";
-  } 
-  //Timeline
-  var lcsh = relationships.uri + ".html";
-  var mappedData = mapData(periododata, lcsh);
-  loadTimeline(periododata, relationships, mappedData);
-  //Map
-  var selectedPeriod = mappedData["lcshPeriod"];
-  generateMapForPeriodo(selectedPeriod, overlay);
-  //Digital collection results
-  searchDigitalCollectionFacet("fast_topic_facet", digLabel, baseUrl);
-  //Catalog results
-  getCatalogResults(digLabel, baseUrl);
-  
-  
 
-}
 
 function displayWikidataInfo(uri, data) {
  console.log(uri);
@@ -298,25 +329,7 @@ function displayWikidataInfo(uri, data) {
 
 }
 
-function loadLCSHResource(uri, periododata, overlay) {
-  getLCSHRelationships(uri, periododata, overlay, execRelationships);
- //get equivalent peri.do
- //get Wikidata URI
- getWikidataInfo(uri, displayWikidataInfo);
 
-}
-
-function load(uri, periododata, overlay) {
- //Afghanistan
- //var lcshURI = "https://id.loc.gov/authorities/names/n79063030";
-  var lcshURI = "https://id.loc.gov/authorities/subjects/sh85001514";
-  var fastURI = "http://id.worldcat.org/fast/798940";
-  if(uri == "x") {
-    loadLCSHResource(lcshURI, periododata, overlay);
-  } else {
-    loadLCSHResource(uri, periododata, overlay);
-  }
-}
 
 function searchDigitalCollectionFacet(facetName, facetValue, baseUrl) {
   //Facet value is a json array so need to get first value out
@@ -631,12 +644,12 @@ function processSpatialInfo(overlay) {
     }
   });
    
-}
+} 
 function getCatalogResults(fastHeading, baseUrl) {
   //empty out 
   clearSearchResults();
   //Multiple possibilities for subject search, with person etc. also possible in which case search field changes
-  var searchLink = baseUrl + "?q=" + fastHeading + "&search_field=subject_topic_browse";
+  var searchLink = baseUrl + "?q=\"" + fastHeading + "\"&search_field=subject_topic_browse";
   var searchFAST = "<a href='" + searchLink + "'>Search Catalog</a>";
   $.ajax({
     "url": searchLink,
