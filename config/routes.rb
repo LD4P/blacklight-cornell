@@ -123,6 +123,8 @@ devise_for :users, controllers: {
   get 'proxy/facet'
   get 'entity_display/display'
   get 'entity_display/index'  
+  get 'proxy/lcshsearch'
+  get 'proxy/bamsearch'
 
   # The priority is based upon order of creation:
   # first created -> highest priority.

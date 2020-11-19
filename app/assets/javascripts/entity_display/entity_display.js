@@ -1,6 +1,18 @@
 /*** Reordering functions, and will need to redo to use objects, etc.**/
 
 
+/*class entityDisplay {
+  constructor() {
+    //Constructor
+  }
+  
+  //initialize function
+  init() {
+    
+  }
+}
+var eDisplay = new entityDisplay();
+*/
 //Given a URI, load the LCSH resource
 
 function load(uri, periododata, overlay) {
@@ -9,19 +21,38 @@ function load(uri, periododata, overlay) {
   var lcshURI = "https://id.loc.gov/authorities/subjects/sh85001514";
   var fastURI = "http://id.worldcat.org/fast/798940";
   if(uri == "x") {
-    loadLCSHResource(lcshURI, periododata, overlay);
+    loadLCSHResource(lcshURI,  periododata, overlay);
   } else {
     loadLCSHResource(uri, periododata, overlay);
   }
 }
 
-function loadLCSHResource(uri, periododata, overlay) {
-  //Retrieve LCSH JSON, broader and narrower relationships
-  getLCSHRelationships(uri, periododata, overlay, execRelationships);
- //get equivalent peri.do
- //get Wikidata URI
- getWikidataInfo(uri, displayWikidataInfo);
+//Retrieve Solr document for this particular URI - also any classification information
 
+function loadLCSHResource(uri, periododata, overlay) {
+ //Retrieve LCSH JSON, broader and narrower relationships - AJAX calls retrieving relationships
+ getLCSHRelationships(uri, periododata, overlay, execRelationships);
+ //get Wikidata URI - AJAX call querying SPARQL endpoint to get and then display information
+ getWikidataInfo(uri, displayWikidataInfo);
+ //Use synchronous call here
+ getInfoFromIndex(uri);
+ //Catalog and digital collections search depend on label
+
+}
+
+function getInfoFromIndex(uri) {
+  //Index depends on format that uses http://
+  var uriString = uri.replace("https:/","http:/");
+  //AJAX query LCSH search
+  var baseURL = $("#displayContainer").attr("base-url");
+  $.ajax({
+    "url": baseURL+ "proxy/lcshsearch?q=" + uriString,
+    "type": "GET",
+    "success" : function(data) {
+     console.log(data);
+    }
+  });
+  
 }
 
 //retrieve LCSH Relationships

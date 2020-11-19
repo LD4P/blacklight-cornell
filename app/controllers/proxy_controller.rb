@@ -87,4 +87,20 @@ class ProxyController < ApplicationController
     render :json => result  	
   end
   
+  # Entity display
+  def lcshsearch
+  	require 'rsolr'
+  	uri = params[:q]
+    solr = RSolr.connect :url => ENV["LCSH_SOLR"]
+    response = solr.get 'select', :params => {:q=>"uri_s:\"" + uri + "\"" , :start=>0, :rows=>1}  
+    render :json => response	
+  end
+  
+  def bamsearch
+  	require 'rsolr'
+  	uri = params[:q]
+    solr = RSolr.connect :url => ENV["SUBJECT_SOLR"]
+    response = solr.get 'select', :params => {:q=>"uri_s:\"" + uri + "\"" , :start=>0, :rows=>1}  
+    render :json => response
+  end
 end
