@@ -45,6 +45,6 @@
 //= require tooltip.js
 
 // Discogs
-//= require discogs.js
+//= require catalog/discogs.js
 //= require oclc.js
 
