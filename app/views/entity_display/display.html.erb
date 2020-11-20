@@ -2,7 +2,7 @@
 label="" >
 	<div class="row">
 		<div class="column">
-			<h1 id="entityLabel">URI:<%= @uri %></h1>
+			<h1 id="entityLabel"><span id="label"></span><small class="externalLink" id="lc"><a href="<%= @uri %>">LOC</a></small><small class="externalLink" id="wd"></small></h1>
 		</div>
 	</div>
 	<div class="row">
@@ -14,12 +14,17 @@ label="" >
 		<div class-"col-sm" id="wdhierarchy"></div>
 	</div>
 	<div class="row">
-		<div class="col-lg border" id="timeline"><h4>Timeline</h4></div>
+		<div class="col-md border" id="subject-timeline"><h4>Timeline</h4></div>
+		<div class="col-sm border" id="timelineInfo"></div>
+		<!--div class="col-md border" id="timeline"><h4>Timeline</h4></div-->
 		
 	</div>
 	<div class="row">
-		<div class="col-lg border"> 
+		<div class="col-md border"> 
 			<div class="mapBrowse" id="map" ></div>
+		</div>
+		<div class="col-sm border"> 
+			<div id="mapInfo" ></div>
 		</div>
 	</div>
 	<div class="row">  

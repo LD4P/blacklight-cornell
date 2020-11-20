@@ -15,32 +15,37 @@ var eDisplay = new entityDisplay();
 */
 //Given a URI, load the LCSH resource
 
-function load(uri, periododata, overlay) {
+function load(uri, periododata, overlay, timeline) {
  //Afghanistan
  //var lcshURI = "https://id.loc.gov/authorities/names/n79063030";
   var lcshURI = "https://id.loc.gov/authorities/subjects/sh85001514";
   var fastURI = "http://id.worldcat.org/fast/798940";
   if(uri == "x") {
-    loadLCSHResource(lcshURI,  periododata, overlay);
+    loadLCSHResource(lcshURI,  periododata, overlay, timeline);
   } else {
-    loadLCSHResource(uri, periododata, overlay);
+    loadLCSHResource(uri, periododata, overlay, timeline);
   }
 }
 
 //Retrieve Solr document for this particular URI - also any classification information
 
-function loadLCSHResource(uri, periododata, overlay) {
+function loadLCSHResource(uri, periododata, overlay, timeline) {
  //Retrieve LCSH JSON, broader and narrower relationships - AJAX calls retrieving relationships
  getLCSHRelationships(uri, periododata, overlay, execRelationships);
  //get Wikidata URI - AJAX call querying SPARQL endpoint to get and then display information
  getWikidataInfo(uri, displayWikidataInfo);
  //Use synchronous call here
- getInfoFromIndex(uri);
+ getInfoFromIndex(uri, overlay, timeline);
  //Catalog and digital collections search depend on label
 
 }
 
-function getInfoFromIndex(uri) {
+
+//To do: Data should be stored somewhere for the object representing the entity
+// Cleaner separation of what happens post data retrieval
+//This represents data that should really be loaded at the beginning: Label included and timeline and geo info
+//relationships, wikidata info and other searches can occur after this is complete
+function getInfoFromIndex(uri, overlay, timeline) {
   //Index depends on format that uses http://
   var uriString = uri.replace("https:/","http:/");
   //AJAX query LCSH search
@@ -49,11 +54,84 @@ function getInfoFromIndex(uri) {
     "url": baseURL+ "proxy/lcshsearch?q=" + uriString,
     "type": "GET",
     "success" : function(data) {
-     console.log(data);
+      
+      if("response" in data && "docs" in data["response"] && data["response"]["docs"].length > 0) {
+        var docs = data["response"]["docs"];
+        var doc = docs[0];
+      //Get timeline info
+      plotSubjectOnTimeline(timeline, doc);
+      //Get map info
+      }
+      
     }
   });
   
 }
+
+//There may be more than one time period?
+//Pass array of start/end periods along with label
+function plotSubjectOnTimeline(timeline, doc) {
+  var start = ("periodo_start_i" in doc) ? doc["periodo_start_i"]: null;
+  var stop = ("periodo_stop_i" in doc)? doc["periodo_stop_i"]: null;
+  var initialDate = null;
+  if(start != null) {
+    initialDate = start;
+  }
+  else if(start == null && stop != null) {
+    initialDate = stop;
+  }
+  var label = doc["label_s"];
+  //This really should depend on the number of years, etc. being displayed 
+  timeline.setStartDate((initialDate - 20).toString());
+  
+  var article = {
+      id: doc["uri_s"],
+      title: doc["label_s"]
+  };
+ 
+  if(start != null) {
+    article["from"] = {
+        year: start
+    } 
+  };
+  if(stop != null) {
+    article["to"] = {
+        year: stop
+    } 
+  };
+  
+  var articles = [];
+  articles.push(article);
+  timeline.load(articles);
+  //timeline.requestRedraw();
+}
+
+//There may be more than one map location
+function plotSubjectOnMap() {
+  
+}
+
+//Init timeline- return timeline object
+function initTimeline(timelineId) {
+ 
+  var container = $("#" + timelineId);
+
+  //Create timeline without also setting initial date
+  var timeline = new Histropedia.Timeline( container, {
+    width: 700,
+    height: 350,
+   zoom: {
+     initial:40
+   },
+   article: {
+     density: Histropedia.DENSITY_HIGH,
+     distanceToMainLine: 200
+   }
+  }  );
+  return timeline;
+  
+}
+
 
 //retrieve LCSH Relationships
 function getLCSHRelationships(uri, periododata, overlay, callback) {
@@ -114,7 +192,7 @@ function processLCSHJSON(jsonArray) {
 function execRelationships(relationships, periododata, overlay) {
   //Display label
   var label = relationships.label;
-  $("#entityLabel").append("<br>" + label);
+  $("#entityLabel #label").html(label);
   $("#displayContainer").attr("label", label);
       generateTree(relationships);
   //Label required for digital collections query (since doesn't use URI but string)
@@ -128,7 +206,7 @@ function execRelationships(relationships, periododata, overlay) {
   //Timeline
   var lcsh = relationships.uri + ".html";
   var mappedData = mapData(periododata, lcsh);
-  loadTimeline(periododata, relationships, mappedData);
+  //loadTimeline(periododata, relationships, mappedData);
   //Map
   var selectedPeriod = mappedData["lcshPeriod"];
   generateMapForPeriodo(selectedPeriod, overlay);
@@ -344,18 +422,18 @@ function retrieveInfoForFAST(uri, callback) {
 
 
 function displayWikidataInfo(uri, data) {
- console.log(uri);
- console.log(data);
+  
  $("#description").html("");
  if("image" in data) {
    $("#description").append("<img class='img-thumbnail rounded float-left' style='width:200px;height:200px' src='" + data.image + "'>");
  }
  if("uriValue" in data) {
-   $("#description").append("URI:" + data["uriValue"] + "<br/>");
+   $("#entityLabel #wd").html("<a href='" + data["uriValue"] + "'>WD</a>");
+   //$("#description").append("URI:" + data["uriValue"] + "<br/>");
  }
 
  if("description" in data) {
-   $("#description").append("<br/>Description:" + data["description"]);
+   $("#description").append(data["description"]);
  }
 
 }
@@ -710,11 +788,12 @@ Blacklight.onLoad(function() {
       throw "Invalid bounding box string";
     }
   };
+  var timeline = initTimeline("subject-timeline");
   var mapInfo = initMap();
   var overlay = mapInfo["overlay"];
   var map = mapInfo["map"];
   processSpatialInfo(overlay);
   //Load uri and periodo data
-  load(uri, periododata, overlay);
+  load(uri, periododata, overlay, timeline);
   
 });  
