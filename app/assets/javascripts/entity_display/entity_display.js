@@ -106,6 +106,35 @@ function plotSubjectOnTimeline(timeline, doc) {
   //timeline.requestRedraw();
 }
 
+function plotRelatedSubjectOnTimeline(timeline, doc, prefix) {
+  var start = ("periodo_start_i" in doc) ? doc["periodo_start_i"]: null;
+  var stop = ("periodo_stop_i" in doc)? doc["periodo_stop_i"]: null;
+
+  
+  var article = {
+      id: doc["uri_s"],
+      title: prefix + ": " + doc["label_s"]
+  };
+ 
+  if(start != null) {
+    article["from"] = {
+        year: start
+    } 
+  };
+  if(stop != null) {
+    article["to"] = {
+        year: stop
+    } 
+  };
+  
+  var articles = [];
+  articles.push(article);
+  timeline.load(articles);
+  //timeline.requestRedraw();
+}
+
+
+
 //There may be more than one map location
 function plotSubjectOnMap() {
   
@@ -126,12 +155,18 @@ function initTimeline(timelineId) {
    article: {
      density: Histropedia.DENSITY_HIGH,
      distanceToMainLine: 200
+   },
+   onArticleClick: function(article) {
+     onArticleClick(article);
    }
   }  );
   return timeline;
   
 }
 
+function onArticleClick(article) {
+  $("#timelineInfo").html("<h4>Subject: " + article.title + "</h4>");
+}
 
 //retrieve LCSH Relationships
 function getLCSHRelationships(uri, periododata, overlay, callback) {
@@ -192,7 +227,7 @@ function processLCSHJSON(jsonArray) {
 function execRelationships(relationships, periododata, overlay) {
   //Display label
   var label = relationships.label;
-  $("#entityLabel #label").html(label);
+  $("#entityLabel #label").html("Subject: " + label);
   $("#displayContainer").attr("label", label);
       generateTree(relationships);
   //Label required for digital collections query (since doesn't use URI but string)
@@ -206,6 +241,17 @@ function execRelationships(relationships, periododata, overlay) {
   //Timeline
   var lcsh = relationships.uri + ".html";
   var mappedData = mapData(periododata, lcsh);
+  
+  //Update timeline with broader and narrower
+  //Put in its own function
+  var broaderURIs = relationships.broaderURIs;
+  var narrowerURIs = relationships.narrowerURIs;
+  
+  $.each(broaderURIs, function(i, v) { 
+    var uri = v;
+    
+  });
+  
   //loadTimeline(periododata, relationships, mappedData);
   //Map
   var selectedPeriod = mappedData["lcshPeriod"];
@@ -220,6 +266,7 @@ function execRelationships(relationships, periododata, overlay) {
 //
 
 function generateTree(relationships) {
+  var baseUrl = $("#displayContainer").attr("base-url");
   var dataHash = relationships.dataHash;
     var uri = relationships.uri;
     var label = relationships.label;
@@ -229,9 +276,10 @@ function generateTree(relationships) {
 
   if(broaderURIs.length > 0) {
     var broaderDisplay = $.map(broaderURIs, function(v, i) {
-      console.log(v);
+      
        var blabel = dataHash[v["@id"]]["http://www.w3.org/2004/02/skos/core#prefLabel"][0]["@value"];
-       return blabel + "-" + v["@id"];
+       var uri = v["@id"].replace("http://","https://");
+       return blabel + " <a href='" + baseUrl + "/entity_display/display?uri=" + uri + "'>See Details</a>" ;
     });
     $("#hierarchy").append(
     "<h4>Broader</h4><ul><li>" + broaderDisplay.join("</li><li>") + "</li></ul>"
