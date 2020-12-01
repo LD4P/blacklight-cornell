@@ -14,7 +14,7 @@
 var eDisplay = new entityDisplay();
 */
 //Given a URI, load the LCSH resource
-
+  
 function load(uri, periododata, overlay, timeline) {
  //Afghanistan
  //var lcshURI = "https://id.loc.gov/authorities/names/n79063030";
@@ -31,7 +31,7 @@ function load(uri, periododata, overlay, timeline) {
 
 function loadLCSHResource(uri, periododata, overlay, timeline) {
  //Retrieve LCSH JSON, broader and narrower relationships - AJAX calls retrieving relationships
- getLCSHRelationships(uri, periododata, overlay, execRelationships);
+ getLCSHRelationships(uri, periododata, overlay, timeline, execRelationships);
  //get Wikidata URI - AJAX call querying SPARQL endpoint to get and then display information
  getWikidataInfo(uri, displayWikidataInfo);
  //Use synchronous call here
@@ -49,6 +49,21 @@ function getInfoFromIndex(uri, overlay, timeline) {
   //Index depends on format that uses http://
   var uriString = uri.replace("https:/","http:/");
   //AJAX query LCSH search
+  getSolrDocForURI(uriString, transformToTimeline, {"timeline":timeline,"primary":true});
+  
+}
+
+function transformToTimeline(callbackData, doc) {
+  var timeline = callbackData["timeline"];
+  var primary = callbackData["primary"];
+  if(primary) {
+    plotSubjectOnTimeline(timeline, doc);
+  } else {
+    plotRelatedSubjectOnTimeline(timeline, doc);
+  }
+}
+
+function getSolrDocForURI(uriString, callback, callbackData) {
   var baseURL = $("#displayContainer").attr("base-url");
   $.ajax({
     "url": baseURL+ "proxy/lcshsearch?q=" + uriString,
@@ -58,14 +73,11 @@ function getInfoFromIndex(uri, overlay, timeline) {
       if("response" in data && "docs" in data["response"] && data["response"]["docs"].length > 0) {
         var docs = data["response"]["docs"];
         var doc = docs[0];
-      //Get timeline info
-      plotSubjectOnTimeline(timeline, doc);
-      //Get map info
+        callback(callbackData, doc);
       }
       
     }
   });
-  
 }
 
 //There may be more than one time period?
@@ -80,40 +92,24 @@ function plotSubjectOnTimeline(timeline, doc) {
   else if(start == null && stop != null) {
     initialDate = stop;
   }
-  var label = doc["label_s"];
-  //This really should depend on the number of years, etc. being displayed 
+  
   timeline.setStartDate((initialDate - 20).toString());
-  
-  var article = {
-      id: doc["uri_s"],
-      title: doc["label_s"]
-  };
- 
-  if(start != null) {
-    article["from"] = {
-        year: start
-    } 
-  };
-  if(stop != null) {
-    article["to"] = {
-        year: stop
-    } 
-  };
-  
-  var articles = [];
-  articles.push(article);
-  timeline.load(articles);
   //timeline.requestRedraw();
+  plotRelatedSubjectOnTimeline(timeline, doc);
+  //This really should depend on the number of years, etc. being displayed 
+ 
 }
 
-function plotRelatedSubjectOnTimeline(timeline, doc, prefix) {
+//Create timeline article for Solr document
+function generateArticleForDoc(doc) {
+//Generate article based on Solr document
+  var label = doc["label_s"];
+  var id = doc["uri_s"];
   var start = ("periodo_start_i" in doc) ? doc["periodo_start_i"]: null;
   var stop = ("periodo_stop_i" in doc)? doc["periodo_stop_i"]: null;
-
-  
   var article = {
-      id: doc["uri_s"],
-      title: prefix + ": " + doc["label_s"]
+      id: id,
+      title: label
   };
  
   if(start != null) {
@@ -126,11 +122,16 @@ function plotRelatedSubjectOnTimeline(timeline, doc, prefix) {
         year: stop
     } 
   };
-  
-  var articles = [];
-  articles.push(article);
-  timeline.load(articles);
-  //timeline.requestRedraw();
+  //TODO: Add temporal component from solr document
+  return article;
+}
+
+//This is true for any subject, whether the main one or not
+function plotRelatedSubjectOnTimeline(timeline, doc) {
+ var article = generateArticleForDoc(doc); 
+ var articles = [];
+ articles.push(article);
+ timeline.load(articles);
 }
 
 
@@ -169,13 +170,13 @@ function onArticleClick(article) {
 }
 
 //retrieve LCSH Relationships
-function getLCSHRelationships(uri, periododata, overlay, callback) {
+function getLCSHRelationships(uri, periododata, overlay, timeline, callback) {
   $.ajax({
     "url": uri + ".jsonld",
     "type": "GET",
     "success" : function(data) {
       var relationships = extractLCSHRelationships(uri, data);
-      callback(relationships, periododata, overlay);
+      callback(relationships, periododata, overlay, timeline);
     }
   });
 }
@@ -224,12 +225,12 @@ function processLCSHJSON(jsonArray) {
 }
 
 //These separate functions should be more cleanly broken out
-function execRelationships(relationships, periododata, overlay) {
+function execRelationships(relationships, periododata, overlay, timeline) {
   //Display label
   var label = relationships.label;
   $("#entityLabel #label").html("Subject: " + label);
   $("#displayContainer").attr("label", label);
-      generateTree(relationships);
+  generateTree(relationships);
   //Label required for digital collections query (since doesn't use URI but string)
   var baseUrl = $("#displayContainer").attr("base-url");
   var uri = $("#displayContainer").attr("uri");
@@ -244,13 +245,7 @@ function execRelationships(relationships, periododata, overlay) {
   
   //Update timeline with broader and narrower
   //Put in its own function
-  var broaderURIs = relationships.broaderURIs;
-  var narrowerURIs = relationships.narrowerURIs;
-  
-  $.each(broaderURIs, function(i, v) { 
-    var uri = v;
-    
-  });
+   addToTimeline(relationships, timeline);
   
   //loadTimeline(periododata, relationships, mappedData);
   //Map
@@ -263,6 +258,22 @@ function execRelationships(relationships, periododata, overlay) {
 
 }
 
+function addToTimeline(relationships, timeline) {
+  var broaderURIs = relationships.broaderURIs;
+  var narrowerURIs = relationships.narrowerURIs;
+  //For each of broader and narrower, add subjects to timeline for viewing
+  $.each(broaderURIs, function(i, v) { 
+    var uri = v["@id"];
+    //This should be set to false and a different way of calculating where to zoom in should be selected
+    getSolrDocForURI(uri, transformToTimeline, {"timeline":timeline,"primary":true});
+  });
+  
+  $.each(narrowerURIs, function(i, v) { 
+    var uri = v["@id"];
+    getSolrDocForURI(uri, transformToTimeline, {"timeline":timeline,"primary":true});
+  });
+}
+
 //
 
 function generateTree(relationships) {
@@ -273,39 +284,30 @@ function generateTree(relationships) {
     var narrowerURIs = relationships.narrowerURIs;
     var closeURIs = relationships.closeURIs;
   var broaderURIs = relationships.broaderURIs;
+  var broaderDisplay = generateHierarchyCategory(broaderURIs, "Broader", dataHash, baseUrl);
+  $("#hierarchy").append(broaderDisplay);
+  var narrowerDisplay = generateHierarchyCategory(narrowerURIs, "Narrower", dataHash, baseUrl);
+  $("#hierarchy").append(narrowerDisplay);
+  var closeDisplay = generateHierarchyCategory(closeURIs, "Similar", dataHash, null);
+  $("#hierarchy").append(closeDisplay);
+}
 
-  if(broaderURIs.length > 0) {
-    var broaderDisplay = $.map(broaderURIs, function(v, i) {
+//Display broader, or narrower
+function generateHierarchyCategory(uris, heading, dataHash, baseUrl) {
+  var displayArray = [];
+  var display = "";
+  if(uris.length > 0) {
+    displayArray = $.map(uris, function(v, i) {
       
-       var blabel = dataHash[v["@id"]]["http://www.w3.org/2004/02/skos/core#prefLabel"][0]["@value"];
+       var label = dataHash[v["@id"]]["http://www.w3.org/2004/02/skos/core#prefLabel"][0]["@value"];
        var uri = v["@id"].replace("http://","https://");
-       return blabel + " <a href='" + baseUrl + "/entity_display/display?uri=" + uri + "'>See Details</a>" ;
+       var link = (baseUrl != null)?  baseUrl + "/entity_display/display?uri=" + uri: uri;
+       return label + " <a href='" + link + "'>See Details</a>" ;
     });
-    $("#hierarchy").append(
-    "<h4>Broader</h4><ul><li>" + broaderDisplay.join("</li><li>") + "</li></ul>"
-    );
-  }  
-if(narrowerURIs.length > 0) {
-    var narrowerDisplay = $.map(narrowerURIs, function(v, i) {
-       var blabel = dataHash[v["@id"]]["http://www.w3.org/2004/02/skos/core#prefLabel"][0]["@value"];
-       return blabel + "-" + v["@id"];
-    });
-    $("#hierarchy").append(
-    "<h4>Narrower</h4><ul><li>" + narrowerDisplay.join("</li><li>") + "</li></ul>"
-    );
-  }
-
-  if(closeURIs.length > 0) {
-      var closeDisplay = $.map(closeURIs, function(v, i) {
-         var blabel = dataHash[v["@id"]]["http://www.w3.org/2004/02/skos/core#prefLabel"][0]["@value"];
-         return blabel + "-" + v["@id"];
-      });
-      $("#hierarchy").append(
-      "<h4>Similar</h4><ul><li>" + closeDisplay.join("</li><li>") + "</li></ul>"
-      );
-  }
-
-
+    display = 
+    "<h4>" + heading + "</h4><ul><li>" + displayArray.join("</li><li>") + "</li></ul>";
+  } 
+  return display;
 }
 function generateTreeTest(relationships) {
   var dataHash = relationships.dataHash;
@@ -670,7 +672,7 @@ function mapData(periododata, lcshURL) {
 function generateMapForPeriodo(selectedPeriod, overlay) {
   console.log("selected period");
   console.log(selectedPeriod);
-  if("spatialCoverage" in selectedPeriod) {
+  if(selectedPeriod && selectedPeriod != null && "spatialCoverage" in selectedPeriod) {
     var spArray = selectedPeriod["spatialCoverage"];
     $.each(spArray, function(i, v) {
       var id = v["id"];
