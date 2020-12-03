@@ -1,7 +1,7 @@
 /*** Reordering functions, and will need to redo to use objects, etc.**/
 
-
-/*class entityDisplay {
+/*
+class entityDisplay {
   constructor() {
     //Constructor
   }
@@ -31,14 +31,25 @@ function load(uri, periododata, overlay, timeline) {
 
 function loadLCSHResource(uri, periododata, overlay, timeline) {
  //Retrieve LCSH JSON, broader and narrower relationships - AJAX calls retrieving relationships
- getLCSHRelationships(uri, periododata, overlay, timeline, execRelationships);
+ var lcshCall = getLCSHRelationships(uri, periododata, overlay, timeline, execRelationships);
  //get Wikidata URI - AJAX call querying SPARQL endpoint to get and then display information
  getWikidataInfo(uri, displayWikidataInfo);
  //Use synchronous call here
- getInfoFromIndex(uri, overlay, timeline);
+ var solrDocCall = getInfoFromIndex(uri, overlay, timeline);
  //Catalog and digital collections search depend on label
 
-}
+ //Issue: Timeline variable needs to be globally accessible
+ //Also: make sure no articles added to timeline where dates aren't available
+ /*
+ $.when(
+     lcshCall,
+     solrDocCall
+   ).then(function() {
+     timeline.setStartDate("1900");
+     window.setTimeout(window.alert, 4*1000, timeline.articles.length);
+     //handleNoPrimaryTime(timeline, uri.replace("https:/","http:/"));
+   });
+}*/
 
 
 //To do: Data should be stored somewhere for the object representing the entity
@@ -49,8 +60,8 @@ function getInfoFromIndex(uri, overlay, timeline) {
   //Index depends on format that uses http://
   var uriString = uri.replace("https:/","http:/");
   //AJAX query LCSH search
-  getSolrDocForURI(uriString, transformToTimeline, {"timeline":timeline,"primary":true});
-  
+  var solrDocCall = getSolrDocForURI(uriString, transformToTimeline, {"timeline":timeline,"primary":true});
+  return solrDocCall;
 }
 
 function transformToTimeline(callbackData, doc) {
@@ -65,7 +76,7 @@ function transformToTimeline(callbackData, doc) {
 
 function getSolrDocForURI(uriString, callback, callbackData) {
   var baseURL = $("#displayContainer").attr("base-url");
-  $.ajax({
+  var solrDocCall = $.ajax({
     "url": baseURL+ "proxy/lcshsearch?q=" + uriString,
     "type": "GET",
     "success" : function(data) {
@@ -74,17 +85,33 @@ function getSolrDocForURI(uriString, callback, callbackData) {
         var docs = data["response"]["docs"];
         var doc = docs[0];
         callback(callbackData, doc);
-      }
+      } 
       
     }
   });
+  return solrDocCall;
+}
+
+//if primary call is false, check if other articles on the timeline and scroll to one of them
+function handleNoPrimaryTime(timeline, uri) {
+  var articles = timeline.articles;
+  var primaryArticle = timeline.getArticleById(uri);
+ if(articles.length > 0 && !primaryArticle) { 
+   var article = articles[0];
+   var articleDate = "from" in article? article["from"]["year"]: ("to" in article? article["to"]["year"]: null);
+   if(articleDate != null) {
+     timeline.setStartDate((articleDate - 20).toString());
+   }
+ }
 }
 
 //There may be more than one time period?
 //Pass array of start/end periods along with label
 function plotSubjectOnTimeline(timeline, doc) {
-  var start = ("periodo_start_i" in doc) ? doc["periodo_start_i"]: null;
-  var stop = ("periodo_stop_i" in doc)? doc["periodo_stop_i"]: null;
+ 
+  
+  var start = ("periodo_start_i" in doc) ? doc["periodo_start_i"]: ("temp_start_i" in doc)? doc["temp_start_i"]: null;
+  var stop = ("periodo_stop_i" in doc)? doc["periodo_stop_i"]: ("temp_stop_i" in doc)? doc["temp_stop_i"]: null;
   var initialDate = null;
   if(start != null) {
     initialDate = start;
@@ -93,10 +120,12 @@ function plotSubjectOnTimeline(timeline, doc) {
     initialDate = stop;
   }
   
-  timeline.setStartDate((initialDate - 20).toString());
-  //timeline.requestRedraw();
-  plotRelatedSubjectOnTimeline(timeline, doc);
-  //This really should depend on the number of years, etc. being displayed 
+  if(initialDate != null) {
+    timeline.setStartDate((initialDate - 20).toString());
+    //timeline.requestRedraw();
+    plotRelatedSubjectOnTimeline(timeline, doc);
+    //This really should depend on the number of years, etc. being displayed 
+  } 
  
 }
 
@@ -105,8 +134,8 @@ function generateArticleForDoc(doc) {
 //Generate article based on Solr document
   var label = doc["label_s"];
   var id = doc["uri_s"];
-  var start = ("periodo_start_i" in doc) ? doc["periodo_start_i"]: null;
-  var stop = ("periodo_stop_i" in doc)? doc["periodo_stop_i"]: null;
+  var start = ("periodo_start_i" in doc) ? doc["periodo_start_i"]: ("temp_start_i" in doc)? doc["temp_start_i"]: null;
+  var stop = ("periodo_stop_i" in doc)? doc["periodo_stop_i"]:  ("temp_stop_i" in doc)? doc["temp_stop_i"]:null;
   var article = {
       id: id,
       title: label
@@ -132,6 +161,7 @@ function plotRelatedSubjectOnTimeline(timeline, doc) {
  var articles = [];
  articles.push(article);
  timeline.load(articles);
+ alert("plot related subject:" + timeline.articles.length);
 }
 
 
@@ -171,7 +201,7 @@ function onArticleClick(article) {
 
 //retrieve LCSH Relationships
 function getLCSHRelationships(uri, periododata, overlay, timeline, callback) {
-  $.ajax({
+  var lcshCall = $.ajax({
     "url": uri + ".jsonld",
     "type": "GET",
     "success" : function(data) {
@@ -179,6 +209,7 @@ function getLCSHRelationships(uri, periododata, overlay, timeline, callback) {
       callback(relationships, periododata, overlay, timeline);
     }
   });
+  return lcshCall;
 }
 function extractLCSHRelationships(inputURI, data) {
   var uri = inputURI.replace("https://","http://");
@@ -265,12 +296,12 @@ function addToTimeline(relationships, timeline) {
   $.each(broaderURIs, function(i, v) { 
     var uri = v["@id"];
     //This should be set to false and a different way of calculating where to zoom in should be selected
-    getSolrDocForURI(uri, transformToTimeline, {"timeline":timeline,"primary":true});
+    getSolrDocForURI(uri, transformToTimeline, {"timeline":timeline,"primary":false});
   });
   
   $.each(narrowerURIs, function(i, v) { 
     var uri = v["@id"];
-    getSolrDocForURI(uri, transformToTimeline, {"timeline":timeline,"primary":true});
+    getSolrDocForURI(uri, transformToTimeline, {"timeline":timeline,"primary":false});
   });
 }
 
@@ -830,6 +861,7 @@ function clearSearchResults() {
 
 Blacklight.onLoad(function() {
   //Define method
+  
   L.bboxToBounds = function(bbox) {
     bbox = bbox.split(' ');
     if (bbox.length === 4) {
