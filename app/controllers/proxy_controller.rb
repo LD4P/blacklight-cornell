@@ -88,7 +88,7 @@ class ProxyController < ApplicationController
   end
   
   # Entity display
-  def lcshsearch
+  def lcshsearch 
   	require 'rsolr'
   	uri = params[:q]
     solr = RSolr.connect :url => ENV["LCSH_SOLR"]
@@ -100,7 +100,19 @@ class ProxyController < ApplicationController
   	require 'rsolr'
   	uri = params[:q]
     solr = RSolr.connect :url => ENV["SUBJECT_SOLR"]
-    response = solr.get 'select', :params => {:q=>"uri_s:\"" + uri + "\"" , :start=>0, :rows=>1}  
+    response = solr.get 'select', :params => {:q=>"uri_s:\"" + uri + "\"" , :start=>0, :rows=>1, :fl=>"classification_ss"}  
     render :json => response
+  end
+  
+  ## Search the production so
+  def sauthsearch
+ 	require 'rsolr'
+  	label = params[:q] 
+    solr = RSolr.connect :url => ENV["PROD_SUB"]
+    #Leaving this out since subject may of multiple types
+    #"headingTypeDesc:\"Topical Term\"",
+   
+    response = solr.get 'browse', :params => {:q=>label, :start=>0, :rows=>1, :fq=>[ "authority:true", "mainEntry:true"]}     
+    render :json => response 	
   end
 end

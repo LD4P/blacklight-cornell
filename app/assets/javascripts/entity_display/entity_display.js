@@ -6,12 +6,15 @@ class entityDisplay {
     //Constructor
     this.uri = uri;
     this.hasTimeInfo = false;
+    this.hasRelatedTimeInfo = false;
     //save related subject solr docs
     this.broader = [];
-  }
+    this.narrower = [];
+  } 
    
   //initialize function
   init() {
+    this.baseUrl = $("#displayContainer").attr("base-url");
     this.timeline = this.initTimeline("subject-timeline");
     this.mapInfo = this.initMap();
     this.overlay = this.mapInfo["overlay"];
@@ -56,16 +59,14 @@ class entityDisplay {
    $.when(
        lcshCall,
        solrDocCall
-     ).then(function() {
-       setTimeout(
-           function() 
-           {
-             //alert(eThis.timeline.articles.length);
-             eThis.handleNoPrimaryTime(eThis.timeline, uri.replace("https:/","http:/"));
-           }, 3000);
-       //timeline.setStartDate("1900");
-       //eThis.handleNoPrimaryTime(eThis.timeline, uri.replace("https:/","http:/"));
-     });*/
+     ).done(function() {
+       eThis.getCatalogWorksAboutSubject(this.uri, this.label);
+       eThis.getLCCN(this.uri, this.label);
+      
+     });
+   
+   */
+   
   }
   
   
@@ -84,18 +85,24 @@ class entityDisplay {
   //Abstracting out display to a more comprehensive call (not just timeline)
   //Need to get broader and narrower information (solr documents) for main document
   displayDocInformation(doc) {
+    this.label = doc["label_s"];
     //First, retrieve primary doc information
     var hasTime = this.hasTimelineInfo(doc);
     var hasMap = this.hasGeographicInfo(doc);
     //Check to see that main document has temporal information
-    alert(hasTime);
     
     if(hasTime) {
       this.hasTimeInfo = true;
       this.plotSubjectOnTimeline(this.timeline, doc);
-    } else {
-      
-    }
+    } 
+    
+    //Retrieve related solr documents
+    //Before this is executed, we know whether or not the primary subject has temporal and geographic info
+    this.retrieveRelatedSolrDocs(doc);
+    
+    //Need to find a better way to chain this or move it elsewhere
+    this.getCatalogWorksAboutSubject(this.uri, this.label);
+    this.getLCCN(this.uri, this.label);
     
   }
    
@@ -139,7 +146,10 @@ class entityDisplay {
     //AJAX query to get solr documents for each related item
     var eThis = this;
     $.each(broaderURIs, function(k, v) {
-      eThis.getSolrDocForURI(v, eThis.updateRelatedSolrDoc, {"type":"broader"});
+      eThis.getSolrDocForURI(v, eThis.updateRelatedSolrDoc.bind(eThis), {"type":"broader"});
+    });
+    $.each(narrowerURIs, function(k, v) {
+      eThis.getSolrDocForURI(v, eThis.updateRelatedSolrDoc.bind(eThis), {"type":"narrower"});
     });
     
   }
@@ -150,11 +160,22 @@ class entityDisplay {
       //save broader document to the entity
       this.broader.push(doc);
     }
+    if(type == "narrower") {
+      this.narrower.push(doc);
+    }
+    if(this.hasTimelineInfo(doc)) {
+      this.plotRelatedSubjectOnTimeline(this.timeline, doc, type);
+      if(!this.hasTimeInfo && !this.hasRelatedTimeInfo) {
+        //Set the timeline to 
+        this.handleNoPrimaryTime(this.timeline, doc["uri_s"]);
+      }
+    }
     
-    this.plotRelatedSubjectOnTimeline(this.timeline, doc);
+  
     
   }
   
+  /*
   transformToTimeline(doc) {
     var docURI = doc["uri_s"];
     var isPrimary = (docURI == this.uri); //it's the "primary" item to be displayed if it corresponds to the URI we loaded
@@ -164,7 +185,7 @@ class entityDisplay {
     } else {
       this.plotRelatedSubjectOnTimeline(this.timeline, doc);
     }
-  }
+  }*/
   
   //retrieve Solr document matching a particular URI
   
@@ -196,13 +217,12 @@ class entityDisplay {
   
   //if primary call is false, check if other articles on the timeline and scroll to one of them
   handleNoPrimaryTime(timeline, uri) {
-    var articles = timeline.articles;
-    var primaryArticle = timeline.getArticleById(uri);
-   if(articles.length > 0 && !primaryArticle) { 
-     var article = articles[0];
+    var article = timeline.getArticleById(uri);
+   if(article) { 
      var articleDate = "from" in article["data"]? article["data"]["from"]["year"]: ("to" in article["data"]? article["data"]["to"]["year"]: null);
      if(articleDate != null) {
        timeline.setStartDate((articleDate - 20).toString());
+       this.hasRelatedTimeInfo = true;
      }
    }
   }
@@ -225,7 +245,7 @@ class entityDisplay {
     if(initialDate != null) {
       timeline.setStartDate((initialDate - 20).toString());
       //timeline.requestRedraw();
-      this.plotRelatedSubjectOnTimeline(timeline, doc);
+      this.plotRelatedSubjectOnTimeline(timeline, doc, null);
       //This really should depend on the number of years, etc. being displayed 
     } 
    
@@ -253,13 +273,19 @@ class entityDisplay {
           year: stop
       } 
     };
+    if ("spatial_coverage_label_ss" in doc) {
+      var spatial_label = doc["spatial_coverage_label_ss"];
+      article["spatial_label"] =  spatial_label;
+    }
     //TODO: Add temporal component from solr document
     return article;
   }
   
   //This is true for any subject, whether the main one or not
-  plotRelatedSubjectOnTimeline(timeline, doc) {
+  plotRelatedSubjectOnTimeline(timeline, doc, type) {
    var article = this.generateArticleForDoc(doc); 
+   var articleType = (type != null)? type: "primary";
+   article["articleType"] = articleType;  
    var articles = [];
    articles.push(article);
    timeline.load(articles);
@@ -299,7 +325,13 @@ class entityDisplay {
   }
   
   onArticleClick(article) {
-    var htmlDisplay = "<h4>Subject: " + article.title + "</h4>";
+    var articleType = article.articleType;
+    var labelDisplay = "Subject";
+    if(articleType != "primary") {
+      labelDisplay = articleType == "broader"? "Broader ": "narrower" ? "Narrower ": "Related ";
+      labelDisplay += "Subject";
+    }
+    var htmlDisplay = "<h4>" + labelDisplay + ": " + article.title + "</h4>";
     
     //If article has from and to, display that information
     var yearRange = "";
@@ -315,6 +347,10 @@ class entityDisplay {
     }
     yearRange = (yearRange != "")? "Years: " + yearRange: yearRange;
     htmlDisplay += yearRange;
+    
+    if("spatial_label" in article["data"]) {
+      htmlDisplay += "<br/>Related regions: " + article["data"]["spatial_label"].join(", ");
+    }
     $("#timelineInfo").html(htmlDisplay);
     
   }
@@ -399,7 +435,7 @@ class entityDisplay {
     
     //Update timeline with broader and narrower
     //Put in its own function
-     this.addToTimeline(relationships);
+     //this.addToTimeline(relationships);
     
     //loadTimeline(periododata, relationships, mappedData);
     //Map
@@ -990,6 +1026,67 @@ class entityDisplay {
     $("#page-entries").html("");
     $("#documents").html("");
   }
+  
+  //Get information from DbPedia
+  
+  //Methods to get information from other/related indices
+  //Notice we will need to rely on labels in certain cases
+  getCatalogWorksAboutSubject(uri, label) {
+    //Do ajax request to proxy controller for subject heading search using this label
+    var searchLabel = label.replace(/--/g," > ");
+    var searchLink = this.baseUrl + "proxy/sauthsearch?q=" + searchLabel;
+    $.ajax({
+      "url": searchLink,
+      "type": "GET",
+      context: this,
+      "success" : function(data) {     
+        if("response" in data && "docs" in data["response"] && data["response"]["docs"].length > 0) {
+          var doc = data["response"]["docs"]["0"];
+          var counts_json = doc["counts_json"];
+          var counts = JSON.parse(counts_json);
+          this.displayWorksAboutSubject(counts);
+        }
+      }
+    });
+  }
+  
+  displayWorksAboutSubject(counts) {
+    if("worksAbout" in counts) {
+      $("#worksAbout").html("Works About: " + counts["worksAbout"] + "<br>");
+    }
+    if("worksBy" in counts) {
+      $("#worksAbout").append("Works By: " + counts["worksAbout"]);
+    }
+  }
+  
+  //get LCCN
+  getLCCN(uri, label) {
+    var searchURI = uri.replace("https://", "http://");
+    var searchLink = this.baseUrl + "proxy/bamsearch?q=" + searchURI;
+    $.ajax({
+      "url": searchLink,
+      "type": "GET",
+      context: this,
+      "success" : function(data) {     
+        if("response" in data && "docs" in data["response"] && data["response"]["docs"].length > 0) {
+          var doc = data["response"]["docs"]["0"];
+          var classification = doc["classification_ss"];//this will be an array
+          this.displayClassificationBrowseLink(classification);
+        }
+      }
+    });
+  }
+  
+  displayClassificationBrowseLink(classification) {
+    if(classification && classification.length) {
+      var lccn = classification[0];
+      var url = this.baseUrl + "browse?authq=" + lccn + "&browse_type=virtual";
+      $("#classification").html("<a href='" + url + "'>Browse related call numbers</a>");
+    }
+    
+  }
+  
+  
 
 }
 Blacklight.onLoad(function() {
