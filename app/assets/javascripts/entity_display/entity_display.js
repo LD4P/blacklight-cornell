@@ -277,6 +277,10 @@ class entityDisplay {
       var spatial_label = doc["spatial_coverage_label_ss"];
       article["spatial_label"] =  spatial_label;
     }
+    
+    if("wikidata_uri_s" in doc) {
+      article["wikidata_uri"] = doc["wikidata_uri_s"];
+    }
     //TODO: Add temporal component from solr document
     return article;
   }
@@ -351,7 +355,30 @@ class entityDisplay {
     if("spatial_label" in article["data"]) {
       htmlDisplay += "<br/>Related regions: " + article["data"]["spatial_label"].join(", ");
     }
+    
+  
     $("#timelineInfo").html(htmlDisplay);
+    if(articleType != "primary" && "wikidata_uri" in article["data"]) {
+      //htmlDisplay += "<div id='wikidataPanel'></div>";
+      //need to work out URI
+      //this.getWikidataInfoForWDURI(article["data"]["wikidata_uri"], this.displayPanelWikidataInfo);
+      this.getWikidataInfo(article["data"]["id"], this.displayPanelWikidataInfo);
+    }
+    
+  }
+  
+  displayPanelWikidataInfo(uri, data) {
+    var htmlDisplay = "";
+    if("image" in data) {
+      htmlDisplay += "<img class='img-thumbnail rounded float-left' style='width:100px;height:100px' src='" + data.image + "'>";
+    }
+  
+    if("description" in data) {
+      htmlDisplay += "<br/>" + data["description"];
+    }
+    
+    htmlDisplay = "<div>" + htmlDisplay + "</div>";
+    $("#timelineInfo").append(htmlDisplay);
     
   }
   
@@ -579,6 +606,33 @@ class entityDisplay {
             });
   
   }
+  
+  getWikidataInfoForWDURI(WDURI, callback) {
+       var wikidataEndpoint = "https://query.wikidata.org/sparql?";
+        var sparqlQuery = "SELECT ?image ?description WHERE {"
+             + " OPTIONAL {<" + WDURI + "> wdt:P18 ?image . }"
+             + " OPTIONAL {<" + WDURI + "> schema:description ?description . FILTER(lang(?description) = \"en\")}"
+             + " SERVICE wikibase:label { bd:serviceParam wikibase:language \"[AUTO_LANGUAGE],en\". }}";
+ 
+           $.ajax({
+             url : wikidataEndpoint,
+             headers : {
+               Accept : 'application/sparql-results+json'
+             },
+             data : {
+               query : sparqlQuery
+             },
+             context:this,
+             success : function (data) {
+               var wikidataParsedData = this.parseWikidataSparqlResults(data);
+               callback(WDURI, wikidataParsedData);
+             }
+ 
+           });
+ 
+ }
+ 
+  
   
   parseWikidataSparqlResults(data) {
         var output = {};
