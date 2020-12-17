@@ -10,6 +10,7 @@ class entityDisplay {
     //save related subject solr docs
     this.broader = [];
     this.narrower = [];
+    this.markers = {};
   } 
    
   //initialize function
@@ -19,7 +20,7 @@ class entityDisplay {
     this.mapInfo = this.initMap();
     this.overlay = this.mapInfo["overlay"];
     this.map = this.mapInfo["map"];
-    this.processSpatialInfo(this.overlay);
+    //this.processSpatialInfo(this.overlay);
     //Load uri and periodo data
     this.load(this.uri, periododata, this.overlay);
   }
@@ -104,6 +105,11 @@ class entityDisplay {
     this.getCatalogWorksAboutSubject(this.uri, this.label);
     this.getLCCN(this.uri, this.label);
     
+    //Get map information
+    if(hasMap) {
+      this.processMapInfo(doc, this.overlay);
+    }
+    
   }
    
   //for a Solr document, check if temporal information, either from period o or from another source exists
@@ -169,6 +175,10 @@ class entityDisplay {
         //Set the timeline to 
         this.handleNoPrimaryTime(this.timeline, doc["uri_s"]);
       }
+    }
+    
+    if(this.hasGeographicInfo(doc)) {
+      this.processMapInfo(doc, this.overlay);
     }
     
   
@@ -278,6 +288,12 @@ class entityDisplay {
       article["spatial_label"] =  spatial_label;
     }
     
+    if ( "spatial_coverage_ss" in doc) {
+      var spatial_uris = doc["spatial_coverage_ss"];
+      article["spatial_coverage_ss"] =  spatial_uris;
+      //article["spatialMarkers"] = this.markers; 
+    }
+    
     if("wikidata_uri_s" in doc) {
       article["wikidata_uri"] = doc["wikidata_uri_s"];
     }
@@ -290,6 +306,7 @@ class entityDisplay {
    var article = this.generateArticleForDoc(doc); 
    var articleType = (type != null)? type: "primary";
    article["articleType"] = articleType;  
+   
    var articles = [];
    articles.push(article);
    timeline.load(articles);
@@ -324,6 +341,7 @@ class entityDisplay {
        eThis.onArticleClick(article);
      }
     }  );
+
     return timeline;
     
   }
@@ -356,6 +374,21 @@ class entityDisplay {
       htmlDisplay += "<br/>Related regions: " + article["data"]["spatial_label"].join(", ");
     }
     
+    if("spatial_coverage_ss" in article["data"]) {
+      var spatialUris = article["data"]["spatial_coverage_ss"];
+      var eThis = this;
+      var highlightIcon = this.getHighlightIcon();
+      $.each(spatialUris, function(k, v) {
+        if(v in eThis.markers) {
+          var m = eThis.markers[v];         
+          m.setIcon(highlightIcon);
+        }
+      });
+     
+      //var m = article["data"]["spatialMarkers"][u];
+      //m.setIcon("https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png");
+    }
+    
   
     $("#timelineInfo").html(htmlDisplay);
     if(articleType != "primary" && "wikidata_uri" in article["data"]) {
@@ -367,10 +400,47 @@ class entityDisplay {
     
   }
   
+  //toggle all icons
+  highlightIcon(marker) {
+    var highlightIcon = this.getHighlightIcon();
+    marker.setIcon(highlightIcon);
+  }
+   
+  resetIcons() {
+    var defaultIcon = this.getDefaultIcon();
+    $.each(this.markers, function(k, v) {
+      v.setIcon(defaultIcon);
+    });
+  }
+  
+  getHighlightIcon() {
+    var highlightIcon = new L.Icon({
+      iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
+      shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+      iconSize: [25, 41],
+      iconAnchor: [12, 41],
+      popupAnchor: [1, -34],
+      shadowSize: [41, 41]
+    });
+    return highlightIcon;
+  }
+  
+  getDefaultIcon() {
+    var defaultIcon = new L.Icon({
+      iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
+      shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+      iconSize: [25, 41],
+      iconAnchor: [12, 41],
+      popupAnchor: [1, -34],
+      shadowSize: [41, 41]
+    });
+    return defaultIcon;
+  }
+  
   displayPanelWikidataInfo(uri, data) {
     var htmlDisplay = "";
     if("image" in data) {
-      htmlDisplay += "<img class='img-thumbnail rounded float-left' style='width:100px;height:100px' src='" + data.image + "'>";
+      htmlDisplay += "<img class='img-thumbnail rounded float-left img-fluid'  src='" + data.image + "'>";
     }
   
     if("description" in data) {
@@ -501,12 +571,15 @@ class entityDisplay {
       var narrowerURIs = relationships.narrowerURIs;
       var closeURIs = relationships.closeURIs;
     var broaderURIs = relationships.broaderURIs;
+    
     var broaderDisplay = this.generateHierarchyCategory(broaderURIs, "Broader", dataHash, baseUrl);
-    $("#hierarchy").append(broaderDisplay);
     var narrowerDisplay = this.generateHierarchyCategory(narrowerURIs, "Narrower", dataHash, baseUrl);
-    $("#hierarchy").append(narrowerDisplay);
-    var closeDisplay = this.generateHierarchyCategory(closeURIs, "Similar", dataHash, null);
-    $("#hierarchy").append(closeDisplay);
+    
+    //if both broader and narrower to be displayed, also put in "arrow"
+    $("#broader").append(broaderDisplay);
+    $("#narrower").append(narrowerDisplay);
+   // var closeDisplay = this.generateHierarchyCategory(closeURIs, "Similar", dataHash, null);
+   // $("#close").append(closeDisplay);
   }
   
   //Display broader, or narrower
@@ -519,10 +592,15 @@ class entityDisplay {
          var label = dataHash[v["@id"]]["http://www.w3.org/2004/02/skos/core#prefLabel"][0]["@value"];
          var uri = v["@id"].replace("http://","https://");
          var link = (baseUrl != null)?  baseUrl + "/entity_display/display?uri=" + uri: uri;
-         return label + " <a href='" + link + "'>See Details</a>" ;
+         var linkHtml = "<a href='" + link + "'>See Details</a>";
+         //return label + " <a href='" + link + "'>See Details</a>" ;
+         return "<div class='col-md'>" + label + "</div><div class='col-md'>" + linkHtml + "</div>" ;
       });
+      //display = 
+      //"<h6>" + heading + "</h6><ul><li>" + displayArray.join("</li><li>") + "</li></ul>";
       display = 
-      "<h4>" + heading + "</h4><ul><li>" + displayArray.join("</li><li>") + "</li></ul>";
+        "<div class='row h5 bento_item_title'>" + heading + "</div>" + 
+        "<div class='row'>" + displayArray.join("</div><div class='row'>") + "</div>";
     } 
     return display;
   }
@@ -723,7 +801,7 @@ class entityDisplay {
     
    $("#description").html("");
    if("image" in data) {
-     $("#description").append("<img class='img-thumbnail rounded float-left' style='width:200px;height:200px' src='" + data.image + "'>");
+     $("#mainImage").html("<img class='img-fluid imgDisplay d-block mx-auto' src='" + data.image + "'>");
    }
    if("uriValue" in data) {
      $("#entityLabel #wd").html("<a href='" + data["uriValue"] + "'>WD</a>");
@@ -916,17 +994,15 @@ class entityDisplay {
     //console.log(mapArray);
     return {"mapArray": mapArray, "lcshPeriod":lcshPeriod};
    }
-  
+   
   //Given periodo, get coordinates display map
   generateMapForPeriodo(selectedPeriod, overlay) {
-    console.log("selected period");
-    console.log(selectedPeriod);
     if(selectedPeriod && selectedPeriod != null && "spatialCoverage" in selectedPeriod) {
       var spArray = selectedPeriod["spatialCoverage"];
       $.each(spArray, function(i, v) {
         var id = v["id"];
         var label = v["label"];
-        if(id.startsWith("http://www.wikidata.org")) {
+        if(id.startsWith("http://www.wikidata.org")) { 
           //console.log("wikidata URI is " + id);
           this.getMapInfoForURI(id, label, overlay);
         }
@@ -968,7 +1044,8 @@ class entityDisplay {
                 // mymap.setView([lat,lon], 10);
               //var link = "<a href='#' auth='" + label + "'>" + label + ":" + facetValue + "</a>";
               var link = label;
-              this.addPointOverlay(overlay, lat, lon, link, true);
+              var marker = this.addPointOverlay(overlay, lat, lon, link, true);
+              this.markers[uri] = marker;
               //map.setView
             }
   
@@ -994,23 +1071,18 @@ class entityDisplay {
   }
   
   addPointOverlay(overlay, lat, lon, link, highlight) {
+    var marker = null;
     if(lat && lon) {
-      var marker = L.marker([lat, lon]);
+      marker = L.marker([lat, lon]);
       marker.bindPopup(link);
       if(highlight) {
-        var greenIcon = new L.Icon({
-          iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
-          shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
-          iconSize: [25, 41],
-          iconAnchor: [12, 41],
-          popupAnchor: [1, -34],
-          shadowSize: [41, 41]
-        });
-        marker = L.marker([lat, lon], {icon: greenIcon});
+        var defaultIcon = this.getDefaultIcon();
+        marker = L.marker([lat, lon], {icon: defaultIcon});
         marker.bindPopup(link);
       } 
       overlay.addLayer(marker);
     }
+    return marker;
   }
   
   initMap () {
@@ -1056,6 +1128,18 @@ class entityDisplay {
     //The other way to do this is $.each().bind
      
   } 
+  
+  processMapInfo(doc, overlay) {
+    //      var geographicFields = ["spatial_coverage_ss", "geo_uri_ss"];
+    var eThis = this;
+    if("spatial_coverage_ss" in doc) {
+      var spatialCov = doc["spatial_coverage_ss"];
+      $.each(spatialCov, function(i, v) {   
+        var wduri = v;
+        eThis.getMapInfoForURI(v, "test", overlay);        
+      });
+    }
+  }
   
   getCatalogResults(fastHeading, baseUrl) {
     //empty out 

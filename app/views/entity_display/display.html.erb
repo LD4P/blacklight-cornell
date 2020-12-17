@@ -1,26 +1,60 @@
 <div id="displayContainer" class="container" base-url="<%= root_url %>" uri="<%= @uri %>"
 label="" >
-	<div class="row">
-		<div class="column">
-			<h1 id="entityLabel"><span id="label"></span><small class="externalLink" id="lc"><a href="<%= @uri %>">LOC</a></small><small class="externalLink" id="wd"></small></h1>
+	<div class="row mainDetails">
+		<div class="col-lg float-none b-1">
+			<div class="entityImage float-left" id="mainImage"></div>
+			<div class="row float-left upperDisplay">
+				<div id="entityLabel" class="float-none">
+					<span id="label" class="search-source"></span>
+					<small class="externalLink" id="lc"><a href="<%= @uri %>">LOC</a></small>
+					<small class="externalLink" id="wd"></small>
+				</div>
+				<div class="row">
+					<div class="col-md">
+						<div id="description"> </div>
+					</div>
+					<div class="col-md">
+			
+						<div id="worksAbout"></div> 
+						<div id="classification"></div> 
+						<div class="float-none"> <div class="float-left">Locations: </div><div class="float-left" id="mainLocations">Locations</div></div>
+						<div class="float-none"> <div class="float-left">Time: </div><div class="float-left" id="mainTime">Time</div></div>
+					</div>
+				</div>
+			</div>
+		</div>
+		
+		
+	</div>
+	
+	<div class="row hierarchy">
+		<div class="col-md" id="broader">
+			<!--div  id="wdhierarchy"></div-->
+		</div>
+		<div class="col-md" id="narrower">
 		</div>
 	</div>
+	
+	
+	<!-- Search results -->
 	<div class="row">
-		<div class="col-md">
-			<div id="worksAbout"></div> 
-		</div>
-		<div class="col-md">
-			<div id="classification"></div> 
-		</div>
+		<ul class="nav nav-tabs">
+		  <li class="nav-item">
+		    <a class="nav-link active" href="#">Library Catalog</a>
+		  </li>
+		  <li class="nav-item">
+		    <a class="nav-link" href="#">Digital Collections</a>
+		  </li>
+		  <li class="nav-item">
+		    <a class="nav-link" href="#">Repositories</a>
+		  </li>
+		</ul>
+	
 	</div>
-	<div class="row">
-		<div class="col-lg">
-		<div id="description"> 				
-		</div>
-		<div  id="hierarchy"></div>
-		<div  id="wdhierarchy"></div>
-		</div>
-	</div>
+	
+	
+	
+	<!--- map and timeline -->
 	<div class="row">
 		<div class="col-lg"><input type="checkbox" id="displayAll">Display all subjects</div>
 	</div>
