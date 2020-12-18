@@ -37,28 +37,42 @@ label="" >
 	
 	
 	<!-- Search results -->
-	<div class="row">
-		<ul class="nav nav-tabs">
+	<div class="row searchTabsNav">
+		<ul class="nav nav-tabs" id="searchTabs" role="tablist">
 		  <li class="nav-item">
-		    <a class="nav-link active" href="#">Library Catalog</a>
+		    <a class="nav-link active" href="#catalogSearch" id="catalogSearchTab" data-toggle="tab" aria-controls="catalogSearch">Library Catalog</a>
 		  </li>
 		  <li class="nav-item">
-		    <a class="nav-link" href="#">Digital Collections</a>
+		    <a class="nav-link" href="#digitalSearch" id="digitalSearchTab" data-toggle="tab" aria-controls="digitalSearch">Digital Collections</a>
 		  </li>
 		  <li class="nav-item">
-		    <a class="nav-link" href="#">Repositories</a>
+		    <a class="nav-link" href="#repositoriesSearch" id="repositoriesSearchTab" data-toggle="tab" aria-controls="repositoriesSearch">Repositories</a>
 		  </li>
 		</ul>
 	
+	</div>
+	<div class="row">
+		<div class="tab-content">
+		    <div class="tab-pane fade show active" id="catalogSearch" aria-labelledby="catologSearchTab" role="tabPanel">
+		      <div id="page-entries"></div>
+	    	  <div id="documents" class="searchDocuments"> </div>
+		    </div>
+		    <div class="tab-pane fade" id="digitalSearch" aria-labelledby="digitalSearchTab" role="tabPanel">
+		        
+		    </div>
+		    <div class="tab-pane fade" id="repositoriesSearch" aria-labelledby="repositoriesSearchTab" role="tabPanel">
+		        
+		    </div>
+		</div>
 	</div>
 	
 	
 	
 	<!--- map and timeline -->
-	<div class="row">
+	<!--div class="row">
 		<div class="col-lg"><input type="checkbox" id="displayAll">Display all subjects</div>
-	</div>
-	<div class="row">
+	</div-->
+	<div class="row temp-geo">
 		<div class="col-lg">
 			<div class="row border" id="subject-timeline">
 				<!--div class="col-md border" id="subject-timeline"><h4>Timeline</h4></div-->
@@ -75,15 +89,11 @@ label="" >
 		<div class="col-sm border" id="timelineInfo"></div>
 			
 	</div>
-	<div class="row">  
-	    <div class="col-lg border" id="searchresults"><h4>Catalog Results</h4>
-	    	<div id="page-entries"></div>
-	    	<div id="documents" class="searchDocuments">
-	    	</div>
-	    </div>
+	<!--div class="row">  
+	   
 		<div class="col-lg border" id="digcol"><h4>Digital Collection Results</h4></div>
 		<div class="col-lg border" id="ecommons"><h4>eCommons results</h4></div>
-	</div>
+	</div-->
 </div>
 <script type="text/javascript">
 	var uri = "<%= @uri %>";

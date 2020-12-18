@@ -23,6 +23,15 @@ class entityDisplay {
     //this.processSpatialInfo(this.overlay);
     //Load uri and periodo data
     this.load(this.uri, periododata, this.overlay);
+    this.bindEventListeners();
+  }
+  
+  bindEventListeners() {
+    $('#searchTabs a').on('click', function (e) {
+      e.preventDefault()
+      $(this).tab('show')
+    })
+    
   }
 
 
@@ -440,14 +449,14 @@ class entityDisplay {
   displayPanelWikidataInfo(uri, data) {
     var htmlDisplay = "";
     if("image" in data) {
-      htmlDisplay += "<img class='img-thumbnail rounded float-left img-fluid'  src='" + data.image + "'>";
+      htmlDisplay += "<div class='entityImage float-left'><img class='img-thumbnail rounded'  src='" + data.image + "'></div>";
     }
   
     if("description" in data) {
-      htmlDisplay += "<br/>" + data["description"];
+      htmlDisplay += "<div class='float-left'>" + data["description"] + "</div>";
     }
     
-    htmlDisplay = "<div>" + htmlDisplay + "</div>";
+    htmlDisplay = "<div class='float-none'>" + htmlDisplay + "</div>";
     $("#timelineInfo").append(htmlDisplay);
     
   }
@@ -539,9 +548,12 @@ class entityDisplay {
     var selectedPeriod = mappedData["lcshPeriod"];
     this.generateMapForPeriodo(selectedPeriod, overlay);
     //Digital collection results
-    this.searchDigitalCollectionFacet("fast_topic_facet", digLabel, baseUrl);
+    //this.searchDigitalCollectionFacet("fast_topic_facet", digLabel, baseUrl);
+    this.searchDigitalCollectionFacet("subject_tesim", digLabel, baseUrl);
+
     //Catalog results
     this.getCatalogResults(digLabel, baseUrl);
+    this.searchRepositories(digLabel, baseUrl);
   
   }
   
@@ -592,7 +604,7 @@ class entityDisplay {
          var label = dataHash[v["@id"]]["http://www.w3.org/2004/02/skos/core#prefLabel"][0]["@value"];
          var uri = v["@id"].replace("http://","https://");
          var link = (baseUrl != null)?  baseUrl + "/entity_display/display?uri=" + uri: uri;
-         var linkHtml = "<a href='" + link + "'>See Details</a>";
+         var linkHtml = "<a href='" + link + "'>Details</a>";
          //return label + " <a href='" + link + "'>See Details</a>" ;
          return "<div class='col-md'>" + label + "</div><div class='col-md'>" + linkHtml + "</div>" ;
       });
@@ -819,10 +831,11 @@ class entityDisplay {
   searchDigitalCollectionFacet(facetName, facetValue, baseUrl) {
     //Facet value is a json array so need to get first value out
    
-    var dcFacetName = (facetName === "fast_topic_facet") ?  "subject_tesim": facetName;
-    //var thumbnailImageProp = "media_URL_size_0_tesim";
-    var thumbnailImageProp = "awsthumbnail_tesim";
-      var lookupURL = baseUrl + "proxy/facet?facet_field=" + dcFacetName + "&facet_value=" + facetValue;
+    //var dcFacetName = (facetName === "fast_topic_facet") ?  "subject_tesim": facetName;
+    var dcFacetName = "subject_tesim";
+    var thumbnailImageProp = "media_URL_size_0_tesim";
+    //var thumbnailImageProp = "awsthumbnail_tesim";
+      var lookupURL = baseUrl + "proxy/facet?facet_field=" + dcFacetName + "&rows=3&facet_value=" + facetValue;
       $.ajax({
         url : lookupURL,
         dataType : 'json',
@@ -836,28 +849,114 @@ class entityDisplay {
             var len = results.length;
             var l;
             for (l = 0; l < len; l++) {
+              var itemDisplay = "";
               var result = results[l];
               var id = result["id"];
               var title = result["title_tesim"][0];
               var digitalURL = "http://digital.library.cornell.edu/catalog/" + id;
+              var counter = l + 1;
+              var titleDisplay = "<h2 class='blacklight-title_display'>" + counter + ". <a href='" + digitalURL + "' target='_blank'>" + title + "</a></h2>";
+              
               var imageContent = "";
               if(thumbnailImageProp in result && result[thumbnailImageProp].length) {
                 var imageURL = result[thumbnailImageProp][0];
                 imageContent = "<a  target='_blank' title='" + title + "' href='" + digitalURL + "'><img style='max-width:90%;'  src='" + imageURL + "'></a>";
               }
-              resultsHtml += "<li>";
+              
               if(imageContent != "") {
-                resultsHtml += "<div style='float:none;clear:both;'><div style='float:left;margin-bottom:5px;width:15%'>" + imageContent + "</div>";
+                itemDisplay += "<div style='float:none;clear:both;'><div style='float:left;margin-bottom:5px;width:15%'>" + imageContent + "</div>";
               }
-              resultsHtml += this.generateLink(digitalURL, title);
+              //resultsHtml += this.generateLink(digitalURL, title);
+              itemDisplay += titleDisplay;
+
               if(imageContent != "") {
-                resultsHtml += "</div>";
+                itemDisplay += "</div>";
               }
-              resultsHtml += "</li>";
+              itemDisplay = '<div class="document blacklight-book row">' + 
+              '<div class="document-data col-lg">' + itemDisplay + "</div></div>";
+              resultsHtml += itemDisplay;
               
             }
             //$("#dig-search-anchor").attr("href","http://digital.library.cornell.edu/?f[" + dcFacetName + "][]=" + dcFacetValue);
-            $("#digcol").append(resultsHtml);
+            
+            if("response" in data && "pages" in data["response"] && "total_count" in data["response"]["pages"]) {
+              var total = data["response"]["pages"]["total_count"];
+              var searchURL = "http://digital.library.cornell.edu/?f[subject_tesim][]=" + facetValue;
+              var showNumber = (parseInt(total) > 3)? 3: total;
+              var pages = "<a href='" + searchURL + "'>Search Results for " + facetValue + ":<strong>1</strong> - <strong>" + showNumber + "</strong> of <strong>" + total + "</strong></a>";
+              resultsHtml = "<div>" + pages + "</div>" + resultsHtml;
+            }
+            
+            
+            
+            $("#digitalSearch").html(resultsHtml);
+            
+          }
+        }
+      });
+      
+    
+    
+  }
+  
+  searchRepositories(value, baseUrl) {
+    var thumbnailImageProp = "media_URL_size_0_tesim";
+    //var thumbnailImageProp = "awsthumbnail_tesim";
+      var lookupURL = baseUrl + "proxy/reposearch?q=" + value;
+      $.ajax({
+        url : lookupURL,
+        dataType : 'json',
+        context:this,
+        success : function (data) {
+          // Digital collection results, append
+          var results = [];
+          var resultsHtml = "";
+          if ("response" in data && "docs" in data.response) {
+            results = data["response"]["docs"];
+            var len = results.length;
+            var l;
+            for (l = 0; l < len; l++) {
+              var itemDisplay = "";
+              var result = results[l];
+              var id = result["id"];
+              var title = result["title_tesim"][0];
+              var digitalURL = result["identifier_tesim"][0];
+              var counter = l + 1;
+              var titleDisplay = "<h2 class='blacklight-title_display'>" + counter + ". <a href='" + digitalURL + "' target='_blank'>" + title + "</a></h2>";
+              
+              var imageContent = "";
+              if(thumbnailImageProp in result && result[thumbnailImageProp].length) {
+                var imageURL = result[thumbnailImageProp][0];
+                imageContent = "<a  target='_blank' title='" + title + "' href='" + digitalURL + "'><img style='max-width:90%;'  src='" + imageURL + "'></a>";
+              }
+              
+              if(imageContent != "") {
+                itemDisplay += "<div style='float:none;clear:both;'><div style='float:left;margin-bottom:5px;width:15%'>" + imageContent + "</div>";
+              }
+              //resultsHtml += this.generateLink(digitalURL, title);
+              itemDisplay += titleDisplay;
+
+              if(imageContent != "") {
+                itemDisplay += "</div>";
+              }
+              itemDisplay = '<div class="document blacklight-book row">' + 
+              '<div class="document-data col-lg">' + itemDisplay + "</div></div>";
+              resultsHtml += itemDisplay;
+              
+            }
+            //$("#dig-search-anchor").attr("href","http://digital.library.cornell.edu/?f[" + dcFacetName + "][]=" + dcFacetValue);
+            
+            if("response" in data && "numFound" in data["response"]) {
+              var total = data["response"]["numFound"];
+              //var searchURL = "http://digital.library.cornell.edu/?f[subject_tesim][]=" + facetValue;
+              var showNumber = (parseInt(total) > 3)? 3: total;
+              var pages = "Search Results for " + value + ":<strong>1</strong> - <strong>" + showNumber + "</strong> of <strong>" + total + "</strong>";
+              resultsHtml = "<div>" + pages + "</div>" + resultsHtml;
+            }
+            
+            
+            
+            $("#repositoriesSearch").html(resultsHtml);
             
           }
         }
@@ -1145,7 +1244,7 @@ class entityDisplay {
     //empty out 
     this.clearSearchResults();
     //Multiple possibilities for subject search, with person etc. also possible in which case search field changes
-    var searchLink = baseUrl + "?q=\"" + fastHeading + "\"&search_field=subject_topic_browse";
+    var searchLink = baseUrl + "?q=\"" + fastHeading + "\"&search_field=subject_topic_browse&rows=3";
     var searchFAST = "<a href='" + searchLink + "'>Search Catalog</a>";
     $.ajax({
       "url": searchLink,

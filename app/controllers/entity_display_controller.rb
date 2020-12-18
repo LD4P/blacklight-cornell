@@ -39,10 +39,24 @@ class EntityDisplayController < ApplicationController
       (0..l).each do |s|
         u = result[3][s];
         urisArray.push(u);
-      end
+      end 
     end
     return urisArray
     #return result
     #return lookupURL
   end
+  
+   
+  ## Testing if we can utilize solr search results 
+  
+  # Assuming subject search results for all
+  #def getSearchTabResults(q, tab)
+  	
+  
+  #end
+  
+  
+  
+  
+  
 end

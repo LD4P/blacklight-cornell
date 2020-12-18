@@ -18,9 +18,11 @@ class ProxyController < ApplicationController
     # Query parameter
     facet_field = params[:facet_field]
     facet_value = params[:facet_value]
-    digital_collections_url = "https://digital.library.cornell.edu/?f[" + facet_field + "][]=" + facet_value + "&format=json";
+    rows = params[:rows] || 10
+    digital_collections_url = "https://digital.library.cornell.edu/?f[" + facet_field + "][]=" + facet_value + "&rows=" + rows.to_s + "&format=json";
+    Rails.logger.info digital_collections_url
     url = URI.parse(digital_collections_url)
-    resp = Net::HTTP.get_response(url)
+    resp = Net::HTTP.get_response(url) 
     data = resp.body
     result = JSON.parse(data)
     render :json => result
@@ -113,6 +115,15 @@ class ProxyController < ApplicationController
     #"headingTypeDesc:\"Topical Term\"",
    
     response = solr.get 'browse', :params => {:q=>label, :start=>0, :rows=>1, :fq=>[ "authority:true", "mainEntry:true"]}     
+    render :json => response 	
+  end
+  
+  #eCommons by way of digital collections
+  def reposearch
+  	require 'rsolr'
+  	label = params[:q] 
+    solr = RSolr.connect :url => ENV["REPOSITORIES_SOLR"]   
+    response = solr.get 'select', :params => {:q=>"subject_tesim:\"" + label + "\"", :start=>0, :rows=>3, :fq=>[ "display_target_tesim:bento-prod"], :fl=>"*"}     
     render :json => response 	
   end
 end

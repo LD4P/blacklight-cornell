@@ -126,6 +126,8 @@ devise_for :users, controllers: {
   get 'proxy/lcshsearch'
   get 'proxy/bamsearch'
   get 'proxy/sauthsearch'
+  get 'proxy/reposearch'
+  
   # The priority is based upon order of creation:
   # first created -> highest priority.
 
