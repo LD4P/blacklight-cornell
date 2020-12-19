@@ -123,7 +123,11 @@ class ProxyController < ApplicationController
   	require 'rsolr'
   	label = params[:q] 
     solr = RSolr.connect :url => ENV["REPOSITORIES_SOLR"]   
+    Rails.logger.debug("URL")
+    Rails.logger.debug(ENV["REPOSITORIES_SOLR"])
     response = solr.get 'select', :params => {:q=>"subject_tesim:\"" + label + "\"", :start=>0, :rows=>3, :fq=>[ "display_target_tesim:bento-prod"], :fl=>"*"}     
+    #response = solr.get 'select', :params => {:q=>label, :start=>0, :rows=>3}     
+
     render :json => response 	
   end
 end
