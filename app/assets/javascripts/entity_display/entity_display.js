@@ -827,7 +827,24 @@ class entityDisplay {
   }
   
   
+  searchDigitalCollectionFacet(facetName, facetValue, baseUrl) {
+    var lookupURL = baseUrl + "proxy/digbento?q=" + facetValue + "&search_field=subject&per_page=3";
+    $.ajax({
+      url : lookupURL,
+      type: "GET",
+      context:this,
+      success : function (data) {
+        if(data != null) {
+          var documents = $(data).find("#entity-results");          
+          if(documents.length) {
+            $("#digitalSearch").html(documents.html());
+          }
+        } 
+      }
+    }); 
+  }
   
+  /*
   searchDigitalCollectionFacet(facetName, facetValue, baseUrl) {
     //Facet value is a json array so need to get first value out
    
@@ -898,7 +915,28 @@ class entityDisplay {
     
     
   }
+  */
+  searchRepositories(value, baseUrl) {
+    
+    //This relies on the bento box information retrieval and display
+       
+      var lookupURL = baseUrl + "institutional_repositories/index?view=entity&search_field=subject&per_page=3&q=" + value;
+      $.ajax({
+        url : lookupURL,
+        type: "GET",
+        context:this,
+        success : function (data) {
+          if(data != null) {
+            var documents = $(data).find("#entity-results");          
+            if(documents.length) {
+              $("#repositoriesSearch").html(documents.html());
+            }
+          } 
+        }
+      }); 
+  }
   
+  /*
   searchRepositories(value, baseUrl) {
     var thumbnailImageProp = "media_URL_size_0_tesim";
     //var thumbnailImageProp = "awsthumbnail_tesim";
@@ -960,11 +998,8 @@ class entityDisplay {
             
           }
         }
-      });
-      
-    
-    
-  }
+      }); 
+  }*/
   
   generateLink(URI, label) {
     return label  + " <a class='data-src' target='_blank' title='" + label + "' href='" + URI + "'><img src='/assets/dc.png' /></a>";

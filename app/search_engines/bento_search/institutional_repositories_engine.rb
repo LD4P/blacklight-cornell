@@ -21,6 +21,7 @@ class BentoSearch::InstitutionalRepositoriesEngine
     format = configuration[:blacklight_format] || 'Institutional Repositories'
     q = URI::encode(args[:oq].gsub(" ","+"))
 
+	# args is not used within 
     uri = get_solr_url(args)
     url = Addressable::URI.parse(uri)
     url.normalize
@@ -29,6 +30,13 @@ class BentoSearch::InstitutionalRepositoriesEngine
     per_page = args[:per_page].is_a?(Integer) ? args[:per_page] : 5
 
     fq = set_fq()
+    
+    #Adding arguments for subject field
+    search_field = args[:search_field] || ""
+    if(search_field == "subject")
+    	q = "subject_tesim:\"" + args[:oq] + "\""
+    	#Rails.logger.info("Subject query : #{q}")
+    end
 
     solr = RSolr.connect :url => url.to_s
     solr_response = solr.get 'select', :params => {

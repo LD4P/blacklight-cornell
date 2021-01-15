@@ -1,0 +1,16 @@
+<div id="entity-results">
+    <% if @results.total_items > 0 %>
+    	<div>
+    	<a href=''>Search Results for :<strong>1</strong> - <strong><%= @results.total_items %></strong> of <strong> <%=  @results.total_items %> </strong></a>
+    	
+    	</div>
+        <%= bento_search @results %>
+    <% else %>
+        <p class="no-results">
+        Your search returned 0 results. Try searching
+        <a href="http://cornell.worldcat.org/search?q=spi eoshf a skre&amp;fq=&amp;dblist=638&amp;qt=sort&amp;se=nodgr&amp;sd=desc&amp;qt=sort_nodgr_desc">Libraries Worldwide</a>
+        or
+        <a href="http://www.library.cornell.edu/services/request/recommend">recommend a purchase.</a>
+        </p>
+    <% end %>
+</div>
