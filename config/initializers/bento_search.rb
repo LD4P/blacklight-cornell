@@ -267,3 +267,10 @@ BentoSearch.register_engine('Object') do |conf|
 	conf.title = 'Objects'
 	conf.blacklight_format = 'Object'
 end
+
+# Configuring for entity page
+BentoSearch.register_engine('solrEntity') do |conf|
+	conf.engine = 'BentoSearch::SolrEngineEntity'
+	conf.title = 'Solr Query'
+  conf.solr_url = SOLR_CONFIG[ENV['RAILS_ENV']]["url"]
+end

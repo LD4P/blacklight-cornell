@@ -48,7 +48,7 @@ class BentoSearch::DigitalCollectionsEngine
       if i['media_URL_size_0_tesim'].present?
         item.format_str = i['media_URL_size_0_tesim'][0].to_s
       #Adding AWS thumbnail - note this would affect all the places we see this information
-      elseif i['awsthumbnail_tesim'].present? && i['awsthumbnail_tesim'].length > 0
+      elsif i['awsthumbnail_tesim'].present? && i['awsthumbnail_tesim'].length > 0
       	item.format_str = i['awsthumbnail_tesim'][0].to_s
       end
       
