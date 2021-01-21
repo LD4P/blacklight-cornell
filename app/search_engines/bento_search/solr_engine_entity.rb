@@ -1,6 +1,7 @@
 class BentoSearch::SolrEngineEntity
 
   include BentoSearch::SearchEngine
+  include DisplayHelper
 
   # Next, at a minimum, you need to implement a #search_implementation method,
   # which takes a normalized hash of search instructions as input (see documentation
@@ -21,9 +22,10 @@ class BentoSearch::SolrEngineEntity
     
     search_field = args[:search_field] || ""
     if(search_field == "subject")
-    	q = "subject_tesim:\"" + q + "\""
+    	q = "subject_topic_browse:\"" + q + "\""
+    	#q_search_field = "subject_topic_browse"
     end
-    
+    Rails.logger.debug(configuration.solr_url)
     solr = RSolr.connect :url => configuration.solr_url
     solr_response = solr.get 'select', :params => {
                                         :q => q,
@@ -76,10 +78,10 @@ class BentoSearch::SolrEngineEntity
         #item.link = "http://" + @catalog_host + "/catalog/#{d['id']}"
         item.unique_id = "#{d['id']}"
         item.link = "/catalog/#{d['id']}"
-          #item.custom_data = {
-          #  'url_online_access' => helpers.access_url_single(d),
-          #  'availability_json' => d['availability_json'],
-          #}
+          item.custom_data = {
+            'url_online_access' => access_url_single(d),
+            'availability_json' => d['availability_json'],
+          }
 
         item.format = d['format']
        return item

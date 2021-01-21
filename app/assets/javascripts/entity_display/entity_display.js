@@ -1275,6 +1275,7 @@ class entityDisplay {
     }
   }
   
+  /*
   getCatalogResults(fastHeading, baseUrl) {
     //empty out 
     this.clearSearchResults();
@@ -1294,9 +1295,30 @@ class entityDisplay {
       }
     });
   }
+  
+  */
   clearSearchResults() {
     $("#page-entries").html("");
     $("#documents").html("");
+  }
+  
+  
+  getCatalogResults(subject, baseUrl) {
+  //The issue is that search_field=subject needs to map to something useful
+    var lookupURL = baseUrl + "proxy/mainsearch?q=" + subject + "&search_field=subject&per_page=3";
+    $.ajax({
+      url : lookupURL,
+      type: "GET",
+      context:this,
+      success : function (data) {
+        if(data != null) {
+          var documents = $(data).find("#entity-results");          
+          if(documents.length) {
+            $("#documents").html(documents.html());
+          }
+        } 
+      }
+    }); 
   }
   
   //Get information from DbPedia
