@@ -4,21 +4,21 @@ label="" >
 		<div class="col-lg float-none b-1">
 			<div class="entityImage float-left" id="mainImage"></div>
 			<div class="row float-left upperDisplay">
-				<div id="entityLabel" class="float-none">
+				<div id="entityLabel" class="float-none clearfix">
 					<span id="label" class="search-source"></span>
 					<small class="externalLink" id="lc"><a href="<%= @uri %>">LOC</a></small>
 					<small class="externalLink" id="wd"></small>
 				</div>
 				<div class="row">
 					<div class="col-md">
-						<div id="description"> </div>
+						<div id="description" class="capitalize"> </div>
 					</div>
 					<div class="col-md">
 			
 						<div id="worksAbout"></div> 
 						<div id="classification"></div> 
-						<div class="float-none"> <div class="float-left">Locations: </div><div class="float-left" id="mainLocations">Locations</div></div>
-						<div class="float-none"> <div class="float-left">Time: </div><div class="float-left" id="mainTime">Time</div></div>
+						<div class="float-none d-none clearfix" id="locationInfo"> <div class="float-left">Location(s): </div><div class="float-left" id="mainLocations"></div></div>
+						<div class="float-none d-none clearfix" id="timeInfo"> <div class="float-left">Time(s): </div><div class="float-left" id="mainTime"></div></div>
 					</div>
 				</div>
 			</div>
@@ -69,31 +69,24 @@ label="" >
 	
 	
 	<!--- map and timeline -->
-	<!--div class="row">
-		<div class="col-lg"><input type="checkbox" id="displayAll">Display all subjects</div>
-	</div-->
+	
 	<div class="row temp-geo">
-		<div class="col-lg">
-			<div class="row border" id="subject-timeline">
-				<!--div class="col-md border" id="subject-timeline"><h4>Timeline</h4></div-->
-				<!--div class="col-md border" id="timeline"><h4>Timeline</h4></div-->				
-			</div>
-			<div class="row border">
-				<div class="mapBrowse" id="map" ></div>				
-				<!--div class="col-md border"> 
-					<div class="mapBrowse" id="map" ></div>
-				</div-->
-			</div>
-		</div>
 		
-		<div class="col-sm border" id="timelineInfo"></div>
+			<div class="col-lg">
+				<div class="row border" id="subject-timeline">							
+				</div>
+				<div class="row border">
+					<div class="mapBrowse" id="map" ></div>				
+				</div>
+			</div>
 			
+			<div class="col-sm border">
+				<div class="text-right"><input type="checkbox" id="displayAll">  Display all subjects</div>
+				<div class="w-100 h-100" id="timelineInfo">
+				</div>
+			</div>
 	</div>
-	<!--div class="row">  
-	   
-		<div class="col-lg border" id="digcol"><h4>Digital Collection Results</h4></div>
-		<div class="col-lg border" id="ecommons"><h4>eCommons results</h4></div>
-	</div-->
+	
 </div>
 <script type="text/javascript">
 	var uri = "<%= @uri %>";

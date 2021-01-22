@@ -28,13 +28,34 @@ class entityDisplay {
   
   bindEventListeners() {
     $('#searchTabs a').on('click', function (e) {
-      e.preventDefault()
-      $(this).tab('show')
+      e.preventDefault();
+      $(this).tab('show');
     })
+    
+    var eThis = this;
+    $("#displayAll").on("change", function(e) {
+      if(this.checked) {
+        //alert("checked");
+        eThis.populateAllSubjects();
+      } else {
+        //alert("not checked");
+        eThis.removeUnrelatedSubjects();
+      }
+    });
     
   }
 
-
+  populateAllSubjects() {
+    //alert("populate!");
+    //Query LCSH index to retrieve all subjects that have any temporal information or any location information
+    //Transform temporal information into articles on timeline and add, designating as "removable" so the removal function will work
+    //Transform 
+  }
+  
+  removeUnrelatedSubjects() {
+    //alert("remove!");
+  }
+  
   //Given a URI, load the LCSH resource
     
   load(uri, periododata, overlay) {
@@ -104,6 +125,7 @@ class entityDisplay {
     if(hasTime) {
       this.hasTimeInfo = true;
       this.plotSubjectOnTimeline(this.timeline, doc);
+      this.displayTimeText(doc);
     } 
     
     //Retrieve related solr documents
@@ -116,7 +138,29 @@ class entityDisplay {
     
     //Get map information
     if(hasMap) {
+      this.displayMapText(doc);
       this.processMapInfo(doc, this.overlay);
+    }
+    
+  }
+  
+  displayTimeText(doc) {
+    $("#timeInfo").removeClass("d-none");
+    var temporalFields = ["periodo_start_i", "periodo_stop_i", "temp_start_i", "temp_stop_i"];
+    var startTime = this.retrieveAvailableField(["periodo_start_i", "temp_start_i"], doc);
+    var endTime = this.retrieveAvailableField(["periodo_stop_i", "temp_stop_i"], doc);
+    var displayText = (startTime != null)? startTime : "";
+    displayText += (endTime != null)? " - " + endTime : "";
+    $("#mainTime").html(displayText);
+
+  }
+  
+  displayMapText(doc) {
+    $("#locationInfo").removeClass("d-none");
+    //Currently we are making a decision of preferring the PeriodO to the label, but this may change
+    var locations = this.retrieveAvailableField([ "spatial_coverage_label_ss", "geo_label_ss"], doc);
+    if(locations != null) {
+      $("#mainLocations").html(locations.join(", "));
     }
     
   }
@@ -145,6 +189,19 @@ class entityDisplay {
     return hasField;
   }
   
+  //Depending on the ordering of the fields in array, returns the first value returned
+  retrieveAvailableField(fieldArray, doc) {
+    var value = null;
+    $.each(fieldArray, function(k, v) {
+      if(v in doc) {
+        value = doc[v];
+        //to break out of the each loop
+        return false;
+      }
+    });
+    return value;
+  }
+  
   
   //Check if broader or narrower have temporal information
   retrieveRelatedSolrDocs(doc) {
@@ -171,6 +228,8 @@ class entityDisplay {
   
   updateRelatedSolrDoc(doc, callbackData) {
     var type = callbackData["type"];
+    var uri = doc["uri_s"];
+    var label = doc["label_s"];
     if(type == "broader") {
       //save broader document to the entity
       this.broader.push(doc);
@@ -182,16 +241,17 @@ class entityDisplay {
       this.plotRelatedSubjectOnTimeline(this.timeline, doc, type);
       if(!this.hasTimeInfo && !this.hasRelatedTimeInfo) {
         //Set the timeline to 
-        this.handleNoPrimaryTime(this.timeline, doc["uri_s"]);
+        this.handleNoPrimaryTime(this.timeline, uri);
       }
     }
     
     if(this.hasGeographicInfo(doc)) {
       this.processMapInfo(doc, this.overlay);
     }
-    
-  
-    
+    //the above relies on the call for grabbing broader and narrower information for map and timeline display
+    //the broader/narrower display in the top section still relies entirely on a live LCSH call
+    //this.getCatalogWorksAboutRelatedSubjects(uri, label);
+        
   }
   
   /*
@@ -222,6 +282,28 @@ class entityDisplay {
             callback(doc, callbackData);
           } else {
             callback(doc);
+          }
+        } 
+        
+      }
+    });
+    return solrDocCall;
+  }
+  
+  //Method to retrieve all documents
+  getAllSolrTempGeoDocs(callback) {
+    var baseURL = $("#displayContainer").attr("base-url");
+    var solrDocCall = $.ajax({
+      "url": baseURL+ "proxy/lcshsearch?tempgeo=true",
+      "type": "GET",
+      "success" : function(data) {
+        
+        if("response" in data && "docs" in data["response"] && data["response"]["docs"].length > 0) {
+          var docs = data["response"]["docs"];
+          if(callbackData) {
+            callback(docs, callbackData);
+          } else {
+            callback(docs);
           }
         } 
         
@@ -424,7 +506,7 @@ class entityDisplay {
   
   getHighlightIcon() {
     var highlightIcon = new L.Icon({
-      iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
+      iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
       shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
       iconSize: [25, 41],
       iconAnchor: [12, 41],
@@ -436,7 +518,7 @@ class entityDisplay {
   
   getDefaultIcon() {
     var defaultIcon = new L.Icon({
-      iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
+      iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
       shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
       iconSize: [25, 41],
       iconAnchor: [12, 41],
@@ -453,7 +535,7 @@ class entityDisplay {
     }
   
     if("description" in data) {
-      htmlDisplay += "<div class='float-left'>" + data["description"] + "</div>";
+      htmlDisplay += "<div class='float-left capitalize'>" + data["description"] + "</div>";
     }
     
     htmlDisplay = "<div class='float-none'>" + htmlDisplay + "</div>";
@@ -592,6 +674,21 @@ class entityDisplay {
     $("#narrower").append(narrowerDisplay);
    // var closeDisplay = this.generateHierarchyCategory(closeURIs, "Similar", dataHash, null);
    // $("#close").append(closeDisplay);
+    
+    //For each of the broader and narrower URIs, see if counts can be retrieved from production 
+    //If broader/narrower info relies on index instead, this code will need to be consolidated with that section
+    var eThis = this;
+    $.each(broaderURIs, function(i, v) {
+      var label = dataHash[v["@id"]]["http://www.w3.org/2004/02/skos/core#prefLabel"][0]["@value"];
+      var uri = v["@id"].replace("http://","https://");
+      eThis.getCatalogWorksAboutRelatedSubjects(uri, label);
+    });
+    $.each(narrowerURIs, function(i, v) {
+      var label = dataHash[v["@id"]]["http://www.w3.org/2004/02/skos/core#prefLabel"][0]["@value"];
+      var uri = v["@id"].replace("http://","https://");
+      eThis.getCatalogWorksAboutRelatedSubjects(uri, label);
+    });
+
   }
   
   //Display broader, or narrower
@@ -606,7 +703,7 @@ class entityDisplay {
          var link = (baseUrl != null)?  baseUrl + "/entity_display/display?uri=" + uri: uri;
          var linkHtml = "<a href='" + link + "'>Details</a>";
          //return label + " <a href='" + link + "'>See Details</a>" ;
-         return "<div class='col-md'>" + label + "</div><div class='col-md'>" + linkHtml + "</div>" ;
+         return "<div class='col-md'>" + label + "<span class='author-works' uri='" + uri + "'></span></div><div class='col-md'>" + linkHtml + "</div>" ;
       });
       //display = 
       //"<h6>" + heading + "</h6><ul><li>" + displayArray.join("</li><li>") + "</li></ul>";
@@ -1152,7 +1249,7 @@ class entityDisplay {
       + "OPTIONAL {<" + uri + "> wdt:P625 ?coords . BIND(geof:longitude(?coords) AS ?clon) BIND(geof:latitude(?coords) AS ?clat) }"
       + "OPTIONAL {<" + uri + "> wdt:P1335 ?w ; wdt:P1333 ?s; wdt:P1334 ?e; wdt:P1332 ?n . BIND( geof:longitude(?w) AS ?wlon) BIND(geof:latitude(?s) AS ?slat) BIND(geof:longitude(?e) AS ?elon) BIND(geof:latitude(?n) AS ?nlat)}"
       + "} ";
-  console.log(sparqlQuery);
+  //console.log(sparqlQuery);
     $.ajax({
       url : wikidataEndpoint,
       headers : {
@@ -1179,6 +1276,9 @@ class entityDisplay {
               //var link = "<a href='#' auth='" + label + "'>" + label + ":" + facetValue + "</a>";
               var link = label;
               var marker = this.addPointOverlay(overlay, lat, lon, link, true);
+              marker.on("click", this.mapMarkerClick.bind(this));
+              marker["uri"] = uri;
+              marker["label"] = label;
               this.markers[uri] = marker;
               //map.setView
             }
@@ -1191,6 +1291,36 @@ class entityDisplay {
     });
   
   }
+  
+  mapMarkerClick(e) {
+    
+    var uri = e.target.uri;
+    var label = e.target.label;
+    this.getWikidataInfoForWDURI(uri, this.displayMarkerPanel);
+    //alert(uri);
+    var htmlDisplay = label;
+    //Get number of subjects and results associated with this particular location?
+    //Across the catalog?
+    //Location FOR a particular subject heading
+    
+   
+    $("#timelineInfo").html(htmlDisplay);
+  }
+  
+  displayMarkerPanel(uri, data) {
+    var htmlDisplay = "";
+    if("image" in data) {
+      htmlDisplay += "<div class='entityImage float-left'><img class='img-thumbnail rounded'  src='" + data.image + "'></div>";
+    }
+  
+    if("description" in data) {
+      htmlDisplay += "<div class='float-left capitalize'>" + data["description"] + "</div>";
+    }
+    
+    htmlDisplay = "<div class='float-none'>" + htmlDisplay + "</div>";
+    $("#timelineInfo").append(htmlDisplay);
+  }
+  
   
   generateCoordinateInfo(binding) {
     var geoInfo = {};
@@ -1222,7 +1352,7 @@ class entityDisplay {
   initMap () {
     var overlay = L.layerGroup();
   
-    var mymap= L.map('map', {minZoom: 2,
+    var mymap= L.map('map', {minZoom: 1,
         maxZoom: 18});
     mymap.setView([0, 0], 0);
     mymap.addLayer(overlay);
@@ -1344,12 +1474,48 @@ class entityDisplay {
     });
   }
   
+  //For broader and narrower, also do a call and then populate that particular section
+  //TODO: This functionality may need to be reviewed and or merged with some of the other calls
+  getCatalogWorksAboutRelatedSubjects(uri, label) {
+    //Do ajax request to proxy controller for subject heading search using this label
+    var searchLabel = label.replace(/--/g," > ");
+    var searchLink = this.baseUrl + "proxy/sauthsearch?q=" + searchLabel;
+    $.ajax({
+      "url": searchLink,
+      "type": "GET",
+      context: this,
+      "success" : function(data) {     
+        if("response" in data && "docs" in data["response"] && data["response"]["docs"].length > 0) {
+          var doc = data["response"]["docs"]["0"];
+          var counts_json = doc["counts_json"];
+          var counts = JSON.parse(counts_json);
+          this.displayWorksAboutRelatedSubject(uri, counts);
+        }
+      }
+    });
+  }
+  
+  displayWorksAboutRelatedSubject(uri, counts) {
+    if("worksAbout" in counts) {
+      var c = counts["worksAbout"];
+      if(c > 0) {
+        $("span.author-works[uri='" + uri + "']").html("(Works About: " + c + ")");
+      }
+    }
+    if("worksBy" in counts) {
+      var c = counts["worksBy"];
+      if(c > 0) {
+        $("span.author-works[uri='" + uri + "']").append("(Works By: " + c + ")");
+      }
+    }
+  }
+  
   displayWorksAboutSubject(counts) {
     if("worksAbout" in counts) {
       $("#worksAbout").html("Works About: " + counts["worksAbout"] + "<br>");
     }
     if("worksBy" in counts) {
-      $("#worksAbout").append("Works By: " + counts["worksAbout"]);
+      $("#worksAbout").append("Works By: " + counts["workBy"]);
     }
   }
   

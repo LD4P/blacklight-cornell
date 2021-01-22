@@ -92,9 +92,16 @@ class ProxyController < ApplicationController
   # Entity display
   def lcshsearch 
   	require 'rsolr'
-  	uri = params[:q]
+  	uri = params[:q] || ""
+  	tempgeo = params[:tempgeo] || ""
+  	params = {}
+  	if (uri != "")
+  		params = {:q=>"uri_s:\"" + uri + "\"" , :start=>0, :rows=>1}  
+  	elsif (tempgeo != "")
+  		params =  {:q=>"periodo_start_i:* OR periodo_stop_i:* OR temp_start_i:* OR temp_stop_i:*" , :start=>0, :rows=>1000} 
+  	end
     solr = RSolr.connect :url => ENV["LCSH_SOLR"]
-    response = solr.get 'select', :params => {:q=>"uri_s:\"" + uri + "\"" , :start=>0, :rows=>1}  
+    response = solr.get 'select', :params => params 
     render :json => response	
   end
   
