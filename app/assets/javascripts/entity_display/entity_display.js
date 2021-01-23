@@ -23,6 +23,7 @@ class entityDisplay {
     //this.processSpatialInfo(this.overlay);
     //Load uri and periodo data
     this.load(this.uri, periododata, this.overlay);
+    $("#displayAll").removeAttr("checked");
     this.bindEventListeners();
   }
   
@@ -50,6 +51,8 @@ class entityDisplay {
     //Query LCSH index to retrieve all subjects that have any temporal information or any location information
     //Transform temporal information into articles on timeline and add, designating as "removable" so the removal function will work
     //Transform 
+    this.getAllSolrTempGeoDocs(this.displayAllTempGeo.bind(this));
+
   }
   
   removeUnrelatedSubjects() {
@@ -291,7 +294,7 @@ class entityDisplay {
   }
   
   //Method to retrieve all documents
-  getAllSolrTempGeoDocs(callback) {
+  getAllSolrTempGeoDocs(callback, callbackData) {
     var baseURL = $("#displayContainer").attr("base-url");
     var solrDocCall = $.ajax({
       "url": baseURL+ "proxy/lcshsearch?tempgeo=true",
@@ -312,6 +315,30 @@ class entityDisplay {
     return solrDocCall;
   }
   
+  displayAllTempGeo(docs) {
+    var eThis = this;
+    $.each(docs, function(i, v) {
+      eThis.displayUnrelatedSubject(v);
+    });
+  }
+  
+  //this is the regular display of related subject minus other functionality so some refactoring could occur here
+  displayUnrelatedSubject(doc) {
+      var uri = doc["uri_s"];
+      var label = doc["label_s"];
+     
+      if(this.hasTimelineInfo(doc)) {
+        //Check if not already on timeline
+        var a = this.timeline.getArticleById(uri);
+        if(!a) {
+          this.plotRelatedSubjectOnTimeline(this.timeline, doc, "unrelated");
+        }
+      }
+      
+      if(this.hasGeographicInfo(doc)) {
+        //this.processMapInfo(doc, this.overlay);
+      }          
+  }
   
   
 
@@ -535,7 +562,7 @@ class entityDisplay {
     }
   
     if("description" in data) {
-      htmlDisplay += "<div class='float-left capitalize'>" + data["description"] + "</div>";
+      htmlDisplay += "<div class='float-left capitalize w-50'>" + data["description"] + "</div>";
     }
     
     htmlDisplay = "<div class='float-none'>" + htmlDisplay + "</div>";
@@ -1245,9 +1272,11 @@ class entityDisplay {
   //Given an identifier, retrieve map coordinates 
   getMapInfoForURI(uri, label, overlay) { 
     var wikidataEndpoint = "https://query.wikidata.org/sparql?";
-    var sparqlQuery = "SELECT ?wlon ?slat ?elon ?nlat ?clon ?clat WHERE {"
+    var sparqlQuery = "SELECT  ?itemLabel ?wlon ?slat ?elon ?nlat ?clon ?clat WHERE {"
+      + "VALUES (?item) {(<" + uri + ">)}"
       + "OPTIONAL {<" + uri + "> wdt:P625 ?coords . BIND(geof:longitude(?coords) AS ?clon) BIND(geof:latitude(?coords) AS ?clat) }"
       + "OPTIONAL {<" + uri + "> wdt:P1335 ?w ; wdt:P1333 ?s; wdt:P1334 ?e; wdt:P1332 ?n . BIND( geof:longitude(?w) AS ?wlon) BIND(geof:latitude(?s) AS ?slat) BIND(geof:longitude(?e) AS ?elon) BIND(geof:latitude(?n) AS ?nlat)}"
+      + " SERVICE wikibase:label { bd:serviceParam wikibase:language \"[AUTO_LANGUAGE],en\". }"
       + "} ";
   //console.log(sparqlQuery);
     $.ajax({
@@ -1267,6 +1296,7 @@ class entityDisplay {
           var b;
            for (b = 0; b < bLength; b++) {
             var binding = bindings[b];
+            var label = binding["itemLabel"]["value"];
             var geoInfo = this.generateCoordinateInfo(binding);
            
             if("Point" in geoInfo) {
@@ -1400,7 +1430,11 @@ class entityDisplay {
       var spatialCov = doc["spatial_coverage_ss"];
       $.each(spatialCov, function(i, v) {   
         var wduri = v;
-        eThis.getMapInfoForURI(v, "test", overlay);        
+        //if a marker doesn't already exist
+        //if(!wduri in eThis.markers) {
+          //if(wduri in eThis.markers) console.log("in  marker already");
+          eThis.getMapInfoForURI(v, "", overlay);   
+        //}
       });
     }
   }
