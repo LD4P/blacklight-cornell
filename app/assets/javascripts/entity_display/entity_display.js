@@ -175,7 +175,7 @@ class entityDisplay {
   }
   
   hasGeographicInfo(doc) {
-    var geographicFields = ["spatial_coverage_ss", "geo_uri_ss"];
+    var geographicFields = ["spatial_coverage_ss", "geo_wd_ss"];
    return this.hasFieldInDoc(geographicFields, doc);
     
   }
@@ -401,19 +401,23 @@ class entityDisplay {
           year: stop
       } 
     };
-    if ("spatial_coverage_label_ss" in doc) {
-      var spatial_label = doc["spatial_coverage_label_ss"];
+    if ("spatial_coverage_label_ss" in doc || "geo_label_ss" in doc) {
+      var spatial_label = ("spatial_coverage_label_ss" in doc) ? doc["spatial_coverage_label_ss"]: doc["geo_label_ss"];
       article["spatial_label"] =  spatial_label;
-    }
+    } 
     
-    if ( "spatial_coverage_ss" in doc) {
-      var spatial_uris = doc["spatial_coverage_ss"];
+    if ( "spatial_coverage_ss" in doc || "geo_wd_ss" in doc) {
+      var spatial_uris = ( "spatial_coverage_ss" in doc ) ? doc["spatial_coverage_ss"]: doc["geo_wd_ss"];
       article["spatial_coverage_ss"] =  spatial_uris;
       //article["spatialMarkers"] = this.markers; 
     }
     
     if("wikidata_uri_s" in doc) {
       article["wikidata_uri"] = doc["wikidata_uri_s"];
+    }
+    
+    if("components_json_s" in doc) {
+      article["components"] = doc["components_json_s"];
     }
     //TODO: Add temporal component from solr document
     return article;
@@ -465,6 +469,8 @@ class entityDisplay {
   }
   
   onArticleClick(article) {
+    //Clear out html
+    $("#timelineInfo").html("");
     var articleType = article.articleType;
     var labelDisplay = "Subject";
     if(articleType != "primary") {
@@ -507,13 +513,23 @@ class entityDisplay {
       //m.setIcon("https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png");
     }
     
-  
+    //
+   
+    
+    htmlDisplay += "<div role='components'></div>";
     $("#timelineInfo").html(htmlDisplay);
+    
     if(articleType != "primary" && "wikidata_uri" in article["data"]) {
       //htmlDisplay += "<div id='wikidataPanel'></div>";
       //need to work out URI
       //this.getWikidataInfoForWDURI(article["data"]["wikidata_uri"], this.displayPanelWikidataInfo);
       this.getWikidataInfo(article["data"]["id"], this.displayPanelWikidataInfo);
+    }
+    if("components" in article["data"]) {
+      var components = article["data"]["components"];
+      var cJSON = JSON.parse(components);
+      //This should result in an array 
+      this.getComponentsWikidataInfo(cJSON);
     }
     
   }
@@ -556,6 +572,12 @@ class entityDisplay {
   }
   
   displayPanelWikidataInfo(uri, data) {
+    var htmlDisplay = this.generatePanelWikidataInfo(uri, data);
+    $("#timelineInfo").append(htmlDisplay);
+    
+  }
+  
+  generatePanelWikidataInfo(uri, data) {
     var htmlDisplay = "";
     if("image" in data) {
       htmlDisplay += "<div class='entityImage float-left'><img class='img-thumbnail rounded'  src='" + data.image + "'></div>";
@@ -566,7 +588,24 @@ class entityDisplay {
     }
     
     htmlDisplay = "<div class='float-none'>" + htmlDisplay + "</div>";
-    $("#timelineInfo").append(htmlDisplay);
+    return htmlDisplay;
+  }
+  
+  addComponentPanelInfo(uri, data) {
+    var htmlDisplay = this.generatePanelWikidataInfo(uri, data);
+    $("div[role='component'][uri='" + uri + "']").append(htmlDisplay);
+  }
+  
+  getComponentsWikidataInfo(cJSON) {
+    var eThis = this;
+    if(cJSON && cJSON.length > 0) {
+      $.each(cJSON, function(i, v) {
+        var uri = v["uri"];
+        var label = v["label"];
+        $("div[role='components']").append("<div class='float-none clearfix' role='component' uri='" + uri + "'>" + label + "</div>");  
+        eThis.getWikidataInfo(uri, eThis.addComponentPanelInfo.bind(eThis));
+      });
+    }
     
   }
   
@@ -1426,17 +1465,31 @@ class entityDisplay {
   processMapInfo(doc, overlay) {
     //      var geographicFields = ["spatial_coverage_ss", "geo_uri_ss"];
     var eThis = this;
-    if("spatial_coverage_ss" in doc) {
+    if("spatial_coverage_ss" in doc && "spatial_coverage_label_ss") {
       var spatialCov = doc["spatial_coverage_ss"];
+      var labels = doc["spatial_coverage_label_ss"];
       $.each(spatialCov, function(i, v) {   
         var wduri = v;
         //if a marker doesn't already exist
         //if(!wduri in eThis.markers) {
           //if(wduri in eThis.markers) console.log("in  marker already");
-          eThis.getMapInfoForURI(v, "", overlay);   
+         label = labels[i] || "";
+          eThis.getMapInfoForURI(v, label, overlay);   
         //}
       });
-    }
+    } else if("geo_wd_ss" in doc && "geo_label_ss") {
+      var spatialCov = doc["geo_wd_ss"];
+      var labels = doc["geo_label_ss"];
+      $.each(spatialCov, function(i, v) {   
+        var wduri = v;
+        //if a marker doesn't already exist
+        //if(!wduri in eThis.markers) {
+          //if(wduri in eThis.markers) console.log("in  marker already");
+         label = labels[i] || "";
+          eThis.getMapInfoForURI(v, label, overlay);   
+        //}
+      });
+    } 
   }
   
   /*

@@ -1,7 +1,10 @@
 <div id="entity-results">
     <% if @results.total_items > 0 %>
+    	<% 
+    	
+    	%>
     	<div>
-    	<a href=''>Search Results for :<strong>1</strong> - <strong><%= @results.total_items %></strong> of <strong> <%=  @results.total_items %> </strong></a>
+    	<a href=''><strong><%= @results.pagination.start_record %></strong> - <strong><%= @results.pagination.end_record %></strong> of <strong> <%= @results.pagination.count_records %> </strong></a>
     	
     	</div>
         <%= bento_search @results %>
