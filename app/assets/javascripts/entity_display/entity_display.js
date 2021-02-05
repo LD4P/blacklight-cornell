@@ -123,6 +123,7 @@ class entityDisplay {
     //First, retrieve primary doc information
     var hasTime = this.hasTimelineInfo(doc);
     var hasMap = this.hasGeographicInfo(doc);
+    var hasComponents = this.hasComponents(doc);
     //Check to see that main document has temporal information
     
     if(hasTime) {
@@ -145,7 +146,51 @@ class entityDisplay {
       this.processMapInfo(doc, this.overlay);
     }
     
+    //If there are components (individual), list those and get descriptions where possible and "works about"
+    if(hasComponents) {
+      this.displayComponents(doc);
+    }
+    
   }
+  
+  //check f any components exist
+  hasComponents(doc) {
+    return ("components_json_s" in doc);
+  }
+  
+  displayComponents(doc) {
+    var components = doc["components_json_s"];
+    var cJSON = JSON.parse(components);
+    var eThis = this;
+    if(cJSON && cJSON.length > 0) {
+      $.each(cJSON, function(i, v) {
+        var uri = v["uri"];
+        var label = v["label"];
+        $("#description").append("<div role='descComponent' uri='" + uri + "'>" + label + "<span class='component-works' uri='" + uri + "'></span></div>");  
+        eThis.getWikidataInfo(uri, eThis.addComponentDescriptionInfo.bind(eThis));
+        //Also get information about works about in the catalog for this component
+        eThis.getCatalogWorksAboutComponent(uri, label);
+      });
+    }
+    
+    
+  }
+  
+  
+  
+  addComponentDescriptionInfo(uri, data) {
+    var htmlDisplay = this.generateComponentDescription(uri, data);
+    $("div[role='descComponent'][uri='" + uri + "']").append(htmlDisplay);
+  }
+  
+  generateComponentDescription(uri, data) {
+    var htmlDisplay = "";
+    if("description" in data) {
+      htmlDisplay = ": <span class='capitalize'>" + data["description"] + "</span>";
+    }
+    return htmlDisplay;
+  }
+  
   
   displayTimeText(doc) {
     $("#timeInfo").removeClass("d-none");
@@ -608,6 +653,8 @@ class entityDisplay {
     }
     
   }
+  //refactor with above to make cleaner
+  
   
   //retrieve LCSH Relationships
   getLCSHRelationships(uri, periododata, overlay, callback) {
@@ -976,6 +1023,7 @@ class entityDisplay {
     
    $("#description").html("");
    if("image" in data) {
+     $("#mainImage").removeClass("d-none");
      $("#mainImage").html("<img class='img-fluid imgDisplay d-block mx-auto' src='" + data.image + "'>");
    }
    if("uriValue" in data) {
@@ -1522,6 +1570,8 @@ class entityDisplay {
   
   getCatalogResults(subject, baseUrl) {
   //The issue is that search_field=subject needs to map to something useful
+    //To handle compponents, ensure that subject replaces "--" with " > "
+    subject = subject.replace(/--/g, " > ");
     var lookupURL = baseUrl + "proxy/mainsearch?q=" + subject + "&search_field=subject&per_page=3";
     $.ajax({
       url : lookupURL,
@@ -1596,6 +1646,42 @@ class entityDisplay {
       }
     }
   }
+  
+  getCatalogWorksAboutComponent(uri, label) {
+    //Do ajax request to proxy controller for subject heading search using this label
+    var searchLabel = label.replace(/--/g," > ");
+    var searchLink = this.baseUrl + "proxy/sauthsearch?q=" + searchLabel;
+    $.ajax({
+      "url": searchLink,
+      "type": "GET",
+      context: this,
+      "success" : function(data) {     
+        if("response" in data && "docs" in data["response"] && data["response"]["docs"].length > 0) {
+          var doc = data["response"]["docs"]["0"];
+          var counts_json = doc["counts_json"];
+          var counts = JSON.parse(counts_json);
+          this.displayWorksAboutComponent(uri, counts);
+        }
+      }
+    });
+  }
+  
+  displayWorksAboutComponent(uri, counts) {
+    if("worksAbout" in counts) {
+      var c = counts["worksAbout"];
+      if(c > 0) {
+        $("span.component-works[uri='" + uri + "']").html("(Works About: " + c + ")");
+      }
+    }
+    if("worksBy" in counts) {
+      var c = counts["worksBy"];
+      if(c > 0) {
+        $("span.component-works[uri='" + uri + "']").append("(Works By: " + c + ")");
+      }
+    }
+  }
+  
+  
   
   displayWorksAboutSubject(counts) {
     if("worksAbout" in counts) {
