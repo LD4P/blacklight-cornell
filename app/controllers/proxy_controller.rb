@@ -98,7 +98,7 @@ class ProxyController < ApplicationController
   	if (uri != "")
   		params = {:q=>"uri_s:\"" + uri + "\"" , :start=>0, :rows=>1}  
   	elsif (tempgeo != "")
-  		params =  {:q=>"periodo_start_i:[* TO *] OR periodo_stop_i:[* TO *] OR temp_start_i:[* TO *] OR temp_stop_i:[* TO *]" , :start=>0, :rows=>30} 
+  		params =  {:q=>"periodo_start_i:[* TO *] OR periodo_stop_i:[* TO *] OR temp_start_i:[* TO *] OR temp_stop_i:[* TO *]" , :start=>0, :rows=>50} 
   	end
     solr = RSolr.connect :url => ENV["LCSH_SOLR"]
     response = solr.get 'select', :params => params 

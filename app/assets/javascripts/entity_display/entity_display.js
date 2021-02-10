@@ -40,7 +40,7 @@ class entityDisplay {
         eThis.populateAllSubjects();
       } else {
         //alert("not checked");
-        eThis.removeUnrelatedSubjects();
+        eThis.removeUnrelatedSubjects().bind(eThis);
       }
     });
     
@@ -57,6 +57,8 @@ class entityDisplay {
   
   removeUnrelatedSubjects() {
     //alert("remove!");
+    this.timeline.articles = [];
+    //this.timeline.requestRedraw();
   }
   
   //Given a URI, load the LCSH resource
@@ -516,13 +518,18 @@ class entityDisplay {
   onArticleClick(article) {
     //Clear out html
     $("#timelineInfo").html("");
-    var articleType = article.articleType;
+    var articleType = article["data"]["articleType"];
     var labelDisplay = "Subject";
+    //Commenting this out for now
+    //For some reason, all subjects are displaying as narrower
+    //Ensure that article type works correctly
+    //console.log(articleType);
+    /*
     if(articleType != "primary") {
-      labelDisplay = articleType == "broader"? "Broader ": "narrower" ? "Narrower ": "Related ";
+      labelDisplay = (articleType == "broader")? "Broader ": (articleType == "narrower") ? "Narrower ": "Related ";
       labelDisplay += "Subject";
-    }
-    var htmlDisplay = "<h4>" + labelDisplay + ": " + article.title + "</h4>";
+    }*/
+    var htmlDisplay = "<h4>" + labelDisplay + ": " + article.title + "<span class='subject-panel-works' uri='" + article["data"]["id"] + "'></span></h4>";
     
     //If article has from and to, display that information
     var yearRange = "";
@@ -568,7 +575,7 @@ class entityDisplay {
       //htmlDisplay += "<div id='wikidataPanel'></div>";
       //need to work out URI
       //this.getWikidataInfoForWDURI(article["data"]["wikidata_uri"], this.displayPanelWikidataInfo);
-      this.getWikidataInfo(article["data"]["id"], this.displayPanelWikidataInfo);
+      this.getWikidataInfo(article["data"]["id"], this.displayPanelWikidataInfo.bind(this));
     }
     if("components" in article["data"]) {
       var components = article["data"]["components"];
@@ -647,8 +654,10 @@ class entityDisplay {
       $.each(cJSON, function(i, v) {
         var uri = v["uri"];
         var label = v["label"];
-        $("div[role='components']").append("<div class='float-none clearfix' role='component' uri='" + uri + "'>" + label + "</div>");  
+        $("div[role='components']").append("<div class='float-none clearfix' role='component' uri='" + uri + "'>" + label + "<span class='component-panel-works' uri='" + uri + "'></span></div>");  
         eThis.getWikidataInfo(uri, eThis.addComponentPanelInfo.bind(eThis));
+        //could turn this into a promise so the next ajax call is fired afterwards
+        eThis.getCatalogWorksAboutPanelComponent(uri, label);
       });
     }
     
@@ -1681,6 +1690,40 @@ class entityDisplay {
     }
   }
   
+  //Refactor since this repeats the above and is only missing the callback
+  getCatalogWorksAboutPanelComponent(uri, label) {
+    //Do ajax request to proxy controller for subject heading search using this label
+    var searchLabel = label.replace(/--/g," > ");
+    var searchLink = this.baseUrl + "proxy/sauthsearch?q=" + searchLabel;
+    $.ajax({
+      "url": searchLink,
+      "type": "GET",
+      context: this,
+      "success" : function(data) {     
+        if("response" in data && "docs" in data["response"] && data["response"]["docs"].length > 0) {
+          var doc = data["response"]["docs"]["0"];
+          var counts_json = doc["counts_json"];
+          var counts = JSON.parse(counts_json);
+          this.displayWorksAboutPanelComponent(uri, counts);
+        }
+      }
+    });
+  }
+  
+  displayWorksAboutPanelComponent(uri, counts) {
+    if("worksAbout" in counts) {
+      var c = counts["worksAbout"];
+      if(c > 0) {
+        $("span.component-panel-works[uri='" + uri + "']").html("(Works About: " + c + ")");
+      }
+    }
+    if("worksBy" in counts) {
+      var c = counts["worksBy"];
+      if(c > 0) {
+        $("span.component-panel-works[uri='" + uri + "']").append("(Works By: " + c + ")");
+      }
+    }
+  }
   
   
   displayWorksAboutSubject(counts) {
