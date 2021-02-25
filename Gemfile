@@ -70,6 +70,8 @@ group :development, :test do
   gem 'pry-byebug'
   gem 'meta_request'
   gem 'awesome_print'
+  # For debugging only
+  gem 'xray-rails'
 end
 
 group :test do

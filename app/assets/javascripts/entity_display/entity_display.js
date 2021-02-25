@@ -39,8 +39,10 @@ class entityDisplay {
         //alert("checked");
         eThis.populateAllSubjects();
       } else {
-        //alert("not checked");
-        eThis.removeUnrelatedSubjects().bind(eThis);
+        alert("not checked");
+        eThis.removeUnrelatedSubjects();
+
+        //eThis.removeUnrelatedSubjects().bind(eThis);
       }
     });
     
@@ -51,15 +53,50 @@ class entityDisplay {
     //Query LCSH index to retrieve all subjects that have any temporal information or any location information
     //Transform temporal information into articles on timeline and add, designating as "removable" so the removal function will work
     //Transform 
+	//When adding, don't re-add the ones we've already added
+	//console.log("Populate all subjects");
+	//console.log(this.timeline.articles);
     this.getAllSolrTempGeoDocs(this.displayAllTempGeo.bind(this));
 
   }
   
   removeUnrelatedSubjects() {
-    //alert("remove!");
-    this.timeline.articles = [];
-    //this.timeline.requestRedraw();
+    //Remove all articles but the ones with ids matching 
+	//the uri for this entity or the 
+	var uHash = this.getURIsForThisEntityAsHash();
+	var keepArticles = [];
+	$.each(this.timeline.articles, function(k, article) {
+		var id = article["data"]["id"];
+		if(id in uHash) {
+			keepArticles.push(article);
+		}
+	});
+	
+	this.timeline.articles = keepArticles;
+	this.timeline.load(keepArticles);
+    this.timeline.requestRedraw();
   }
+
+  getURIsForThisEntity() {
+	var uris = [this.uri];
+	$.each(this.broader, function(key, v) {
+		uris.push(v["uri_s"]);
+	});
+	$.each(this.narrower, function(key, v) {
+		uris.push(v["uri_s"]);
+	});
+	return uris;
+ }
+
+ getURIsForThisEntityAsHash() {
+	var uris = this.getURIsForThisEntity();
+	var uHash = {};
+	$.each(uris, function(k, v) {
+		uHash[v.replace("https://", "http://")] = true;
+	}); 
+	return uHash;
+ }
+  
   
   //Given a URI, load the LCSH resource
     
@@ -373,13 +410,14 @@ class entityDisplay {
   displayUnrelatedSubject(doc) {
       var uri = doc["uri_s"];
       var label = doc["label_s"];
-     
       if(this.hasTimelineInfo(doc)) {
         //Check if not already on timeline
-        var a = this.timeline.getArticleById(uri);
+        var a = this.timeline.getArticleById(uri.replace("https://","http://"));
         if(!a) {
           this.plotRelatedSubjectOnTimeline(this.timeline, doc, "unrelated");
-        }
+        } else {
+			console.log("Already on timeline");
+		}
       }
       
       if(this.hasGeographicInfo(doc)) {

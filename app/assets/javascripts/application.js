@@ -48,6 +48,6 @@
 //= require leaflet
 //= require 'entity_display/entity_display.js'
 //= require jquery.mousewheel
-//= require histropedia-1.1.1.min.js
+//= require histropedia-1.2.0.min.js
 //= require 'entity_display/periodotest.js'
 //= require 'entity_display/spatialinfo.js'
