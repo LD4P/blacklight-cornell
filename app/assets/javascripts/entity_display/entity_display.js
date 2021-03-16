@@ -421,7 +421,7 @@ class entityDisplay {
       }
       
       if(this.hasGeographicInfo(doc)) {
-        //this.processMapInfo(doc, this.overlay);
+        this.processMapInfo(doc, this.overlay);
       }          
   }
   
