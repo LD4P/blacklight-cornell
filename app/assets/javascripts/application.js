@@ -44,6 +44,7 @@
 //= require zz_inview.js
 //= require tooltip.js
 
+
 //Entity display
 //= require leaflet
 //= require 'entity_display/entity_display.js'
@@ -51,3 +52,4 @@
 //= require histropedia-1.2.0.min.js
 //= require 'entity_display/periodotest.js'
 //= require 'entity_display/spatialinfo.js'
+//= require catalog/discogs.js
