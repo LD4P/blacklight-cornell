@@ -39,7 +39,6 @@ class entityDisplay {
         //alert("checked");
         eThis.populateAllSubjects();
       } else {
-        alert("not checked");
         eThis.removeUnrelatedSubjects();
 
         //eThis.removeUnrelatedSubjects().bind(eThis);
@@ -592,11 +591,14 @@ class entityDisplay {
       var spatialUris = article["data"]["spatial_coverage_ss"];
       var eThis = this;
       var highlightIcon = this.getHighlightIcon();
-      $.each(spatialUris, function(k, v) {
+	  var defaultIcon = this.getDefaultIcon();
+      //Reset all icons
+      this.resetIcons();
+	  $.each(spatialUris, function(k, v) {
         if(v in eThis.markers) {
           var m = eThis.markers[v];         
           m.setIcon(highlightIcon);
-        }
+        } 
       });
      
       //var m = article["data"]["spatialMarkers"][u];
@@ -648,18 +650,21 @@ class entityDisplay {
     });
     return highlightIcon;
   }
-  
+   
   getDefaultIcon() {
     var defaultIcon = new L.Icon({
-      iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
+      iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-grey.png',
       shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
       iconSize: [25, 41],
       iconAnchor: [12, 41],
       popupAnchor: [1, -34],
       shadowSize: [41, 41]
     });
+//      iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
+
     return defaultIcon;
   }
+
   
   displayPanelWikidataInfo(uri, data) {
     var htmlDisplay = this.generatePanelWikidataInfo(uri, data);
@@ -773,10 +778,7 @@ class entityDisplay {
     var baseUrl = $("#displayContainer").attr("base-url");
     var uri = $("#displayContainer").attr("uri");
     var digLabel = label;
-    //Test case
-    if(uri == "x") {
-     digLabel = "Sagan, Carl, 1934-1996";
-    }  
+ 
     //Timeline
     var lcsh = relationships.uri + ".html";
     var mappedData = this.mapData(periododata, lcsh);
@@ -828,10 +830,24 @@ class entityDisplay {
     
     var broaderDisplay = this.generateHierarchyCategory(broaderURIs, "Broader", dataHash, baseUrl);
     var narrowerDisplay = this.generateHierarchyCategory(narrowerURIs, "Narrower", dataHash, baseUrl);
-    
+    var hasBroader = (broaderDisplay != "");
+	var hasNarrower = (narrowerDisplay != "");
     //if both broader and narrower to be displayed, also put in "arrow"
-    $("#broader").append(broaderDisplay);
-    $("#narrower").append(narrowerDisplay);
+	var broaderDiv = $("#broader");
+	var narrowerDiv = $("#narrower");
+	var arrowDiv = $("#hierarchyArrow");
+	if(hasBroader) {
+		broaderDiv.removeClass("d-none");
+    	broaderDiv.append(broaderDisplay);
+	}
+	if(hasBroader && hasNarrower) {
+		arrowDiv.removeClass("d-none");
+		arrowDiv.addClass("d-flex");
+	}
+	if(hasNarrower) {
+		narrowerDiv.removeClass("d-none");
+    	narrowerDiv.append(narrowerDisplay);
+	}
    // var closeDisplay = this.generateHierarchyCategory(closeURIs, "Similar", dataHash, null);
    // $("#close").append(closeDisplay);
     
@@ -874,6 +890,7 @@ class entityDisplay {
     return display;
   }
   
+/*
   generateTreeTest(relationships) {
     var dataHash = relationships.dataHash;
     var uri = relationships.uri;
@@ -921,7 +938,7 @@ class entityDisplay {
     });
   
   }
-  
+  */
   getDigitalCollections(query) {
      //For subjects
      var q = query.replace(/>/g, " ");
@@ -1520,19 +1537,29 @@ class entityDisplay {
         maxZoom: 18});
     mymap.setView([0, 0], 0);
     mymap.addLayer(overlay);
-  
-    L.tileLayer(
-        'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{retina}.png', {
-          attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, &copy; <a href="http://carto.com/attributions">Carto</a>',
-          maxZoom: 18,
-          worldCopyJump: true,
-          retina: '@2x',
-          detectRetina: false
-        }
-      ).addTo(mymap);   
+    var tileLayer = this.generateLeafletTileLayer();
+    tileLayer.addTo(mymap);   
     return {"overlay":overlay, "map": mymap};
   } 
-  
+   
+  generateLeafletTileLayer() {
+	/*return L.tileLayer(
+	    'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{retina}.png', {
+	      attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, &copy; <a href="http://carto.com/attributions">Carto</a>',
+	      maxZoom: 18,
+	      worldCopyJump: true,
+	      retina: '@2x',
+	      detectRetina: false
+    	});*/
+	return L.tileLayer(
+	    'https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
+	      attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>, Tiles courtesy of <a href="http://hot.openstreetmap.org/" target="_blank">Humanitarian OpenStreetMap Team</a>', 
+	      maxZoom: 19,
+	      worldCopyJump: true,
+	      retina: '@2x',
+	      detectRetina: false
+    });
+  }
   //Process spatial info and put all the points on
   processSpatialInfo(overlay) {
     //var spatialInfo -> array of all information with coordinates, mapping back to periodo
