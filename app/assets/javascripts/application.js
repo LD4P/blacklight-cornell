@@ -46,3 +46,5 @@
 
 //= require catalog/discogs.js
 
+// For LD4P3
+//= require kp/integrateLinks.js
