@@ -1831,28 +1831,17 @@ class entityDisplay {
 
 }
 Blacklight.onLoad(function() {
-  
-  //Define method
-  
-  L.bboxToBounds = function(bbox) {
-    bbox = bbox.split(' ');
-    if (bbox.length === 4) {
-      return L.latLngBounds([[bbox[1], bbox[0]], [bbox[3], bbox[2]]]);
-    } else {
-      throw "Invalid bounding box string";
-    }
-  };
-  
-  var eDisplay = new entityDisplay(uri);
-  eDisplay.init();
-
-  /*
-  var timeline = initTimeline("subject-timeline");
-  var mapInfo = initMap();
-  var overlay = mapInfo["overlay"];
-  var map = mapInfo["map"];
-  processSpatialInfo(overlay);
-  //Load uri and periodo data
-  load(uri, periododata, overlay, timeline);*/
-  
+	//Only load this code on entity page 
+	if ( $('#displayContainer').length ) {
+		L.bboxToBounds = function(bbox) {
+			bbox = bbox.split(' ');
+			if (bbox.length === 4) {
+				return L.latLngBounds([[bbox[1], bbox[0]], [bbox[3], bbox[2]]]);
+			} else {
+				throw "Invalid bounding box string";
+			}
+		};
+	  	var eDisplay = new entityDisplay(uri);
+	  	eDisplay.init();
+	} 
 });  
