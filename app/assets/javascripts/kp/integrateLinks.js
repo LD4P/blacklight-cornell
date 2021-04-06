@@ -38,6 +38,11 @@ $(document).ready(function () {
         searchDigitalCollections(baseUrl, getDigitalCollectionsQuery(auth, authType));
       });
   
+  //get label and text for full record
+  function getFullRecordLink() {
+	//var link =  
+  }
+ 
   function queryLOC(auth, authType, headingType) {
     locPath = "names";
     rdfType = "PersonalName";
@@ -269,9 +274,11 @@ $(document).ready(function () {
             && "bindings" in data["results"]) {
           var bindings = data["results"]["bindings"];
           var bLength = bindings.length;
+		  //Only displaying up to three
+		  bLength = (bLength < 3)? bLength: 3;
           var b;
           if (bindings.length) {
-            var notableWorksHtml = "<div><h4>Notable Works</h4><ul class=\"explist-notable\"><li>";
+            var notableWorksHtml = "<div class='row'><div class='col-md heading'>Notable Works</div><div class='col-md'>";
             var notableHtmlArray = [];
             for (b = 0; b < bLength; b++) {
               var binding = bindings[b];
@@ -281,17 +288,13 @@ $(document).ready(function () {
               && "value" in binding["title"]) {
                 var notableWorkURI = binding["notable_work"]["value"];
                 var notableWorkLabel = binding["title"]["value"];
-                console.log("uri and label for notable work "
-                    + notableWorkURI + ":" + notableWorkLabel);
                 notableHtmlArray.push(generateExternalLinks(notableWorkURI, notableWorkLabel, "Wikidata", ""));
               }
             }
-            notableWorksHtml += notableHtmlArray.join("</li><li>")
-            + "</li></ul><button id=\"expnext-notable\">&#x25BD; more</button><button id=\"expless-notable\">&#x25B3; less</button></div>";
+            notableWorksHtml += "<div class='row'>" + notableHtmlArray.join("</div><div class='row'>") + "</div></div></div>";
             $("#wikidataContent").append(notableWorksHtml);
           }
         }
-        listExpander('notable');
       }
 
     });
@@ -321,9 +324,10 @@ $(document).ready(function () {
               && "bindings" in data["results"]) {
             var bindings = data["results"]["bindings"];
             var bLength = bindings.length;
+		  	bLength = (bLength < 3)? bLength: 3;
             var b;
             if (bindings.length) {
-              var notableWorksHtml = "<div><h4>Was influence for</h4><ul class=\"explist-influencedby\"><li>";
+              var notableWorksHtml = "<div class='row'><div class='col-md heading'>Was influence for</div><div class='col-md'>";
               var notableHtmlArray = [];
               for (b = 0; b < bLength; b++) {
                 var binding = bindings[b];
@@ -337,12 +341,10 @@ $(document).ready(function () {
                   notableHtmlArray.push(generateExternalLinks(iURI, iLabel, "Wikidata", iLocUri));
                 }
               }
-              notableWorksHtml += notableHtmlArray.join("</li><li>")
-              + "</li></ul><button id=\"expnext-influencedby\">&#x25BD; more</button><button id=\"expless-influencedby\">&#x25B3; less</button></div>";
+              notableWorksHtml += "<div class='row'>" + notableHtmlArray.join("</div><div class='row'>") + "</div></div></div>";
               $("#wikidataContent").append(notableWorksHtml);
             }
           }
-          listExpander('influencedby');
         }
 
       });
@@ -372,9 +374,11 @@ $(document).ready(function () {
               && "bindings" in data["results"]) {
             var bindings = data["results"]["bindings"];
             var bLength = bindings.length;
+		  	bLength = (bLength < 3)? bLength: 3;
+
             var b;
             if (bindings.length) {
-              var notableWorksHtml = "<div><h4>Was influenced by</h4><ul class=\"explist-whoinfluenced\"><li>";
+              var notableWorksHtml = "<div class='row'><div class='col-md heading'>Was influenced by</div><div class='col-md'>";
               var notableHtmlArray = [];
               for (b = 0; b < bLength; b++) {
                 var binding = bindings[b];
@@ -388,8 +392,7 @@ $(document).ready(function () {
                   notableHtmlArray.push(generateExternalLinks(iURI, iLabel, "Wikidata", iLocUri));
                 }
               }
-              notableWorksHtml += notableHtmlArray.join("</li><li>")
-              + "</li></ul><button id=\"expnext-whoinfluenced\">&#x25BD; more</button><button id=\"expless-whoinfluenced\">&#x25B3; less</button></div>";
+              notableWorksHtml += "<div class='row'>" + notableHtmlArray.join("</div><div class='row'>") + "</div></div></div>";
               $("#wikidataContent").append(notableWorksHtml);
               //$('[data-toggle="tooltip"]').tooltip();
             }

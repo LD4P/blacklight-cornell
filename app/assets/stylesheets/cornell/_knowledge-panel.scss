@@ -1,8 +1,7 @@
-
 // Top row with author's image and name
 .kp-content .kp-flexrow {
   display: flex;
-}
+} 
 .kp-content figure.kp-entity-image {
   margin-right: 10px;
 }
@@ -29,7 +28,7 @@
   margin-bottom: 0;
 }
 .kp-content li:before {
-  content: "•";
+  content: "ï¿½";
   padding-right: 3px;
 }
 
@@ -57,4 +56,39 @@
 .kp-map {
   width:200px;
   height:200px;
+}
+
+//Originally in base.scss in ld4p2 branch
+a.data-src {
+    margin-left: 8px !important;
+}
+.data-src  img {
+	width: 16px;
+}
+
+//There don't appear to be any empty fields
+
+.kp-content dl {
+	float:none;
+}
+
+.kp-content dt, dd {
+	float:left;
+	width:50% !important;
+	margin: 10px 0px 0px 0px !important;
+}
+
+#wikidataContent {
+	background-color: #edebe7;
+	margin-top:5px;
+}
+
+#wikidataContent h3 {
+	margin-top:5px;
+}
+
+#wikidataContent .heading {
+	font-weight:700;
+	text-align:left;
+	color:#222;
 }
