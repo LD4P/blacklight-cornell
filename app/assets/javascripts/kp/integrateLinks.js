@@ -22,8 +22,8 @@ $(document).ready(function () {
         // Set up container
         var contentHtml = "<div id='popoverContent' class='kp-content'>" + 
         "<div id='authContent' class='float-none clearfix'><div style='float:left;clear:both' id='imageContent'></div></div>" + 
-        "<div id='wikidataContent' class='mt-2 float-none clearfix'></div><div id='digitalCollectionsContent' class='mt-5'></div>" + 
-		"<div id='fullRecordLink' class='w-100 text-right'></div>" + 
+        "<div id='wikidataContent' class='mt-2 float-none clearfix'></div>" + 
+		"<div id='fullRecordLink' class='mt-1 w-100 text-right'></div>" + 
 		"</div>";
         //,trigger : 'focus'
         e.popover({
@@ -44,13 +44,16 @@ $(document).ready(function () {
 				//This can be replaced with another link if doing the entity page
 				$("#fullRecordLink").html(fullRecordLink);
 			} 
-		  });
+		  }); 
 		  
           $("#authContent").append(d);
+		  $("#authContent div.author-works").last().after("<div id='digitalCollectionsContent' class='author-works'></div>");
+		//Moving this over here so we can add digital collections count after the html has been added
+		// Add query to lookup digital collections
+        searchDigitalCollections(baseUrl, getDigitalCollectionsQuery(auth, authType));
         });
        queryLOC(auth, authType, headingType);
-        // Add query to lookup digital collections
-        searchDigitalCollections(baseUrl, getDigitalCollectionsQuery(auth, authType));
+        
       });
   
   //get label and text for full record
@@ -127,7 +130,7 @@ $(document).ready(function () {
 			var totalCount = data["response"]["pages"]["total_count"];
 			if(parseInt(totalCount) > 0) {
           		var link = "https://digital.library.cornell.edu/?q=" + authString + "&search_field=all_fields";
-				var displayHtml = "<div class='row mt-5'><div class='col-md'><h3>Digital Collections</h3></div><div class='col-md'><a href='" + link + "'>" + totalCount + " results</a></div></div>";
+				var displayHtml = "Digital Collections: <a href='" + link + "'>" + totalCount + " results</a>";
 				$("#digitalCollectionsContent").append(displayHtml);
 			}
         }
