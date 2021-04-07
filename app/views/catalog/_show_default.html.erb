@@ -1,5 +1,5 @@
 <%# default partial to display solr document fields in catalog show view -%>
-<dl class="row" id="itemDetails">
+<dl class="row" id="itemDetails" base-url="<%= root_url %>">
   <% document_show_fields(document).each do |solr_fname, field| -%>
     <% if document.has? solr_fname  -%>
 	    <dt class="blacklight-<%= solr_fname.parameterize %> col-sm-3"><%= render_document_show_field_label document, :field => solr_fname %></dt>
@@ -8,24 +8,24 @@
         <% if  solr_fname == 'author_json' -%>
           <%= render_clickable_document_show_field_value :document => document, :field => solr_fname %>
           <% authname = field_value solr_fname %>
-          <% document['author_json'].each do |authority| %>
-          <% heading = JSON.parse(authority) %>
-          <% if heading["authorizedForm"] == true %> 
-          <% type = heading['type']  %>
-          <% if heading['search2'].present?  %>
-          <% search = heading['search2'] %>
-          <% else search = heading['search1']  %>
-          <% end %>
-          <%# show heading popover for everything bigger than smartphone %>
-          <a href='#' role="button" tabindex="0" data-trigger="focus" data-poload='/browse/info?authq=<%=  search %>&amp;browse_type=Author&amp;headingtype=<%=  type %>' id="info" class="info-button d-none d-sm-inline"><span class="badge badge-primary">
-            Info
-          </span>
-          </a>
-          <%# link directly to heading on smartphone %>
-          <a href="/browse/info?authq=<%=  search %>&amp;browse_type=Author&amp;headingtype=<%=  type %>" role="button" class="info-button d-inline d-sm-none"><span class="badge badge-primary">
-            Info
-          </span>
-          </a>
+           <% document['author_json'].each do |authority| %>
+            <% heading = JSON.parse(authority) %>
+            <% if heading["authorizedForm"] == true %> 
+              <% type = heading['type']  %>
+              <% if heading['search2'].present?  %>
+                <% search = heading['search2'] %>
+              <% else search = heading['search1']  %>
+              <% end %>
+              <%# show heading popover for everything bigger than smartphone %>
+            <a href='#' role="button" tabindex = "0" base-url="<%= root_url %>" data-auth-type='author' data-auth='<%=search %>' datasearch-poload='/browse/info?authq=<%=  search %>&amp;browse_type=Author&amp;headingtype=<%=  type %>' id="info" class="info-button hidden-xs"><span class="badge badge-primary">
+              Info
+            </span>
+            </a>
+            <%# link directly to heading on smartphone, commenting out below as it appears on page%>
+            <!--a href="/browse/info?authq=<%=  search %>&amp;browse_type=Author&amp;headingtype=<%=  type %>" role="button" class="info-button visible-xs"><span class="badge badge-primary">
+              Info
+            </span>
+            </a-->
           <% end %>
           <% end %>
           

@@ -119,7 +119,7 @@ devise_for :users, controllers: {
   get "/get_next" => 'catalog#next_callnumber', as: 'get_next'
   get "/get_carousel" => 'catalog#build_carousel', as: 'get_carousel'
 
-  
+
   get 'proxy/search'  
   get 'proxy/facet'
   get 'entity_display/display'
@@ -132,7 +132,6 @@ devise_for :users, controllers: {
   get 'proxy/index'
   get 'proxy/mainsearch'
   
-
 
   # discogs processing
   get "/get_discogs" => 'catalog#get_discogs', as: 'get_discogs'

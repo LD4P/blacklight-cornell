@@ -1,0 +1,100 @@
+// Top row with author's image and name
+.popover {
+	width:350px !important;
+}
+.kp-content .kp-flexrow {
+  display: flex;
+} 
+.kp-content figure.kp-entity-image {
+  margin-right: 10px;
+}
+.kp-content figure.kp-entity-image > img {
+  max-width: 100px;
+  max-height: 100px;
+}
+.kp-content h3 {
+  margin: 0;
+  line-height: 1.2;
+}
+.kp-content .kp-source {
+  font-size: smaller;
+  margin-top: 5px;
+}
+
+// List items and heading
+.kp-content h4 {
+  margin: 10px 0 4px 0;
+}
+.kp-content ul {
+  list-style: none;
+  padding: 0 !important;
+  margin-bottom: 0;
+}
+.kp-content li:before {
+  content: "�";
+  padding-right: 3px;
+}
+
+// Button to expand list
+.kp-content button {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0 15px 0 0;
+  font-size: smaller;
+  display: none;
+}
+
+// Truncate long titles with ellipsis
+.kp-content li > a {
+  vertical-align: top;
+  display: inline-block; 
+  max-width: 24em; 
+  overflow: hidden; 
+  text-overflow: ellipsis; 
+  white-space: nowrap;
+  margin: 0;
+}
+
+.kp-map {
+  width:200px;
+  height:200px;
+}
+
+//Originally in base.scss in ld4p2 branch
+a.data-src {
+    margin-left: 8px !important;
+}
+.data-src  img {
+	width: 16px;
+}
+
+//There don't appear to be any empty fields
+
+.kp-content dl {
+	float:none;
+}
+
+.kp-content dt, dd {
+	float:left;
+	width:50% !important;
+	margin: 10px 0px 0px 0px !important;
+}
+
+#wikidataContent {
+	background-color: $light-tan;
+}
+
+#wikidataContent h3 {
+	margin-top:5px;
+}
+
+#wikidataContent .heading {
+	font-weight:700;
+	text-align:left;
+	color:#222;
+}
+/*
+#digitalCollectionsContent {
+	background-color: #D8D8D8;
+}*/

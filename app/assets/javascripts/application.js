@@ -53,3 +53,5 @@
 //= require 'entity_display/periodotest.js'
 //= require 'entity_display/spatialinfo.js'
 //= require catalog/discogs.js
+//= require kp/integrateLinks.js
+
