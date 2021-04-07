@@ -40,7 +40,8 @@ $(document).ready(function () {
 			if($.trim(innerText).indexOf("Full record") > -1) {
 				var oFullRecordLink = $(this)[0].outerHTML;
 				d = d.replace(oFullRecordLink, "<div class='float-none'>&nbsp;&nbsp;</div>");
-				var fullRecordLink = oFullRecordLink.replace("Full record", "View full record");
+				var fullRecordLink = getFullRecordLink(baseUrl, auth, authType);
+				//oFullRecordLink.replace("Full record", "View full record");
 				//This can be replaced with another link if doing the entity page
 				$("#fullRecordLink").html(fullRecordLink);
 			} 
@@ -57,8 +58,16 @@ $(document).ready(function () {
       });
   
   //get label and text for full record
-  function getFullRecordLink() {
-	//var link =  
+  function getFullRecordLink(baseUrl, auth, authType) {
+	var link = "#";
+	if(auth == "subject") {
+		link = baseUrl + "entity_display/display?qlabel=" + auth;
+	} else {
+		//This should cover authors
+		//Can check if specific auth type for authors
+		link = "";
+	}
+	 return "<a href='" + link + "'>View full record</a>";
   }
  
   function queryLOC(auth, authType, headingType) {
