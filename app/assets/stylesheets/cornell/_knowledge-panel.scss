@@ -1,4 +1,7 @@
 // Top row with author's image and name
+.popover {
+	width:350px !important;
+}
 .kp-content .kp-flexrow {
   display: flex;
 } 
@@ -79,8 +82,7 @@ a.data-src {
 }
 
 #wikidataContent {
-	background-color: #edebe7;
-	margin-top:5px;
+	background-color: $light-tan;
 }
 
 #wikidataContent h3 {
@@ -91,4 +93,8 @@ a.data-src {
 	font-weight:700;
 	text-align:left;
 	color:#222;
+}
+
+#digitalCollectionsContent {
+	background-color: #D8D8D8;
 }

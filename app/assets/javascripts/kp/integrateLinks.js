@@ -21,8 +21,10 @@ $(document).ready(function () {
         var catalogAuthURL = e.attr("datasearch-poload");
         // Set up container
         var contentHtml = "<div id='popoverContent' class='kp-content'>" + 
-        "<div id='authContent' style='float:none'><div style='float:left;clear:both' id='imageContent'></div></div>" + 
-        "<div id='wikidataContent'></div><div id='digitalCollectionsContent'></div></div>";
+        "<div id='authContent' class='float-none clearfix'><div style='float:left;clear:both' id='imageContent'></div></div>" + 
+        "<div id='wikidataContent' class='mt-2 float-none clearfix'></div><div id='digitalCollectionsContent' class='mt-5'></div>" + 
+		"<div id='fullRecordLink' class='w-100 text-right'></div>" + 
+		"</div>";
         //,trigger : 'focus'
         e.popover({
           content : contentHtml,
@@ -31,6 +33,19 @@ $(document).ready(function () {
         }).popover('show');
         // Get authority content
         $.get(catalogAuthURL, function (d) {
+		  var authHtml = $.parseHTML($.trim("<div>" + d + "</div>"));
+	      //Contains doesn't seem to work'		
+		  $(authHtml).find("a").each(function() {
+			var innerText = $(this).text();
+			if($.trim(innerText).indexOf("Full record") > -1) {
+				var oFullRecordLink = $(this)[0].outerHTML;
+				d = d.replace(oFullRecordLink, "<div class='float-none'>&nbsp;&nbsp;</div>");
+				var fullRecordLink = oFullRecordLink.replace("Full record", "View full record");
+				//This can be replaced with another link if doing the entity page
+				$("#fullRecordLink").html(fullRecordLink);
+			} 
+		  });
+		  
           $("#authContent").append(d);
         });
        queryLOC(auth, authType, headingType);
@@ -86,7 +101,6 @@ $(document).ready(function () {
         urisArray = parseLOCSuggestions(data);
         if (urisArray && urisArray.length) {
           var locURI = urisArray[0]; 
-          console.log("LOC URI from suggestions is " + locURI);
           queryWikidata(locURI);
         }
       }
@@ -108,57 +122,14 @@ $(document).ready(function () {
       success : function (data) {
         // Digital collection results, append
         var results = [];
-        if ("response" in data && "docs" in data.response) {
-          results = data["response"]["docs"];
-          // iterate through array
-          var resultsHtml = "<div><ul class=\"explist-digitalresults\">";
-          var authorsHtml = "<div><ul class=\"explist-digitalcontributers\">";
-          var maxLen = 10;
-          var numberResults = results.length;
-          var len = results.length;
-          if (len > maxLen)
-            len = maxLen;
-          var l;
-          for (l = 0; l < len; l++) {
-            var result = results[l];
-            var id = result["id"];
-            var title = result["title_tesim"];
-            var digitalURL = "http://digital.library.cornell.edu/catalog/"
-              + id;
-            resultsHtml += "<li>" + generateExternalLinks(digitalURL, title, "Digital Library Collections", "") + "</li>";
-            var creator = [], creator_facet = [];
-            if ("creator_tesim" in result)
-              creator = result["creator_tesim"];
-            if ("creator_facet_tesim" in result)
-              creator_facet = result["creator_facet_tesim"];
-            if (creator.length) {
-              var c = creator.length;
-              var i;
-              for (i = 0; i < creator.length; i++) {
-                authorsHtml += "<li> <a href='" + baseUrl
-                + "catalog?q=" + creator[i]
-                + "&search_field=all_fields'>" + creator[i]
-                + "</a></li>";
-              }
-            }
-          }
-
-          resultsHtml += "</ul><button id=\"expnext-digitalresults\">&#x25BD; more</button><button id=\"expless-digitalresults\">&#x25B3; less</button></div>";
-          var displayHtml = "";
-          //Only display this section if there are any digital collection results
-          if(numberResults > 0) {
-            var digColSearchURL = "https://digital.library.cornell.edu/?q=" + authString + "&search_field=all_fields";
-            displayHtml += "<div><h4>Digital Collections Results " + 
-            "<a class='data-src' href='" + digColSearchURL + "' target='_blank'><img src='/assets/dc.png' /></a></h4>"          
-            + resultsHtml
-            + "<h4>Related Digital Collections Contributors</h4>"
-            + authorsHtml
-            + "</ul><button id=\"expnext-digitalcontributers\">&#x25BD; more</button><button id=\"expless-digitalcontributers\">&#x25B3; less</button></div>";
-          }  
-
-          $("#digitalCollectionsContent").append(displayHtml);
-          listExpander('digitalresults');
-          listExpander('digitalcontributers');
+        //Just getting number of results
+        if ("response" in data && "pages" in data["response"] && "total_count" in data["response"]["pages"]) {
+			var totalCount = data["response"]["pages"]["total_count"];
+			if(parseInt(totalCount) > 0) {
+          		var link = "https://digital.library.cornell.edu/?q=" + authString + "&search_field=all_fields";
+				var displayHtml = "<div class='row mt-5'><div class='col-md'><h3>Digital Collections</h3></div><div class='col-md'><a href='" + link + "'>" + totalCount + " results</a></div></div>";
+				$("#digitalCollectionsContent").append(displayHtml);
+			}
         }
 
       }
@@ -278,7 +249,7 @@ $(document).ready(function () {
 		  bLength = (bLength < 3)? bLength: 3;
           var b;
           if (bindings.length) {
-            var notableWorksHtml = "<div class='row'><div class='col-md heading'>Notable Works</div><div class='col-md'>";
+            var notableWorksHtml = "<div class='row mt-2'><div class='col heading'>Notable Works</div><div class='col'>";
             var notableHtmlArray = [];
             for (b = 0; b < bLength; b++) {
               var binding = bindings[b];
@@ -288,7 +259,8 @@ $(document).ready(function () {
               && "value" in binding["title"]) {
                 var notableWorkURI = binding["notable_work"]["value"];
                 var notableWorkLabel = binding["title"]["value"];
-                notableHtmlArray.push(generateExternalLinks(notableWorkURI, notableWorkLabel, "Wikidata", ""));
+				//replaced method generateExternalLinks which will also put wikidata and LOC links
+                notableHtmlArray.push(generateLinksWithoutExternal(notableWorkURI, notableWorkLabel, "Wikidata", ""));
               }
             }
             notableWorksHtml += "<div class='row'>" + notableHtmlArray.join("</div><div class='row'>") + "</div></div></div>";
@@ -327,7 +299,7 @@ $(document).ready(function () {
 		  	bLength = (bLength < 3)? bLength: 3;
             var b;
             if (bindings.length) {
-              var notableWorksHtml = "<div class='row'><div class='col-md heading'>Was influence for</div><div class='col-md'>";
+              var notableWorksHtml = "<div class='row mt-2'><div class='col heading'>Was influence for</div><div class='col'>";
               var notableHtmlArray = [];
               for (b = 0; b < bLength; b++) {
                 var binding = bindings[b];
@@ -338,7 +310,7 @@ $(document).ready(function () {
                   var iURI = binding["influenceFor"]["value"];
                   var iLabel = binding["influenceForLabel"]["value"];
                   var iLocUri = binding["locUri"]["value"] != undefined ? binding["locUri"]["value"] : "";
-                  notableHtmlArray.push(generateExternalLinks(iURI, iLabel, "Wikidata", iLocUri));
+                  notableHtmlArray.push(generateLinksWithoutExternal(iURI, iLabel, "Wikidata", iLocUri));
                 }
               }
               notableWorksHtml += "<div class='row'>" + notableHtmlArray.join("</div><div class='row'>") + "</div></div></div>";
@@ -378,7 +350,7 @@ $(document).ready(function () {
 
             var b;
             if (bindings.length) {
-              var notableWorksHtml = "<div class='row'><div class='col-md heading'>Was influenced by</div><div class='col-md'>";
+              var notableWorksHtml = "<div class='row mt-2'><div class='col heading'>Was influenced by</div><div class='col'>";
               var notableHtmlArray = [];
               for (b = 0; b < bLength; b++) {
                 var binding = bindings[b];
@@ -389,7 +361,7 @@ $(document).ready(function () {
                   var iURI = binding["influencedBy"]["value"];
                   var iLabel = binding["influencedByLabel"]["value"];
                   var iLocUri = binding["locUri"]["value"] != undefined ? binding["locUri"]["value"] : "";
-                  notableHtmlArray.push(generateExternalLinks(iURI, iLabel, "Wikidata", iLocUri));
+                  notableHtmlArray.push(generateLinksWithoutExternal(iURI, iLabel, "Wikidata", iLocUri));
                 }
               }
               notableWorksHtml += "<div class='row'>" + notableHtmlArray.join("</div><div class='row'>") + "</div></div></div>";
@@ -429,8 +401,7 @@ $(document).ready(function () {
             if ("image" in binding && "value" in binding["image"] 
                && binding["image"]["value"]) {
               var image = binding["image"]["value"];
-              var html = "<figure class='kp-entity-image float-left'><img src='" + image + "'></figure>" + 
-              "<span class='kp-source'>Image: Wikidata</span>";
+              var html = "<figure class='kp-entity-image float-left'><img src='" + image + "'><br><span class='kp-source'>Image: Wikidata</span></figure>";
               $("#imageContent").append(html);
 
             }
@@ -459,6 +430,17 @@ $(document).ready(function () {
     return "<a data-toggle='tooltip' data-placement='top' data-original-title='Search Library Catalog' href='" 
             + keywordSearch + "'>" + label + "</a> " + "<a target='_blank' class='data-src' data-toggle='tooltip' data-placement='top' data-original-title='" 
             + title + "' href='" + URI + "'><img src='/assets/" + image +".png' /></a>" + locHtml
+  }
+
+  function generateLinksWithoutExternal(URI, label, sourceLabel, locUri) {
+    var baseUrl = $("#itemDetails").attr("base-url");
+    var keywordSearch = baseUrl + "catalog?q=" + label + "&search_field=all_fields";
+    var title = "See " + sourceLabel;
+    var image = "wikidata";
+    var locHtml = "";
+   
+    return "<a data-toggle='tooltip' data-placement='top' data-original-title='Search Library Catalog' href='" 
+            + keywordSearch + "'>" + label + "</a> ";
   }
 
 });
