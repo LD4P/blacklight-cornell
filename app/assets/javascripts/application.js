@@ -54,4 +54,6 @@
 //= require 'entity_display/spatialinfo.js'
 //= require catalog/discogs.js
 //= require kp/integrateLinks.js
+//= require catalog/doubleside-tree.js
+//= require agent_dashboard.js
 

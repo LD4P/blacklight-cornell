@@ -1,0 +1,414 @@
+<% content_for :head do %>
+  <script type="text/javascript" src="https://d3js.org/d3.v3.js"></script>
+<% end %>
+<% if @headingsResponse.present? && params[:info_type].nil? %>
+  <% if !request.xhr? %>
+    <div class="return-link">
+      <%= link_to "/browse?authq=" + params[:authq] + "&browse_type=" + params[:browse_type] + "&start=0" do %>
+        <i class="fa fa-arrow-circle-left"></i>
+        Back to list
+      <% end %>
+    </div>
+  <% end %>
+  <% @headingsResponse.each do |data| %>
+    <% encoded_heading = (data["heading"]).gsub('&', '%26').gsub("\"", "'") %>
+    <% if data["headingTypeDesc"] == params[:headingtype] || params[:headingtype].nil? %>
+      <h2>
+        <%= data["heading"] %>
+      </h2>
+      <% if data["counts_json"].present? %>
+        <% works=JSON.parse(data["counts_json"]) %>
+        <% if params[:browse_type] == "Author"  %>
+          <div class="author-works">
+            Works by:
+            <%= link_to '/?q="' + encoded_heading + '"&search_field=author_' + search_field(data["headingTypeDesc"]) + '_browse' do %>
+              <%= works["worksBy"] %>
+              Title(s)
+            <% end %>
+          </div>
+          <div class="author-works">
+            Works about:
+            <%= link_to '/?q="' + encoded_heading + '"&search_field=subject_' + search_field(data["headingTypeDesc"]) + '_browse' do %>
+              <%= works["worksAbout"]  %>
+              Title(s)
+            <% end %>
+          </div>
+        <% end %>
+        <% if params[:browse_type] == "Subject" %>
+          <% if works["works"].present? %>
+            <div class="author-works">
+              Works:
+              <%= link_to '/?q="' + encoded_heading + '"&search_field=authortitle_browse' do %>
+                <%= works["works"] %>
+                Title(s)
+              <% end %>
+            </div>
+          <% end %>
+          <% if works["worksBy"].present? %>
+            <div class="author-works">
+              Works by:
+              <%= link_to '/?q="' + encoded_heading + '"&search_field=author_' + search_field(data["headingTypeDesc"]) + '_browse' do %>
+                <%= works["worksBy"] %>
+                Title(s)
+              <% end %>
+            </div>
+          <% end %>
+          <div class="author-works">
+            <% if works["worksAbout"].present? %>
+              Works about:
+              <%= link_to '/?q="' + encoded_heading + '"&search_field=subject_' + search_field(data["headingTypeDesc"]) + '_browse' do %>
+                <%= works["worksAbout"]  %>
+                Title(s)
+              <% end %>
+            <% end %>
+          </div>
+        <% end %>
+        <% if params[:browse_type] == "Author-Title"  %>
+          <div class="author-works">
+            Works:
+            <%= link_to '/?q="' + encoded_heading + '"&search_field=authortitle_browse' do %>
+              <%= data["count"] %>
+              Title(s)
+            <% end %>
+          </div>
+          <div class="author-works">
+            Works About:
+            <%= link_to '/?q="' + encoded_heading + '"&search_field=subject_work_browse' do %>
+              <%= works["worksAbout"]  %>
+              Title(s)
+            <% end %>
+          </div>
+        <% end %>
+      <% end %>
+      <% if (!data["notes"].nil? || data["seeAlso"].present? || data["alternateForm"].present? || data["headingTypeDesc"].present?) && !request.xhr?  %>
+        <h3>
+          Reference Info
+        </h3>
+      <% end %>
+      <dl class="dl-horizontal">
+        <% if !data["notes"].nil? %>
+          <dt>
+            Scope note:
+          </dt>
+          <dd>
+            <% data["notes"].each do |note| %>
+              <% if note.include?("header") %>
+                <% note=JSON.parse(note) %>
+                <% note.each do |nottee| %>
+                  <div class="scope-note">
+                    <% if nottee.include?("header") %>
+                      <% nottee.each do |headingInfo| %>
+                        <%= link_to "/browse?authq=" + headingInfo[1] + "&start=0" + "&browse_type=" + params[:browse_type] do %>
+                          <%= headingInfo[1] %>
+                        <% end %>
+                      <% end %>
+                    <% else %>
+                      <%= nottee %>
+                    <% end %>
+                  </div>
+                <% end %>
+              <% else %>
+                <div class="scope-note">
+                  <%= note %>
+                </div>
+              <% end %>
+            <% end %>
+          </dd>
+        <% end %>
+        <% if data["seeAlso"].present? || data["alternateForm"].present? %>
+          <% if data["seeAlso"].present?  %>
+            <% sa=JSON.parse(data["seeAlso"]) %>
+            <% sa.each do |r,h| %>
+              <% if r.blank? %>
+                <dt>
+                  See Also:
+                </dt>
+              <% end %>
+              <% if !r.blank? %>
+                <dt>
+                  <%= r + ':' %>
+                </dt>
+              <% end %>
+				<% if h.count > 20 %>
+				  <div class="columns" style="margin-left:165px;column-width:22.5">
+				<% end %>
+			  <% loop_count = 0 %>
+              <% h.each do |headingInfo| %>
+                <dd <% if h.count > 20 and loop_count >= 20 %>style="margin-left:0;display:none;"  class="toggled-cr-refs"<% elsif h.count > 20  %>style="margin-left:0;"<%end%>>
+                  <%= link_to "/browse?authq=" + headingInfo["heading"].gsub('&', '%26').gsub("\"", "'") + "&start=0" + "&browse_type=" + params[:browse_type] do %>
+                    <%= headingInfo["heading"] %>
+                  <% end %>
+                  <% if params[:browse_type] == "Author" %>
+                    <span class="author-works">
+                      Works by:
+                      <%= link_to '/?q="' + headingInfo["heading"].gsub('&', '%26').gsub("\"", "'") + '"&search_field=author_' + search_field(headingInfo["headingTypeDesc"]) + '_browse' do %>
+                        <%= headingInfo["worksBy"] %>
+                      <% end %>
+                      <% if headingInfo["worksAbout"] > 0 %>
+                        <span class="author-works">
+                          Works about:
+                          <%= link_to '/?q="' + headingInfo["heading"].gsub('&', '%26').gsub("\"", "'") + '"&search_field=subject_' + search_field(headingInfo["headingTypeDesc"]) + '_browse' do %>
+                            <%= headingInfo["worksAbout"] %>
+                          <% end %>
+                        </span>
+                      <% end %>
+                    </span>
+                  <% end %>
+                  <% if params[:browse_type] == "Subject" %>
+                    <% if headingInfo["worksBy"].present? %>
+                      <span class="author-works">
+                        Works by:
+                        <%= link_to '/?q="' + headingInfo["heading"].gsub('&', '%26').gsub("\"", "'") + '"&search_field=author_' + search_field(headingInfo["headingTypeDesc"]) + '_browse' do %>
+                          <%= headingInfo["worksBy"] %>
+                        <% end %>
+                      </span>
+                    <% end %>
+                    <% if headingInfo["worksAbout"].present? %>
+                      <span class="author-works">
+                        Works about:
+                        <%= link_to '/?q="' + headingInfo["heading"].gsub('&', '%26').gsub("\"", "'") + '"&search_field=subject_' + search_field(headingInfo["headingTypeDesc"]) + '_browse' do %>
+                          <%= headingInfo["worksAbout"] %>
+                        <% end %>
+                      </span>
+                    <% end %>
+                  <% end %>
+                  <% if params[:browse_type] == "Author-Title" %>
+                    <span class="author-works">
+                      Works:
+                      <%= link_to '/?q="' + data["heading"].gsub('&', '%26').gsub("\"", "'") + '"&search_field=authortitle_browse' do %>
+                        <%= headingInfo["count"] %>
+                      <% end %>
+                    </span>
+                  <% end %>
+                </dd>
+				<% loop_count += 1 %>
+              <% end %>
+				<% if loop_count > 20 %>
+				  <div>
+				    <a id="cr-refs-toggle" href="#">more &raquo;</a>
+				  </div>
+				<% end %>
+				<% if h.count >= 20 %>
+				  </div>
+				<% end %>
+            <% end %>
+          <% end %>
+        <% end %>
+        <% if !data["alternateForm"].nil? && !request.xhr? %>
+          <dt>
+            Alternate form(s):
+          </dt>
+          <% data["alternateForm"].each do |af| %>
+            <dd>
+              <%= af %>
+            </dd>
+          <% end %>
+        <% end %>
+        <% if data["headingTypeDesc"].present? && !request.xhr? %>
+          <dt>
+            Headings type:
+          </dt>
+          <dd>
+            <%= data["headingTypeDesc"]				 %>
+          </dd>
+        <% end %>
+      </dl>
+      <% if data["mainEntry"] == true  && data["rda_json"].present? %>
+        <% if !request.xhr? %>
+          <h3>
+            Description
+          </h3>
+        <% end %>
+        <% if data["rda_json"].present? %>
+          <dl class="dl-horizontal">
+            <% rda=JSON.parse(data["rda_json"]) %>
+            <% rda.each do |t,d| %>
+              <% unless t == "Gender" %>
+              <dt>
+                <%= t + ':' %>
+              </dt>
+              <% d.each do |data| %>
+                <dd>
+                  <%= data %>
+                </dd>
+                <% end %>
+              <% end %>
+            <% end %>
+          </dl>
+        <% end %>
+      <% end %>
+    <% end %>
+    <% if request.xhr? %>
+    <% if data["headingTypeDesc"].present? && (data["headingTypeDesc"] == params[:headingtype]) %>
+      <%= link_to "/browse/info?authq=" + params[:authq] + "&browse_type=" + params[:browse_type] do %>
+        Full record
+      <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% elsif params[:info_type].present?%>
+<% Rails.logger.info("**************************** @headingsResponse (info.html) = " + @headingsResponse.inspect) %>
+  <% encoded_heading = (@headingsResponse[0]["heading"]).gsub('&', '%26').gsub("\"", "'") %>
+  <% alt_form_count = @headingsResponse[0]["alternateForm"].present? ? @headingsResponse[0]["alternateForm"].size : 0 %>
+  <% Rails.logger.info("************************** ALT FORM COUNT = " + alt_form_count.inspect)%>
+  <input id="loc_localname" type="hidden" value="<%=@loc_localname%>"/>
+  <% bio_data = @headingsResponse[0]["rda_json"].present? ? JSON.parse(@headingsResponse[0]["rda_json"]) : {} %>
+  <%# put this in a helper %>
+  <%  occ_array = []
+      if bio_data["Occupation"].present? 
+        bio_data["Occupation"].each do |o|
+	      occ_array << o.gsub(/s$/, '')
+	    end
+	  end
+  %> 
+  <h2><%= @headingsResponse[0]["heading"]%></h2>
+  <div class="row info-row" style="margin:0 0 20px">
+	<div  class="col-sm-8 col-md-8 col-lg-8" style="">
+	  <div class="row info-row" style="background:#edebe7;padding-top: 12px;padding-bottom: 12px;border: 1px solid rgba(0, 0, 0, 0.125);border-radius: 0.25rem;">
+	    <div class="col-sm-3 col-md-3 col-lg-3">
+	    	<img id="agent-image" src="" title="author image" width="120px"/>
+	    </div>
+	    <div class="col-sm-9 col-md-9 col-lg-9">
+	    	<dl class="row" id="itemDetails">
+		        <% if bio_data["Occupation"].present? %>
+	    		  <dt class="col-sm-4">Occupation:</dt>
+	    		  <dd class="col-sm-8"><%= occ_array.join(", ")%></dd>
+	            <% end %>
+	    		<% if bio_data["Birth Place"].present? %>
+	    		  <dt class="col-sm-4">Place of Birth:</dt>
+	    		  <dd class="col-sm-8"><%=bio_data["Birth Place"][0]%></dd>
+	    	    <% end %>
+	    		<% if bio_data["Place of Death"].present? %>
+	    		  <dt class="col-sm-4">Place of Death:</dt>
+	    		  <dd class="col-sm-8"><%=bio_data["Place of Death"][0]%></dd>
+	    	    <% end %>
+	    		  <dt class="col-sm-4 citizenship">Citizenship:</dt>
+	    		  <dd class="col-sm-8 citizenship"></dd>
+	    		  <dt class="col-sm-4 education">Educated at:</dt>
+	    		  <dd class="col-sm-8 education"></dd>
+	    		<% if bio_data["Group/Organization"].present? %>
+	    		  <dt class="col-sm-4">Affiliations:</dt>
+	    		  <dd class="col-sm-8"><%=bio_data["Group/Organization"].join(", ")%></dd>
+	    	    <% end %>
+	    		  <dt id="inf-by-dt" class="col-sm-4 influence">Influenced by:</dt>
+	    		  <dd id="inf-by-dd" class="col-sm-8 influence"></dd>
+	    		  <dt id="inf-for-dt" class="col-sm-4 influence">Influence for:</dt>
+	    		  <dd id="inf-for-dd" class="col-sm-8 influence"></dd>
+	    		<% if @headingsResponse[0]["notes"].present? %>
+	              <% the_notes = JSON.parse(@headingsResponse[0]["notes"][0])%>
+	    		  <dt class="col-sm-4">Notes:</dt>
+	    		  <dd class="col-sm-8">
+	                <%=the_notes[0].to_s%>:
+	                <ul class="agent-notes">
+			        <% the_notes.each do |n| %>
+			          <% if n.class.inspect == "Hash"%>
+			            <li><%= n['header']%></li>
+			          <% end %>
+			        <% end %>
+			        </ul>
+		          </dd>
+	    	    <% end %>
+	    	</dl>
+	    </div>
+	  </div>
+	</div>
+	<div class="col-sm-4 col-md-4 col-lg-4">
+		<div class="card" id="formats">
+		  <div class="card-header">
+		    <h3 style="margin-bottom: 0;">Library Holdings</h3>
+		  </div>
+		  <div class="card-body" style="padding-top: .75rem;">
+		    <ul class="fa-ul" id="more-results">
+			  <% works=JSON.parse(@headingsResponse[0]["counts_json"]) %>
+		      <li>
+			    Total Works By: <%= link_to '/?q="' + encoded_heading + '"&search_field=author_' + search_field(@headingsResponse[0]["headingTypeDesc"]) + '_browse' do %>
+	              <%= works["worksBy"] %>
+	              <% if works["worksBy"] > 1 %>Titles<%else%>Title<%end%>
+	            <% end %>
+			  </li>
+		      <li>
+			    Total Works About: <%= link_to '/?q="' + encoded_heading + '"&search_field=subject_' + search_field(@headingsResponse[0]["headingTypeDesc"]) + '_browse' do %>
+	              <%= works["worksAbout"] %>
+	              <% if works["worksAbout"] > 1 %>Titles<%else%>Title<%end%>
+	            <% end %>
+			  </li>
+		      <li style="text-align center">
+			    <div style="width:100%;border-bottom: solid 1px #dcdcdc"></div>
+			  </li>
+			  <% @formats.each do |f| %>
+			    <li>
+			      <%= format_the_format(f, encoded_heading)%>
+			    </li>
+			  <% end %>
+			</ul>
+		  </div>
+	    </div>
+	</div>
+  </div>	
+<div class="container" style="margin-left:-15px;margin-bottom:40px">
+
+  <ul class="nav nav-tabs">
+    <li class="nav-link active">
+	  <a id="timeline" class="active" data-toggle="tab" href="#timeline-container">Publication Timeline</a>
+	</li>
+      <li id="influence-tab" class="nav-link">
+	    <a id="influences" data-toggle="tab" href="#influence-content">Influences</a>
+	  </li>
+	<% if alt_form_count > 0 %>
+      <li class="nav-link">
+	    <a id="alternate" data-toggle="tab" href="#alternate-forms">Alternate Forms</a>
+	  </li>
+	<% end %>
+  </ul>
+
+  <div class="tab-content" style="width:100%;border: solid 1px #dee2e6;border-top: none;border-bottom-left-radius: 4px;border-bottom-right-radius: 4px;">
+    <div id="timeline-container" class="tab-pane active" style="padding:10px 4px 0;">
+    </div>
+	<% if alt_form_count > 0 and alt_form_count < 4 %>
+      <div id="alternate-forms" class="tab-pane">
+	    <div class="row" style="margin: 0;padding-top: 10px;">
+		  <div class="col-md-6" style="margin-left:30px;">
+		    <%  @headingsResponse[0]["alternateForm"].each do |af| %>
+		      <p><%= af%></p>
+		    <% end %>
+		  </div>
+		</div>
+	  </div>
+	<% elsif alt_form_count > 0 and alt_form_count >= 4 %>
+	  <% divisor = 2 if alt_form_count <= 8 %>
+	  <% divisor = 3 if alt_form_count > 8%>
+      <div id="alternate-forms" class="tab-pane">
+	    <div class="row" style="margin:0;padding-top: 10px;">
+        <% count = 0 %>
+          <div class="col-md-4">
+            <% split_at = alt_form_count / divisor %>
+            <%  @headingsResponse[0]["alternateForm"].each do |af| %>
+              <% if count <= split_at %>
+                 <p><%= af%></p>
+                 <% count = count + 1 %>
+              <% elsif %>
+                 </div> <!-- elsif div-->
+                 <div class="col-md-4">
+                   <% count = 0 %>
+                   <p><%= af%></p>
+                   <% count = count + 1 %>
+              <% end %>
+            <% end %>
+          </div> <!-- first closing div-->
+        </div><!-- second closing div-->
+	  </div><!-- third closing div-->
+	<% end %>
+	<div id="influence-content" class="tab-pane" >
+	  <div class="row" style="padding-top:20px;margin:0">
+		<div class="col-md-2"></div>
+		<div id="influenced-by-container" class="col-md-3 text-center influence-header"><h3 id="influenced-by-hdr" >Influenced By</h3></div>
+		<div class="col-md-2"></div>
+		<div id="influence-for-container" class="col-md-3 text-center influence-header"><h3 id="influence-for-hdr">Influence For</h3></div>
+		<div class="col-md-2"></div>
+	  </div>
+	  <div id="influence-chart" ></div>
+	</div>
+  </div>
+</div>
+
+<% end %>

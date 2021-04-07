@@ -4,7 +4,7 @@ $(document).ready(function () {
     $("body").tooltip({
         selector: '[data-toggle="tooltip"]'
     });
-    
+
     $(this).on('click','*[data-auth]',
       function (event) {
         var e = $(this);
@@ -65,7 +65,8 @@ $(document).ready(function () {
 	} else {
 		//This should cover authors
 		//Can check if specific auth type for authors
-		link = "";
+		link = baseUrl + $('a#info').attr("datasearch-poload");
+		link += "&info_type=dashboard";
 	}
 	 return "<a href='" + link + "'>View full record</a>";
   }
