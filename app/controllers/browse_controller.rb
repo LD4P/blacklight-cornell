@@ -198,46 +198,51 @@ class BrowseController < ApplicationController
         result = JSON.parse(data)
         @loc_localname = !result[3][0].blank? ? result[3][0].split("/").last.inspect : ""
 
-        query = transform_query(params[:authq])
-        solr = RSolr.connect :url => ENV["SOLR_URL"]
-        solr_response = solr.get 'select', :params => {
-                                           :q => query,
-                                           :rows => 0, # from sample single query; should set this dynamically?
-                                           :group => true,
-                                             'group.field' => 'format_main_facet',
-                                             'group.limit' => 0,
-                                             'group.ngroups' => 'true',
-                                            :sort => 'score desc, pub_date_sort desc, title_sort asc',
-                                            :fl => 'id,pub_date_display,format,fulltitle_display,fulltitle_vern_display,author_display,score,pub_info_display,availability_json',
-                                            :mm => 1
-                                          }
-
-        Rails.logger.debug("mjc12test: BlacklightEngine2 search called. #{__FILE__} #{__LINE__} solr_response #{solr_response}")
-        formats = solr_response['facet_counts']['facet_fields']['format']
-
-        uri = "https://digital.library.cornell.edu/catalog.json?utf8=%E2%9C%93&q=#{params[:authq]}&search_field=all_fields&rows=3"
-        url = Addressable::URI.parse(uri)
-        url.normalize
-        portal_response = JSON.load(open(url.to_s))
-        if portal_response['response']['pages']['total_count'] > 0
-          formats << "Digital Collections"
-          formats << portal_response['response']['pages']['total_count']
-        end
-        f_count = 0
-        tmp_array = []
-        formats.each do |f|
-          if f.class == String
-            tmp_string = pluralize_format(f) + " (" + formats[f_count + 1].to_s + ")"
-            tmp_array << tmp_string
-          end
-          f_count = f_count + 1
-        end
-        @formats = tmp_array.sort
+        @formats = get_formats
       end
       respond_to do |format|
         format.html { render layout: !request.xhr? } #renders naked html if ajax
       end
     end
+  end
+  
+  def get_formats
+    query = transform_query(params[:authq])
+    solr = RSolr.connect :url => ENV["SOLR_URL"]
+    solr_response = solr.get 'select', :params => {
+                                       :q => query,
+                                       :rows => 0, # from sample single query; should set this dynamically?
+                                       :group => true,
+                                         'group.field' => 'format_main_facet',
+                                         'group.limit' => 0,
+                                         'group.ngroups' => 'true',
+                                        :sort => 'score desc, pub_date_sort desc, title_sort asc',
+                                        :fl => 'id,pub_date_display,format,fulltitle_display,fulltitle_vern_display,author_display,score,pub_info_display,availability_json',
+                                        :mm => 1
+                                      }
+
+    Rails.logger.debug("mjc12test: BlacklightEngine2 search called. #{__FILE__} #{__LINE__} solr_response #{solr_response}")
+    formats = solr_response['facet_counts']['facet_fields']['format']
+
+    uri = "https://digital.library.cornell.edu/catalog.json?utf8=%E2%9C%93&q=#{params[:authq]}&search_field=all_fields&rows=3"
+    url = Addressable::URI.parse(URI.escape(uri))
+    url.normalize
+    portal_response = JSON.load(open(url.to_s))
+    if portal_response['response']['pages']['total_count'] > 0
+      formats << "Digital Collections"
+      formats << portal_response['response']['pages']['total_count']
+    end
+    f_count = 0
+    tmp_array = []
+    formats.each do |f|
+      if f.class == String
+        tmp_string = pluralize_format(f) + " (" + formats[f_count + 1].to_s + ")"
+        tmp_array << tmp_string
+      end
+      f_count = f_count + 1
+    end
+    
+    return tmp_array.sort
   end
 
   def redirect_catalog

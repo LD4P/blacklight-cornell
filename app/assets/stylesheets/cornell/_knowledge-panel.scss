@@ -1,5 +1,6 @@
 // Top row with author's image and name
 .popover {
+    max-width: 100%;
 	width:350px !important;
 }
 .kp-content .kp-flexrow {
@@ -75,24 +76,69 @@ a.data-src {
 	float:none;
 }
 
-.kp-content dt, dd {
+.kp-content dt {
+    clear: both;
 	float:left;
+	width:50% !important;
+	margin: 10px 0px 0px 0px !important;
+}
+
+.kp-content dd {
+    clear: right;
+	float:right;
 	width:50% !important;
 	margin: 10px 0px 0px 0px !important;
 }
 
 #wikidataContent {
 	background-color: $light-tan;
+	margin: 0 -12px 10px -12px;
+    padding-left: 12px;
 }
 
 #wikidataContent h3 {
 	margin-top:5px;
+	font-size:18px;
 }
 
 #wikidataContent .heading {
 	font-weight:700;
 	text-align:left;
 	color:#222;
+}
+
+#wikidataContent div {
+	font-size: 12.6px;
+}
+span.kp-badge {
+    font-weight: normal;
+    font-size: 14px;
+}
+
+span.subj-badge {
+    font-weight: lighter;
+}
+
+.blacklight-catalog-show .popover dl.dl-horizontal dt {
+    display: block;
+    width: 100%;
+    text-align: left;
+    margin: .75em 0 .15em 0;
+    font-weight: 700;
+    color: #222;
+    font-size: 90%;
+}
+
+.blacklight-catalog-show .popover .author-works {
+    margin-left: 0;
+    display: block;
+    margin-bottom: .25em;
+}
+
+.blacklight-catalog-show .popover h2 {
+    margin: 0 0 .25em 0;
+    font-size: 20px;
+    line-height: 1.2em;
 }
 /*
 #digitalCollectionsContent {

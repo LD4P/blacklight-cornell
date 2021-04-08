@@ -67,7 +67,7 @@ $(document).ready(function () {
 		//Can check if specific auth type for authors
 		link = "";
 	}
-	 return "<a href='" + link + "'>View full record</a>";
+	 return "<a href='" + link + "'><span class='badge badge-primary kp-badge'>View full record</span></a>";
   }
  
   function queryLOC(auth, authType, headingType) {
