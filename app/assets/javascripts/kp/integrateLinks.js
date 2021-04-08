@@ -68,7 +68,7 @@ $(document).ready(function () {
 		link = baseUrl + $('a#info').attr("datasearch-poload");
 		link += "&info_type=dashboard";
 	}
-	 return "<a href='" + link + "'>View full record</a>";
+	 return "<a href='" + link + "'><span class='badge badge-primary kp-badge'>View full record</span></a>";
   }
  
   function queryLOC(auth, authType, headingType) {

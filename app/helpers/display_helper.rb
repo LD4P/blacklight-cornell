@@ -1640,7 +1640,7 @@ end
     'i</span></a>'
       end
       #Adding a link for "see more" using the heading
-      see_more = '<a role="button" class="info-button hidden-xs" href="' + request.base_url + '/entity_display/display?qlabel=' + json_value + '"><span class="badge badge-primary">See Details</span></a>';
+      see_more = '<a role="button" class="info-button hidden-xs" href="' + request.base_url + '/entity_display/display?qlabel=' + json_value + '"><span class="badge badge-primary subj-badge">See details</span></a>';
 		#overriding info button for a bit
 		info_button = ""
 
