@@ -557,6 +557,7 @@ class entityDisplay {
     $("#timelineInfo").html("");
     var articleType = article["data"]["articleType"];
     var labelDisplay = "Subject";
+	var uri = article["data"]["id"];
     //Commenting this out for now
     //For some reason, all subjects are displaying as narrower
     //Ensure that article type works correctly
@@ -566,8 +567,12 @@ class entityDisplay {
       labelDisplay = (articleType == "broader")? "Broader ": (articleType == "narrower") ? "Narrower ": "Related ";
       labelDisplay += "Subject";
     }*/
-    var htmlDisplay = "<h4>" + labelDisplay + ": " + article.title + "<span class='subject-panel-works' uri='" + article["data"]["id"] + "'></span></h4>";
-    
+//"<span class='subject-panel-works' uri='" + article["data"]["id"] + "'></span>
+    var htmlDisplay = "<h4>" + labelDisplay + ": " + article.title + "</h4>";
+    htmlDisplay += "<div class='row mt-1 ml-1' role='description' uri='" + uri + "'></div>";
+    htmlDisplay += "<div class='row mt-1 ml-1' role='worksAbout' uri='" + uri + "'></div>";
+    htmlDisplay += "<div class='row mt-1 ml-1' role='relatedCall' uri='" + uri + "'></div>";
+
     //If article has from and to, display that information
     var yearRange = "";
     var fromExists = false;
@@ -580,11 +585,14 @@ class entityDisplay {
       yearRange += (fromExists)? " - ": "";
       yearRange += toYear;
     }
-    yearRange = (yearRange != "")? "Years: " + yearRange: yearRange;
-    htmlDisplay += yearRange;
     
     if("spatial_label" in article["data"]) {
-      htmlDisplay += "<br/>Related regions: " + article["data"]["spatial_label"].join(", ");
+      htmlDisplay += "<div class='row mt-1 ml-1'><div class='col font-weight-bold'>Related regions:</div><div class='col'>" + article["data"]["spatial_label"].join(", ") + "</div></div>";
+    }
+
+ //yearRange = (yearRange != "")? "Years: " + yearRange: yearRange;
+	if(yearRange != "") {
+    	htmlDisplay += "<div class='row mt-1 ml-1'><div class='col font-weight-bold'>Years:</div><div class='col'>" + yearRange + "</div></div>";
     }
     
     if("spatial_coverage_ss" in article["data"]) {
@@ -1534,7 +1542,7 @@ class entityDisplay {
     var overlay = L.layerGroup();
   
     var mymap= L.map('map', {minZoom: 1,
-        maxZoom: 18});
+        maxZoom: 19});
     mymap.setView([0, 0], 0);
     mymap.addLayer(overlay);
     var tileLayer = this.generateLeafletTileLayer();
