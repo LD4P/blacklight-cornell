@@ -569,7 +569,7 @@ class entityDisplay {
     }*/
 //"<span class='subject-panel-works' uri='" + article["data"]["id"] + "'></span>
     var htmlDisplay = "<h4>" + labelDisplay + ": " + article.title + "</h4>";
-    htmlDisplay += "<div class='row mt-1 ml-1' role='description' uri='" + uri + "'></div>";
+    htmlDisplay += "<div class='row mt-1 ml-1 capitalize' role='description' uri='" + uri + "'></div>";
     htmlDisplay += "<div class='row mt-1 ml-1' role='worksAbout' uri='" + uri + "'></div>";
     htmlDisplay += "<div class='row mt-1 ml-1' role='relatedCall' uri='" + uri + "'></div>";
 
@@ -587,12 +587,12 @@ class entityDisplay {
     }
     
     if("spatial_label" in article["data"]) {
-      htmlDisplay += "<div class='row mt-1 ml-1'><div class='col font-weight-bold'>Related regions:</div><div class='col'>" + article["data"]["spatial_label"].join(", ") + "</div></div>";
+      htmlDisplay += "<div class='row mt-1 ml-1'><div class='col font-weight-bold'>Location(s):</div><div class='col'>" + article["data"]["spatial_label"].join(", ") + "</div></div>";
     }
 
  //yearRange = (yearRange != "")? "Years: " + yearRange: yearRange;
 	if(yearRange != "") {
-    	htmlDisplay += "<div class='row mt-1 ml-1'><div class='col font-weight-bold'>Years:</div><div class='col'>" + yearRange + "</div></div>";
+    	htmlDisplay += "<div class='row mt-1 ml-1'><div class='col font-weight-bold'>Time(s):</div><div class='col'>" + yearRange + "</div></div>";
     }
     
     if("spatial_coverage_ss" in article["data"]) {
@@ -619,7 +619,7 @@ class entityDisplay {
     htmlDisplay += "<div role='components'></div>";
     $("#timelineInfo").html(htmlDisplay);
     
-    if(articleType != "primary" && "wikidata_uri" in article["data"]) {
+    if("wikidata_uri" in article["data"]) {
       //htmlDisplay += "<div id='wikidataPanel'></div>";
       //need to work out URI
       //this.getWikidataInfoForWDURI(article["data"]["wikidata_uri"], this.displayPanelWikidataInfo);
@@ -678,11 +678,17 @@ class entityDisplay {
 
   
   displayPanelWikidataInfo(uri, data) {
-    var htmlDisplay = this.generatePanelWikidataInfo(uri, data);
-    $("#timelineInfo").append(htmlDisplay);
+    //var htmlDisplay = this.generatePanelWikidataInfo(uri, data);
+    //$("#timelineInfo").append(htmlDisplay);
+    if("description" in data) {
+		var description = data["description"];
+      //htmlDisplay += "<div class='float-left capitalize w-50'>" + data["description"] + "</div>";
+    	$("#timelineInfo div[role='description'][uri='" + uri + "']").html(description);
+	}
     
   }
   
+/*
   generatePanelWikidataInfo(uri, data) {
     var htmlDisplay = "";
     if("image" in data) {
@@ -696,19 +702,26 @@ class entityDisplay {
     htmlDisplay = "<div class='float-none'>" + htmlDisplay + "</div>";
     return htmlDisplay;
   }
-  
+  */
   addComponentPanelInfo(uri, data) {
-    var htmlDisplay = this.generatePanelWikidataInfo(uri, data);
-    $("div[role='component'][uri='" + uri + "']").append(htmlDisplay);
+    //var htmlDisplay = this.generatePanelWikidataInfo(uri, data);
+	var htmlDisplay = "";
+	if("description" in data) {
+		var description = data["description"];
+		htmlDisplay = "<div class='row mt-1 ml-1 capitalize'>" + description + "</div>";
+    	$("#timelineInfo div[role='panelComponent'][uri='" + uri + "']").append(htmlDisplay);
+	}
   }
   
   getComponentsWikidataInfo(cJSON) {
     var eThis = this;
     if(cJSON && cJSON.length > 0) {
+	  $("#timelineInfo div[role='components']").html("<div class='row font-weight-bold mt-2 ml-1'>Related subjects:</div>");
       $.each(cJSON, function(i, v) {
         var uri = v["uri"];
         var label = v["label"];
-        $("div[role='components']").append("<div class='float-none clearfix' role='component' uri='" + uri + "'>" + label + "<span class='component-panel-works' uri='" + uri + "'></span></div>");  
+		var componentHtml = "<div class='row mt-1 ml-1 mr-1 capitalize' role='panelComponent' uri='" + uri + "'>" + label + "<span class='component-panel-works' uri='" + uri + "'></span></div>";
+        $("div[role='components']").append(componentHtml);  
         eThis.getWikidataInfo(uri, eThis.addComponentPanelInfo.bind(eThis));
         //could turn this into a promise so the next ajax call is fired afterwards
         eThis.getCatalogWorksAboutPanelComponent(uri, label);

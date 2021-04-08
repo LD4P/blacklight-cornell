@@ -4,7 +4,7 @@ $(document).ready(function () {
     $("body").tooltip({
         selector: '[data-toggle="tooltip"]'
     });
-
+    
     $(this).on('click','*[data-auth]',
       function (event) {
         var e = $(this);
@@ -60,13 +60,12 @@ $(document).ready(function () {
   //get label and text for full record
   function getFullRecordLink(baseUrl, auth, authType) {
 	var link = "#";
-	if(auth == "subject") {
+	if(authType == "subject") {
 		link = baseUrl + "entity_display/display?qlabel=" + auth;
 	} else {
 		//This should cover authors
 		//Can check if specific auth type for authors
-		link = baseUrl + $('a#info').attr("datasearch-poload");
-		link += "&info_type=dashboard";
+		link = "";
 	}
 	 return "<a href='" + link + "'>View full record</a>";
   }
