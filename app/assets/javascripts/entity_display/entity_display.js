@@ -631,6 +631,9 @@ class entityDisplay {
       //This should result in an array 
       this.getComponentsWikidataInfo(cJSON);
     }
+
+	//Add works about
+	this.getCatalogWorksAboutGeneral(uri, article.title, $("div[role='worksAbout'][uri='" + uri + "']"), null);
     
   }
   
@@ -1603,7 +1606,7 @@ class entityDisplay {
         //if a marker doesn't already exist
         //if(!wduri in eThis.markers) {
           //if(wduri in eThis.markers) console.log("in  marker already");
-         label = labels[i] || "";
+          var label = labels[i] || "";
           eThis.getMapInfoForURI(v, label, overlay);   
         //}
       });
@@ -1615,7 +1618,7 @@ class entityDisplay {
         //if a marker doesn't already exist
         //if(!wduri in eThis.markers) {
           //if(wduri in eThis.markers) console.log("in  marker already");
-         label = labels[i] || "";
+          var label = labels[i] || "";
           eThis.getMapInfoForURI(v, label, overlay);   
         //}
       });
@@ -1725,6 +1728,40 @@ class entityDisplay {
       var c = counts["worksBy"];
       if(c > 0) {
         $("span.author-works[uri='" + uri + "']").append("(Works By: " + c + ")");
+      }
+    }
+  }
+
+	getCatalogWorksAboutGeneral(uri, label, aboutDiv, byDiv) { 
+    //Do ajax request to proxy controller for subject heading search using this label
+    var searchLabel = label.replace(/--/g," > ");
+    var searchLink = this.baseUrl + "proxy/sauthsearch?q=" + searchLabel;
+    $.ajax({
+      "url": searchLink,
+      "type": "GET",
+      context: this,
+      "success" : function(data) {     
+        if("response" in data && "docs" in data["response"] && data["response"]["docs"].length > 0) {
+          var doc = data["response"]["docs"]["0"];
+          var counts_json = doc["counts_json"];
+          var counts = JSON.parse(counts_json);
+          this.displayWorksAboutGeneral(uri, counts, aboutDiv, byDiv);
+        }
+      }
+    });
+  }
+
+  displayWorksAboutGeneral(uri, counts, aboutDiv, byDiv) {
+    if("worksAbout" in counts) {
+      var c = counts["worksAbout"];
+      if(c > 0) {
+        aboutDiv.html("<div class='col font-weight-bold'>Works About:</div><div class='col'>" + c + "</div>");
+      }
+    }
+    if("worksBy" in counts) {
+      var c = counts["worksBy"];
+      if(c > 0) {
+        byDiv.append("(Works By: " + c + ")");
       }
     }
   }
