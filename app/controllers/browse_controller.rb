@@ -225,7 +225,7 @@ class BrowseController < ApplicationController
     formats = solr_response['facet_counts']['facet_fields']['format']
 
     uri = "https://digital.library.cornell.edu/catalog.json?utf8=%E2%9C%93&q=#{params[:authq]}&search_field=all_fields&rows=3"
-    url = Addressable::URI.parse(uri)
+    url = Addressable::URI.parse(URI.escape(uri))
     url.normalize
     portal_response = JSON.load(open(url.to_s))
     if portal_response['response']['pages']['total_count'] > 0

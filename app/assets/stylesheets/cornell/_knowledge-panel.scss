@@ -1,5 +1,6 @@
 // Top row with author's image and name
 .popover {
+    max-width: 100%;
 	width:350px !important;
 }
 .kp-content .kp-flexrow {
@@ -97,6 +98,7 @@ a.data-src {
 
 #wikidataContent h3 {
 	margin-top:5px;
+	font-size:18px;
 }
 
 #wikidataContent .heading {
@@ -127,6 +129,17 @@ span.subj-badge {
     font-size: 90%;
 }
 
+.blacklight-catalog-show .popover .author-works {
+    margin-left: 0;
+    display: block;
+    margin-bottom: .25em;
+}
+
+.blacklight-catalog-show .popover h2 {
+    margin: 0 0 .25em 0;
+    font-size: 20px;
+    line-height: 1.2em;
+}
 /*
 #digitalCollectionsContent {
 	background-color: #D8D8D8;
