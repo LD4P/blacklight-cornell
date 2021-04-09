@@ -1637,12 +1637,13 @@ end
         info_button = '<a href="#" role="button" tabindex = "0" base-url="' + request.base_url + 
         '" data-auth-type="subject" heading-type="' + type + '" data-auth="' + json_value + '" datasearch-poload="/browse/info?authq=' + 
         json_value + '&amp;browse_type=Subject' + headingtype + '" id="info" class="info-button hidden-xs"><span class="badge badge-primary">' + 
-    'i</span></a>'
+    'Info</span></a>'
       end
       #Adding a link for "see more" using the heading
-      see_more = '<a role="button" class="info-button hidden-xs" href="' + request.base_url + '/entity_display/display?qlabel=' + json_value + '"><span class="badge badge-primary subj-badge">See details</span></a>';
+      see_more = '<a role="button" class="info-button hidden-xs" href="' + request.base_url + '/entity_display/display?qlabel=' + json_value + '"><span class="badge badge-primary">Info</span></a>';
 		#overriding info button for a bit
-		info_button = ""
+		#info_button = ""
+		see_more = ""
 
 
       "<div style='" + style_text + "'>" + link_to(v, add_search_params(field, '"' + json_value + '"'), class: "hierarchical") + "&nbsp;" + info_button + see_more + "</div>"

@@ -4,7 +4,7 @@ $(document).ready(function () {
     $("body").tooltip({
         selector: '[data-toggle="tooltip"]'
     });
-
+    
     $(this).on('click','*[data-auth]',
       function (event) {
         var e = $(this);
@@ -60,7 +60,7 @@ $(document).ready(function () {
   //get label and text for full record
   function getFullRecordLink(baseUrl, auth, authType) {
 	var link = "#";
-	if(auth == "subject") {
+	if(authType == "subject") {
 		link = baseUrl + "entity_display/display?qlabel=" + auth;
 	} else {
 		//This should cover authors
