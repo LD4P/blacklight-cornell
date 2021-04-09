@@ -615,8 +615,9 @@ class entityDisplay {
     
     //
    
-    
-    htmlDisplay += "<div role='components'></div>";
+    var link = this.baseUrl + "/entity_display/display?uri=" + uri;
+    var linkHtml = "<a href='" + link + "'>Details</a>";
+    htmlDisplay += "<div role='components'></div><div class='row mt-2 ml-1 mr-1'><div class='col text-center'>" + linkHtml + "</div></div>";
     $("#timelineInfo").html(htmlDisplay);
     
     if("wikidata_uri" in article["data"]) {
