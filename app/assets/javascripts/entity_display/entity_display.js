@@ -557,6 +557,7 @@ class entityDisplay {
     $("#timelineInfo").html("");
     var articleType = article["data"]["articleType"];
     var labelDisplay = "Subject";
+	var uri = article["data"]["id"];
     //Commenting this out for now
     //For some reason, all subjects are displaying as narrower
     //Ensure that article type works correctly
@@ -566,8 +567,12 @@ class entityDisplay {
       labelDisplay = (articleType == "broader")? "Broader ": (articleType == "narrower") ? "Narrower ": "Related ";
       labelDisplay += "Subject";
     }*/
-    var htmlDisplay = "<h4>" + labelDisplay + ": " + article.title + "<span class='subject-panel-works' uri='" + article["data"]["id"] + "'></span></h4>";
-    
+//"<span class='subject-panel-works' uri='" + article["data"]["id"] + "'></span>
+    var htmlDisplay = "<h4>" + labelDisplay + ": " + article.title + "</h4>";
+    htmlDisplay += "<div class='row mt-1 ml-1 capitalize' role='description' uri='" + uri + "'></div>";
+    htmlDisplay += "<div class='row mt-1 ml-1' role='worksAbout' uri='" + uri + "'></div>";
+    htmlDisplay += "<div class='row mt-1 ml-1' role='relatedCall' uri='" + uri + "'></div>";
+
     //If article has from and to, display that information
     var yearRange = "";
     var fromExists = false;
@@ -580,11 +585,14 @@ class entityDisplay {
       yearRange += (fromExists)? " - ": "";
       yearRange += toYear;
     }
-    yearRange = (yearRange != "")? "Years: " + yearRange: yearRange;
-    htmlDisplay += yearRange;
     
     if("spatial_label" in article["data"]) {
-      htmlDisplay += "<br/>Related regions: " + article["data"]["spatial_label"].join(", ");
+      htmlDisplay += "<div class='row mt-1 ml-1'><div class='col font-weight-bold'>Location(s):</div><div class='col'>" + article["data"]["spatial_label"].join(", ") + "</div></div>";
+    }
+
+ //yearRange = (yearRange != "")? "Years: " + yearRange: yearRange;
+	if(yearRange != "") {
+    	htmlDisplay += "<div class='row mt-1 ml-1'><div class='col font-weight-bold'>Time(s):</div><div class='col'>" + yearRange + "</div></div>";
     }
     
     if("spatial_coverage_ss" in article["data"]) {
@@ -607,11 +615,12 @@ class entityDisplay {
     
     //
    
-    
-    htmlDisplay += "<div role='components'></div>";
+    var link = this.baseUrl + "/entity_display/display?uri=" + uri;
+    var linkHtml = "<a href='" + link + "'>Details</a>";
+    htmlDisplay += "<div role='components'></div><div class='row mt-2 ml-1 mr-1'><div class='col text-center'>" + linkHtml + "</div></div>";
     $("#timelineInfo").html(htmlDisplay);
     
-    if(articleType != "primary" && "wikidata_uri" in article["data"]) {
+    if("wikidata_uri" in article["data"]) {
       //htmlDisplay += "<div id='wikidataPanel'></div>";
       //need to work out URI
       //this.getWikidataInfoForWDURI(article["data"]["wikidata_uri"], this.displayPanelWikidataInfo);
@@ -623,6 +632,9 @@ class entityDisplay {
       //This should result in an array 
       this.getComponentsWikidataInfo(cJSON);
     }
+
+	//Add works about
+	this.getCatalogWorksAboutGeneral(uri, article.title, $("div[role='worksAbout'][uri='" + uri + "']"), null);
     
   }
   
@@ -667,11 +679,17 @@ class entityDisplay {
 
   
   displayPanelWikidataInfo(uri, data) {
-    var htmlDisplay = this.generatePanelWikidataInfo(uri, data);
-    $("#timelineInfo").append(htmlDisplay);
+    //var htmlDisplay = this.generatePanelWikidataInfo(uri, data);
+    //$("#timelineInfo").append(htmlDisplay);
+    if("description" in data) {
+		var description = data["description"];
+      //htmlDisplay += "<div class='float-left capitalize w-50'>" + data["description"] + "</div>";
+    	$("#timelineInfo div[role='description'][uri='" + uri + "']").html(description);
+	}
     
   }
   
+/*
   generatePanelWikidataInfo(uri, data) {
     var htmlDisplay = "";
     if("image" in data) {
@@ -685,19 +703,26 @@ class entityDisplay {
     htmlDisplay = "<div class='float-none'>" + htmlDisplay + "</div>";
     return htmlDisplay;
   }
-  
+  */
   addComponentPanelInfo(uri, data) {
-    var htmlDisplay = this.generatePanelWikidataInfo(uri, data);
-    $("div[role='component'][uri='" + uri + "']").append(htmlDisplay);
+    //var htmlDisplay = this.generatePanelWikidataInfo(uri, data);
+	var htmlDisplay = "";
+	if("description" in data) {
+		var description = data["description"];
+		htmlDisplay = "<div class='row mt-1 ml-1 capitalize'>" + description + "</div>";
+    	$("#timelineInfo div[role='panelComponent'][uri='" + uri + "']").append(htmlDisplay);
+	}
   }
   
   getComponentsWikidataInfo(cJSON) {
     var eThis = this;
     if(cJSON && cJSON.length > 0) {
+	  $("#timelineInfo div[role='components']").html("<div class='row font-weight-bold mt-2 ml-1'>Related subjects:</div>");
       $.each(cJSON, function(i, v) {
         var uri = v["uri"];
         var label = v["label"];
-        $("div[role='components']").append("<div class='float-none clearfix' role='component' uri='" + uri + "'>" + label + "<span class='component-panel-works' uri='" + uri + "'></span></div>");  
+		var componentHtml = "<div class='row mt-1 ml-1 mr-1 capitalize' role='panelComponent' uri='" + uri + "'>" + label + "<span class='component-panel-works' uri='" + uri + "'></span></div>";
+        $("div[role='components']").append(componentHtml);  
         eThis.getWikidataInfo(uri, eThis.addComponentPanelInfo.bind(eThis));
         //could turn this into a promise so the next ajax call is fired afterwards
         eThis.getCatalogWorksAboutPanelComponent(uri, label);
@@ -1534,7 +1559,7 @@ class entityDisplay {
     var overlay = L.layerGroup();
   
     var mymap= L.map('map', {minZoom: 1,
-        maxZoom: 18});
+        maxZoom: 19});
     mymap.setView([0, 0], 0);
     mymap.addLayer(overlay);
     var tileLayer = this.generateLeafletTileLayer();
@@ -1595,7 +1620,7 @@ class entityDisplay {
         //if a marker doesn't already exist
         //if(!wduri in eThis.markers) {
           //if(wduri in eThis.markers) console.log("in  marker already");
-         label = labels[i] || "";
+          var label = labels[i] || "";
           eThis.getMapInfoForURI(v, label, overlay);   
         //}
       });
@@ -1607,7 +1632,7 @@ class entityDisplay {
         //if a marker doesn't already exist
         //if(!wduri in eThis.markers) {
           //if(wduri in eThis.markers) console.log("in  marker already");
-         label = labels[i] || "";
+          var label = labels[i] || "";
           eThis.getMapInfoForURI(v, label, overlay);   
         //}
       });
@@ -1717,6 +1742,40 @@ class entityDisplay {
       var c = counts["worksBy"];
       if(c > 0) {
         $("span.author-works[uri='" + uri + "']").append("(Works By: " + c + ")");
+      }
+    }
+  }
+
+	getCatalogWorksAboutGeneral(uri, label, aboutDiv, byDiv) { 
+    //Do ajax request to proxy controller for subject heading search using this label
+    var searchLabel = label.replace(/--/g," > ");
+    var searchLink = this.baseUrl + "proxy/sauthsearch?q=" + searchLabel;
+    $.ajax({
+      "url": searchLink,
+      "type": "GET",
+      context: this,
+      "success" : function(data) {     
+        if("response" in data && "docs" in data["response"] && data["response"]["docs"].length > 0) {
+          var doc = data["response"]["docs"]["0"];
+          var counts_json = doc["counts_json"];
+          var counts = JSON.parse(counts_json);
+          this.displayWorksAboutGeneral(uri, counts, aboutDiv, byDiv);
+        }
+      }
+    });
+  }
+
+  displayWorksAboutGeneral(uri, counts, aboutDiv, byDiv) {
+    if("worksAbout" in counts) {
+      var c = counts["worksAbout"];
+      if(c > 0) {
+        aboutDiv.html("<div class='col font-weight-bold'>Works About:</div><div class='col'>" + c + "</div>");
+      }
+    }
+    if("worksBy" in counts) {
+      var c = counts["worksBy"];
+      if(c > 0) {
+        byDiv.append("(Works By: " + c + ")");
       }
     }
   }
